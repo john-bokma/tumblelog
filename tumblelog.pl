@@ -95,8 +95,8 @@ sub create_index {
             );
             for my $entry ( @{ $collected->{ $year_week }{ $date } } ) {
                 $body_html .= html_for_entry( $entry );
-                --$todo or last YEAR_WEEK;
             }
+            --$todo or last YEAR_WEEK;
         }
     }
 
