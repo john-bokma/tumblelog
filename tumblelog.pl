@@ -184,41 +184,41 @@ sub html_for_date {
     my ( $year, $month, $day ) = split /-/, $date;
     my $uri = "$path/$year/$month/$day.html";
 
-    return qq(<div class="tl-date"><a href="$uri">)
+    return qq(<time class="tl-date" datetime="$date"><a href="$uri">)
         . parse_date( $date )->strftime( $date_format )
-        . "</a></div>\n";
+        . "</a></time>\n";
 }
 
 sub html_for_entry {
 
     my $entry = shift;
-    return qq(<div class="tl-entry">\n)
+    return qq(<article>\n)
         . CommonMark->markdown_to_html( $entry  )
-        . "</div>\n";
+        . "</article>\n";
 }
 
 sub html_for_archive {
 
     my ( $archive, $current_year_week, $path ) = @_;
 
-    my $html = qq(<dl class="tl-archive">\n);
+    my $html = qq(<nav>\n  <dl class="tl-archive">\n);
     for my $year ( sort { $b <=> $a } keys %$archive ) {
-        $html .= "  <dt>$year</dt>\n  <dd>\n    <ul>\n";
+        $html .= "    <dt>$year</dt>\n    <dd>\n      <ul>\n";
         for my $week ( @{ $archive->{ $year } } ) {
             my $year_week = year_week( $year, $week );
             if ( $year_week eq $current_year_week ) {
-                $html .= qq(      <li class="tl-self">$week</li>\n);
+                $html .= qq(        <li class="tl-self">$week</li>\n);
             }
             else {
                 my $uri = "$path/$year/week/$week.html";
-                $html .= "      <li>"
+                $html .= "        <li>"
                     . qq(<a href="$uri" title="$year_week">)
                     . $week . "</a></li>\n";
             }
         }
-        $html .= "      </ul>\n  </dd>\n";
+        $html .= "      </ul>\n    </dd>\n";
     }
-    $html .= "</dl>\n";
+    $html .= "  </dl>\n</nav>\n";
     return $html;
 }
 
