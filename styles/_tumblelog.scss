@@ -1,0 +1,184 @@
+/* (c) John Bokma, 2019
+ *
+ * This stylesheet is free software; you can redistribute it and/or modify it
+ * under the same terms as Perl itself.
+ */
+
+html {
+    box-sizing: border-box;
+    font-size: 14px;
+    line-height: 21px;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+body {
+    background-color: $background-color;
+    font-family: $font-stack;
+}
+
+#tl-page {
+    margin: 14px auto;
+    padding: 10px;
+    width: 480px;
+    background-color: $page-background-color;
+    color: $text-color;
+    border-radius: $border-radius;
+}
+
+@media screen
+    and (max-width: 479px) {
+    #tl-page {
+        width: 320px;
+    }
+}
+
+.tl-title {
+    color: $heading-color;
+
+    h1 {
+        margin: 0;
+        padding-top: 6px;
+        font-style: oblique;
+        display: inline-block;
+        font-size: 40px;
+    }
+
+    div {
+        display: inline-block;
+        font-size: 14px;
+    }
+
+    span {
+        font-size: 12px;
+        color: $label-color;
+        float: right;
+    }
+}
+
+ul.tl-navigation {
+    list-style: none;
+    margin: 0 0 12px 0;
+    padding: 0;
+
+    li {
+        display: inline;
+        padding-left: 6px;
+    }
+}
+
+.tl-date {
+    display: block;
+    clear: both;
+    text-align: right;
+    border-bottom: $border;
+
+    a {
+        color: $date-color;
+    }
+}
+
+article {
+
+    h2, h3, h4 {
+        color: $heading-color;
+    }
+
+    h2, h3 {
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    h2 {
+        font-size: 18px;
+        line-height: 27px;
+    }
+
+    h3 {
+        font-size: 16px;
+        line-height: 24px;
+    }
+
+    h4 {
+        font-size: 14px;
+        font-weight: bold;
+        font-style: oblique;
+    }
+}
+
+.tl-self {
+    color: $self-color;
+}
+
+a {
+    text-decoration: none;
+    color: $link-color;
+}
+
+pre {
+    margin: 0;
+    padding: 5px;
+    background-color: $pre-background-color;
+    border-radius: $border-radius;
+    overflow: auto;
+}
+
+blockquote {
+    margin: 0;
+    padding: 0 6px;
+    background-color: $blockquote-background-color;
+    border-radius: $border-radius;
+}
+
+code {
+    font-family: $code-font-stack;
+}
+
+img {
+    width: 100%;
+}
+
+h2.tl-archives-heading {
+    border-top: $border;
+    padding-top: 10px;
+    font-size: 20px;
+    color: $heading-color;
+}
+
+dl.tl-archive {
+    margin: 0;
+    padding: 0;
+
+    dt {
+        float: left;
+    }
+
+    dd {
+        margin: 0 0 0 36px;
+
+        ul {
+            display: inline;
+            margin: 0;
+            padding: 0;
+
+            li {
+                display: inline;
+            }
+        }
+    }
+}
+
+footer {
+    margin-top: 6px;
+    padding-top: 6px;
+    font-size: 12px;
+    border-top: $border;
+}

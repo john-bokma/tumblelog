@@ -1,0 +1,32 @@
+/* (c) John Bokma, 2019
+ *
+ * This stylesheet is free software; you can redistribute it and/or modify it
+ * under the same terms as Perl itself.
+ *
+ * Palette taken from the Soothe Theme for Emacs by Jason Milkins.
+ */
+
+$font-stack: "San Fransisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
+$code-font-stack: "Courier New", Courier, monospace;
+
+$background-color: white;
+$page-background-color: white;
+$text-color: #333;
+$heading-color: black;
+$label-color: black;
+$border-color: #333;
+$date-color: black;
+$self-color: #333;
+$link-color: #0000ee;
+$pre-background-color: #eee;
+$blockquote-background-color: white;
+
+$border: solid 1px $border-color;
+$border-radius: 6px;
+
+@import 'tumblelog';
+
+blockquote {
+    border-radius: initial;
+    border-left: solid 3px #999;
+}
