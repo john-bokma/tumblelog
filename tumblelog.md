@@ -25,6 +25,7 @@ https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
 
 ![Yellow Chrysanthemum flowers](
 http://plurrrr.com/images/yellow-chrysanthemum-flowers.jpg)
+
 Yellow Chrysanthemum flowers.
 
 > A short quote
