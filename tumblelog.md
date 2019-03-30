@@ -3,6 +3,10 @@
 
 If you see this post you sucessfully ran `thumblelog.pl`.
 %
+## Example tumblelog
+See [Plurrrr](http://plurrrr.com/) for an example tumblelog created
+with `tumblelog.pl`.
+%
 ## Next Steps
 
 - Create your own template.
@@ -16,7 +20,6 @@ If you see this post you sucessfully ran `thumblelog.pl`.
 - [Contact me by email](http://johnbokma.com/email.html).
 - [Markdown Cheatsheet](
 https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
-
 %
 ## heading level 2
 ### heading level 3
