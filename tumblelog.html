@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>YOUR BLOG NAME: a Tumblelog by YOUR NAME - [% label %]</title>
+    <link rel="stylesheet" href="[% css %]">
+  </head>
+  <body>
+    <div id="tl-page">
+      <header>
+        <div class="tl-title">
+          <h1>YOUR BLOG NAME</h1>
+          <div>a tumblelog</div>
+          <span>[% label %]</span>
+        </div>
+        <nav>
+          <ul class="tl-navigation">
+            <li><a href="http://example.com/">SOME SITE</a></li>
+            <li><a href="/">home</a>
+          </ul>
+        </nav>
+      </header>
+      <main>
+[% body %]
+        <h2 class="tl-archives-heading">Archives</h2>
+[% archive %]
+      </main>
+      <footer>
+        Copyright &copy; [% year-range %] YOUR NAME
+        Pages generated with
+          <a
+            href="http://johnbokma.com/blog/2019/03/30/tumblelog-perl.html"
+          >tumblelog.pl</a>.
+      </footer>
+    </div>
+  </body>
+</html>
