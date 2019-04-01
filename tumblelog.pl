@@ -285,7 +285,11 @@ sub collect_daily_entries {
 sub read_tumblelog_entries {
 
     my $filename = shift;
-    return [ split /^%\n/m, path( $filename )->slurp_utf8() ];
+    my $entries = [ split /^%\n/m, path( $filename )->slurp_utf8() ];
+
+    @$entries or die "No blog entries found";
+
+    return $entries;
 }
 
 sub show_help {
