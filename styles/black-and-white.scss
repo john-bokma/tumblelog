@@ -7,7 +7,13 @@
  */
 
 $font-stack: "San Fransisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
-$code-font-stack: "Courier New", Courier, monospace;
+$code-font-stack: SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace;
 
 $background-color: white;
 $page-background-color: white;
