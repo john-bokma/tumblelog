@@ -139,7 +139,12 @@ blockquote {
 }
 
 code {
+    white-space: nowrap;
     font-family: $code-font-stack;
+}
+
+pre>code {
+    whitespace: pre;
 }
 
 img {
