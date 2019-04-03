@@ -6,6 +6,6 @@ for the required additional parameters for the JSON feed.
 
 ## Examples
 
-- [http://plurrrr.com/] - Plurrrr: a tumblelog by John Bokma
+- [Plurrrr: a tumblelog](http://plurrrr.com/) - by John Bokma
 
 If you want your tumblelog generated site listed, please let me know.
