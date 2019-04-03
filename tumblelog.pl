@@ -57,6 +57,7 @@ if ( !defined $tumblelog_filename ) {
     show_help();
     exit( 1 );
 }
+warn "Additional arguments have been skipped\n" if @ARGV;
 
 $options{ template } = path( $options{ 'template-filename' } )->slurp_utf8();
 
