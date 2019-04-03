@@ -8,6 +8,9 @@
 use strict;
 use warnings;
 
+use URI;
+use JSON;
+use HTML::Entities;
 use Path::Tiny;
 use CommonMark;
 use Time::Piece;
@@ -16,6 +19,9 @@ use Getopt::Long;
 my %options = (
     'template-filename' => undef,
     'output-dir'        => undef,
+    'author'            => undef,
+    'name'              => undef,
+    'blog-url'          => undef,
     'days'              => 14,
     'css-url'           => 'styles.css',
     'date-format'       => '%d %b %Y',
@@ -27,6 +33,9 @@ GetOptions(
     \%options,
     'template-filename=s',
     'output-dir=s',
+    'author=s',
+    'name=s',
+    'blog-url=s',
     'days=i',
     'css-url=s',
     'date-format=s',
@@ -39,16 +48,25 @@ if ( $options{ help }) {
     exit;
 }
 
-if ( !defined $options{ 'output-dir' } ) {
-    warn "Use --output-dir to specify an output directory for HTML files\n\n";
-    show_help();
-    exit( 1 );
-}
+my %required = (
+    'template-filename' =>
+        "Use --template-filename to specify a template",
+    'output-dir' =>
+        "Use --output-dir to specify an output directory for HTML files",
+    'author' =>
+        "Use --author to specify an author name",
+    'name' =>
+        "Use --name to specify a name for the blog and its feed",
+    'blog-url' =>
+        "Use --blog-url to specify the URL of the blog itself",
+);
 
-if ( !defined $options{ 'template-filename' } ) {
-    warn "Use --template-filename to specify a template\n\n";
-    show_help();
-    exit( 1 );
+for my $name ( sort keys %required ) {
+    if ( !defined $options{ $name } ) {
+        warn "$required{ $name }\n\n";
+        show_help();
+        exit( 1 );
+    }
 }
 
 my $tumblelog_filename = shift @ARGV;
@@ -59,7 +77,10 @@ if ( !defined $tumblelog_filename ) {
 }
 warn "Additional arguments have been skipped\n" if @ARGV;
 
-$options{ template } = path( $options{ 'template-filename' } )->slurp_utf8();
+$options{ template    } = path( $options{ 'template-filename' } )->slurp_utf8();
+$options{ 'feed-path' } = 'feed.json';
+$options{ 'feed-url'  } = URI->new_abs( @options{ qw( feed-path blog-url ) } )
+    ->as_string();
 
 my $collected = collect_weekly_entries(
     collect_daily_entries(
@@ -80,6 +101,8 @@ create_index(
 create_other_pages( $_, $collected, $archive, \%options, $min_year, $max_year )
     for @year_weeks;
 
+create_json_feed( \@year_weeks, $collected, \%options );
+
 
 sub create_index {
 
@@ -94,9 +117,10 @@ sub create_index {
             $body_html .= html_for_date(
                 $date, $options->{ 'date-format' }, 'archive'
             );
-            for my $entry ( @{ $collected->{ $year_week }{ $date } } ) {
-                $body_html .= html_for_entry( $entry );
-            }
+
+            $body_html .= html_for_entry( $_ )
+                for @{ $collected->{ $year_week }{ $date } };
+
             --$todo or last YEAR_WEEK;
         }
     }
@@ -166,11 +190,15 @@ sub create_page {
     my $html = $options->{ template };
 
     for ( $html ) {
-        s/\[% \s+ label      \s+ %\]/$label/gx;
-        s/\[% \s+ css        \s+ %\]/$css/gx;
         s/\[% \s+ year-range \s+ %\]/$year_range/gx;
-        s/\[% \s+ body       \s+ %\]\n/$body_html/x;
-        s/\[% \s+ archive    \s+ %\]\n/$archive_html/gx;
+        s/\[% \s+ label    \s+ %\]/ encode_entities( $label ) /gxe;
+        s/\[% \s+ css      \s+ %\]/$css/gx;
+        s/\[% \s+ name     \s+ %\]/ encode_entities( $options->{ name } )/gxe;
+        s/\[% \s+ author   \s+ %\]/ encode_entities( $options->{ author } )/gxe;
+        s/\[% \s+ feed-url \s+ %\]/ $options->{ 'feed-url' }/gx;
+        s/\[% \s+ body     \s+ %\]\n/$body_html/x;
+        s/\[% \s+ archive  \s+ %\]\n/$archive_html/gx;
+
     }
 
     path( "$options->{ 'output-dir' }/$path" )->spew_utf8( $html );
@@ -233,6 +261,57 @@ sub create_archive {
         unshift @{ $archive{ $year } }, $week;
     }
     return \%archive
+}
+
+sub create_json_feed {
+
+    my ( $period, $collected, $options ) = @_;
+
+    my @items;
+    my $todo = $options->{ days };
+  YEAR_WEEK:
+    for my $year_week ( @$period ) {
+        my @dates = sort { $b cmp $a } keys %{ $collected->{ $year_week } };
+        for my $date ( @dates ) {
+            my $html;
+            $html .= html_for_entry( $_ )
+                for @{ $collected->{ $year_week }{ $date } };
+
+            my ( $year, $month, $day ) = split /-/, $date;
+            my $url = URI->new_abs(
+                "archive/$year/$month/$day.html",
+                $options->{ 'blog-url' }
+            )->as_string();
+            my $title = parse_date( $date )
+                ->strftime( $options->{ 'date-format' } );
+            push @items, {
+                id    => $url,
+                url   => $url,
+                title => $title,
+                content_html   => $html,
+                date_published => $date,
+            };
+
+            --$todo or last YEAR_WEEK;
+        }
+    }
+
+    my $feed = {
+        version       => 'https://jsonfeed.org/version/1',
+        title         => $options->{ 'name' },
+        home_page_url => $options->{ 'blog-url' },
+        feed_url      => $options->{ 'feed-url' },
+        author        => {
+            name => $options->{ author },
+        },
+        items => \@items,
+    };
+    my $path = $options->{ 'feed-path' };
+    my $json = JSON->new->utf8->pretty->canonical->encode( $feed );
+    path( "$options->{ 'output-dir' }/$path" )->spew_raw( $json );
+    $options->{ quiet } or print "Created '$path'\n";
+
+    return;
 }
 
 sub year_week {
@@ -301,11 +380,13 @@ NAME
 
 SYNOPSIS
         tumblelog.pl --template-filename TEMPLATE --output-dir HTDOCS
+            --author AUTHOR -name BLOGNAME --blog-url URL
             [--days DAYS ] [--css-url URL] [--date-format DATE] [--quiet] FILE
         tumblelog.pl --help
 DESCRIPTION
         Processes the given FILE and creates static HTML pages using
         TEMPLATE and writes the generated files to directory HTDOCS.
+        Uses the AUTHOR, BLOGNAME, and URL to create a JSON feed.
 
         The --days argument specifies the number of days to show on the
         main page of the blog. It defaults to 14.

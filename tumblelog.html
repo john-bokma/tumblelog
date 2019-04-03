@@ -3,14 +3,17 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>BLOG NAME: a Tumblelog by YOUR NAME - [% label %]</title>
+    <meta name="author" content="[% author %]">
+    <title>[% name %]: a Tumblelog by [% author %] - [% label %]</title>
     <link rel="stylesheet" href="[% css %]">
+    <link rel="alternate" title="[% name %]" type="application/json"
+          href="[% feed-url %]">
   </head>
   <body>
     <div id="tl-page">
       <header>
         <div class="tl-title">
-          <h1>BLOG NAME</h1>
+          <h1>[% name %]</h1>
           <div>a tumblelog</div>
           <span>[% label %]</span>
         </div>
@@ -18,6 +21,7 @@
           <ul class="tl-navigation">
             <li><a href="http://example.com/">SOME SITE</a></li>
             <li><a href="/">home</a></li>
+            <li><a href="[% feed-url %]">JSON</a></li>
           </ul>
         </nav>
       </header>
@@ -29,7 +33,7 @@
 [% archive %]
       </main>
       <footer>
-        Copyright &copy; [% year-range %] YOUR NAME.
+        Copyright &copy; [% year-range %] [% author %].
         Pages generated with
         <a
           href="http://johnbokma.com/blog/2019/03/30/tumblelog-perl.html"
