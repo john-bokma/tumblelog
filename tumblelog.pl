@@ -9,7 +9,7 @@ use strict;
 use warnings;
 
 use URI;
-use JSON;
+use JSON::XS;
 use HTML::Entities;
 use Path::Tiny;
 use CommonMark;
