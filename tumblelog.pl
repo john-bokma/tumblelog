@@ -307,7 +307,7 @@ sub create_json_feed {
         items => \@items,
     };
     my $path = $options->{ 'feed-path' };
-    my $json = JSON->new->utf8->pretty->canonical->encode( $feed );
+    my $json = JSON::XS->new->utf8->pretty->canonical->encode( $feed );
     path( "$options->{ 'output-dir' }/$path" )->spew_raw( $json );
     $options->{ quiet } or print "Created '$path'\n";
 
