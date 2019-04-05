@@ -256,7 +256,7 @@ sub create_archive {
     my $year_weeks = shift;
 
     my %archive;
-    for my $year_week ( @year_weeks ) {
+    for my $year_week ( @$year_weeks ) {
         my ( $year, $week ) = split_year_week( $year_week );
         unshift @{ $archive{ $year } }, $week;
     }
