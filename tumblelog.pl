@@ -381,7 +381,7 @@ NAME
 SYNOPSIS
         tumblelog.pl --template-filename TEMPLATE --output-dir HTDOCS
             --author AUTHOR -name BLOGNAME --blog-url URL
-            [--days DAYS ] [--css-url URL] [--date-format DATE] [--quiet] FILE
+            [--days DAYS ] [--css-url URL] [--date-format FORMAT] [--quiet] FILE
         tumblelog.pl --help
 DESCRIPTION
         Processes the given FILE and creates static HTML pages using
