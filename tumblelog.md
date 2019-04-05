@@ -1,7 +1,7 @@
 2019-03-30
 ## Congratulations
 
-If you see this post you sucessfully ran `thumblelog.pl`.
+If you see this post you sucessfully ran `tumblelog.pl`.
 %
 ## Example tumblelog
 See [Plurrrr](http://plurrrr.com/) for an example tumblelog created
