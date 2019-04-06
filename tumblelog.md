@@ -1,7 +1,8 @@
 2019-03-30
 ## Congratulations
-
 If you see this post you sucessfully ran `tumblelog.pl`.
+
+Unicode test: ☺ (smiley face)
 %
 ## Example tumblelog
 See [Plurrrr](http://plurrrr.com/) for an example tumblelog created
