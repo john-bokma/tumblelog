@@ -16,6 +16,16 @@ use CommonMark;
 use Time::Piece;
 use Getopt::Long;
 
+my $RE_YEAR_RANGE = qr/\[% \s+ year-range \s+ %\]/x;
+my $RE_LABEL      = qr/\[% \s+ label      \s+ %\]/x;
+my $RE_CSS        = qr/\[% \s+ css        \s+ %\]/x;
+my $RE_NAME       = qr/\[% \s+ name       \s+ %\]/x;
+my $RE_AUTHOR     = qr/\[% \s+ author     \s+ %\]/x;
+my $RE_FEED_URL   = qr/\[% \s+ feed-url   \s+ %\]/x;
+my $RE_BODY       = qr/\[% \s+ body       \s+ %\]\n/x;
+my $RE_ARCHIVE    = qr/\[% \s+ archive    \s+ %\]\n/x;
+
+
 create_blog( get_options() );
 
 sub get_options {
@@ -205,14 +215,14 @@ sub create_page {
     my $html = $options->{ template };
 
     for ( $html ) {
-        s/\[% \s+ year-range \s+ %\]/$year_range/gx;
-        s/\[% \s+ label    \s+ %\]/ encode_entities( $label ) /gxe;
-        s/\[% \s+ css      \s+ %\]/$css/gx;
-        s/\[% \s+ name     \s+ %\]/ encode_entities( $options->{ name } )/gxe;
-        s/\[% \s+ author   \s+ %\]/ encode_entities( $options->{ author } )/gxe;
-        s/\[% \s+ feed-url \s+ %\]/ $options->{ 'feed-url' }/gx;
-        s/\[% \s+ body     \s+ %\]\n/$body_html/x;
-        s/\[% \s+ archive  \s+ %\]\n/$archive_html/gx;
+        s/ $RE_YEAR_RANGE /$year_range/gx;
+        s/ $RE_LABEL      / encode_entities( $label ) /gxe;
+        s/ $RE_CSS        /$css/gx;
+        s/ $RE_NAME       / encode_entities( $options->{ name } ) /gxe;
+        s/ $RE_AUTHOR     / encode_entities( $options->{ author } ) /gxe;
+        s/ $RE_FEED_URL   /$options->{ 'feed-url' }/gx;
+        s/ $RE_BODY       /$body_html/x;
+        s/ $RE_ARCHIVE    /$archive_html/gx;
     }
 
     path( "$options->{ 'output-dir' }/$path" )->spew_utf8( $html );
