@@ -125,7 +125,7 @@ sub create_index {
         }
     }
 
-    my $archive_html = html_for_archive( $archive, 'none', 'archive' );
+    my $archive_html = html_for_archive( $archive, undef, 'archive' );
 
     create_page(
         'index.html', $body_html, $archive_html, $options,
@@ -149,7 +149,7 @@ sub create_other_pages {
             $day_body_html .= html_for_entry( $entry );
         }
 
-        my $archive_html = html_for_archive( $archive, '', '../..' );
+        my $archive_html = html_for_archive( $archive, undef, '../..' );
 
         my ( $year, $month, $day ) = split /-/, $date;
         path( "$options->{ 'output-dir' }/archive/$year/$month")->mkpath();
@@ -235,7 +235,8 @@ sub html_for_archive {
         $html .= "    <dt>$year</dt>\n    <dd>\n      <ul>\n";
         for my $week ( @{ $archive->{ $year } } ) {
             my $year_week = year_week( $year, $week );
-            if ( $year_week eq $current_year_week ) {
+            if ( defined $current_year_week
+                     && $year_week eq $current_year_week ) {
                 $html .= qq(        <li class="tl-self">$week</li>\n);
             }
             else {
