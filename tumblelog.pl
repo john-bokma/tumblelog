@@ -351,7 +351,7 @@ sub collect_daily_entries {
     my $date;
     my %collected;
     for my $entry ( @$entries ) {
-        if ( $entry =~ /^(\d{4}-\d{2}-\d{2})\n(.*)/sm ) {
+        if ( $entry =~ /^(\d{4}-\d{2}-\d{2})\n(.*)/s ) {
             $date = $1;
             $entry = $2;
         }
