@@ -142,6 +142,7 @@ sub create_index {
 
     my $archive_html = html_for_archive( $archive, undef, 'archive' );
 
+    path( $options->{ 'output-dir' } )->mkpath();
     create_page(
         'index.html', $body_html, $archive_html, $options,
         'home', $min_year, $max_year
