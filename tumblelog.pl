@@ -249,7 +249,7 @@ sub html_for_archive {
     for my $year ( sort { $b <=> $a } keys %$archive ) {
         $html .= "    <dt>$year</dt>\n    <dd>\n      <ul>\n";
         for my $week ( @{ $archive->{ $year } } ) {
-            my $year_week = year_week( $year, $week );
+            my $year_week = join_year_week( $year, $week );
             if ( defined $current_year_week
                      && $year_week eq $current_year_week ) {
                 $html .= qq(        <li class="tl-self">$week</li>\n);
@@ -330,7 +330,7 @@ sub create_json_feed {
     return;
 }
 
-sub year_week {
+sub join_year_week {
 
     my ( $year, $week ) = @_;
     return sprintf '%04d-%02d', $year, $week;
@@ -354,7 +354,7 @@ sub collect_weekly_entries {
     my @dates = sort { $b cmp $a } keys %$entries;
     for my $date ( @dates ) {
         my $tp = parse_date( $date );
-        my $year_week = year_week( $tp->year(), $tp->week() );
+        my $year_week = join_year_week( $tp->year(), $tp->week() );
         $collected{ $year_week }{ $date } = $entries->{ $date };
     }
     return \%collected;
