@@ -213,7 +213,6 @@ sub create_page {
         s/\[% \s+ feed-url \s+ %\]/ $options->{ 'feed-url' }/gx;
         s/\[% \s+ body     \s+ %\]\n/$body_html/x;
         s/\[% \s+ archive  \s+ %\]\n/$archive_html/gx;
-
     }
 
     path( "$options->{ 'output-dir' }/$path" )->spew_utf8( $html );
