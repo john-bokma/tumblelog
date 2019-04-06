@@ -27,7 +27,7 @@ sub get_options {
         'name'              => undef,
         'blog-url'          => undef,
         'days'              => 14,
-        'css-url'           => 'styles.css',
+        'css'               => 'styles.css',
         'date-format'       => '%d %b %Y',
         'quiet'             => undef,
         'help'              => undef,
@@ -41,7 +41,7 @@ sub get_options {
         'name=s',
         'blog-url=s',
         'days=i',
-        'css-url=s',
+        'css=s',
         'date-format=s',
         'quiet',
         'help',
@@ -199,8 +199,7 @@ sub create_page {
         $min_year : "$min_year - $max_year";
 
     my $slashes = $path =~ tr{/}{};
-    my $css = $options->{ 'css-url' };
-    $css = join( '', '../' x $slashes, $css );
+    my $css = join( '', '../' x $slashes, $options->{ css } );
 
     my $html = $options->{ template };
 
@@ -397,7 +396,7 @@ NAME
 SYNOPSIS
         tumblelog.pl --template-filename TEMPLATE --output-dir HTDOCS
             --author AUTHOR -name BLOGNAME --blog-url URL
-            [--days DAYS ] [--css-url URL] [--date-format FORMAT] [--quiet] FILE
+            [--days DAYS ] [--css CSS] [--date-format FORMAT] [--quiet] FILE
         tumblelog.pl --help
 DESCRIPTION
         Processes the given FILE and creates static HTML pages using
@@ -407,7 +406,7 @@ DESCRIPTION
         The --days argument specifies the number of days to show on the
         main page of the blog. It defaults to 14.
 
-        The --css-url argument specifies the name of the stylesheet. It
+        The --css argument specifies the name of the stylesheet. It
         defaults to 'styles.css'.
 
         The --date-format argument specifies the date format to use
