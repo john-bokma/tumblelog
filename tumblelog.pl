@@ -185,7 +185,7 @@ sub create_page {
 
     my $slashes = $path =~ tr{/}{};
     my $css = $options->{ 'css-url' };
-    $css = join( '', '../' x $slashes ) . $css;
+    $css = join( '', '../' x $slashes, $css );
 
     my $html = $options->{ template };
 
