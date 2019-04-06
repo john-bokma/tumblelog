@@ -16,93 +16,108 @@ use CommonMark;
 use Time::Piece;
 use Getopt::Long;
 
-my %options = (
-    'template-filename' => undef,
-    'output-dir'        => undef,
-    'author'            => undef,
-    'name'              => undef,
-    'blog-url'          => undef,
-    'days'              => 14,
-    'css-url'           => 'styles.css',
-    'date-format'       => '%d %b %Y',
-    'quiet'             => undef,
-    'help'              => undef,
-);
+create_blog( get_options() );
 
-GetOptions(
-    \%options,
-    'template-filename=s',
-    'output-dir=s',
-    'author=s',
-    'name=s',
-    'blog-url=s',
-    'days=i',
-    'css-url=s',
-    'date-format=s',
-    'quiet',
-    'help',
-);
+sub get_options {
 
-if ( $options{ help }) {
-    show_help();
-    exit;
-}
+    my %options = (
+        'template-filename' => undef,
+        'output-dir'        => undef,
+        'author'            => undef,
+        'name'              => undef,
+        'blog-url'          => undef,
+        'days'              => 14,
+        'css-url'           => 'styles.css',
+        'date-format'       => '%d %b %Y',
+        'quiet'             => undef,
+        'help'              => undef,
+    );
 
-my %required = (
-    'template-filename' =>
-        "Use --template-filename to specify a template",
-    'output-dir' =>
-        "Use --output-dir to specify an output directory for HTML files",
-    'author' =>
-        "Use --author to specify an author name",
-    'name' =>
-        "Use --name to specify a name for the blog and its feed",
-    'blog-url' =>
-        "Use --blog-url to specify the URL of the blog itself",
-);
+    GetOptions(
+        \%options,
+        'template-filename=s',
+        'output-dir=s',
+        'author=s',
+        'name=s',
+        'blog-url=s',
+        'days=i',
+        'css-url=s',
+        'date-format=s',
+        'quiet',
+        'help',
+    );
 
-for my $name ( sort keys %required ) {
-    if ( !defined $options{ $name } ) {
-        warn "$required{ $name }\n\n";
+    if ( $options{ help }) {
+        show_help();
+        exit;
+    }
+
+    my %required = (
+        'template-filename' =>
+            'Use --template-filename to specify a template',
+        'output-dir' =>
+            'Use --output-dir to specify an output directory for HTML files',
+        'author' =>
+            'Use --author to specify an author name',
+        'name' =>
+            'Use --name to specify a name for the blog and its feed',
+        'blog-url' =>
+            'Use --blog-url to specify the URL of the blog itself',
+    );
+
+    for my $name ( sort keys %required ) {
+        if ( !defined $options{ $name } ) {
+            warn "$required{ $name }\n\n";
+            show_help();
+            exit( 1 );
+        }
+    }
+
+    my $filename = shift @ARGV;
+    if ( !defined $filename ) {
+        warn "Specify a filename that contains the blog entries\n\n";
         show_help();
         exit( 1 );
     }
+    warn "Additional arguments have been skipped\n" if @ARGV;
+
+    $options{ filename } = $filename;
+    $options{ template } = path( $options{ 'template-filename' } )
+        ->slurp_utf8();
+    $options{ 'feed-path' } = 'feed.json';
+    $options{ 'feed-url' } = URI->new_abs(
+        @options{ qw( feed-path blog-url ) }
+    )->as_string();
+
+    return \%options;
 }
 
-my $tumblelog_filename = shift @ARGV;
-if ( !defined $tumblelog_filename ) {
-    warn "Specify a filename that contains the log entries\n\n";
-    show_help();
-    exit( 1 );
+sub create_blog {
+
+    my $options = shift;
+
+    my $collected = collect_weekly_entries(
+        collect_daily_entries(
+            read_tumblelog_entries( $options->{ filename } )
+        )
+    );
+
+    my @year_weeks = sort { $b cmp $a } keys %$collected;
+    my $max_year = ( split_year_week( $year_weeks[  0 ] ) )[ 0 ];
+    my $min_year = ( split_year_week( $year_weeks[ -1 ] ) )[ 0 ];
+
+    my $archive = create_archive( \@year_weeks );
+
+    create_index(
+        \@year_weeks, $collected, $archive, $options, $min_year, $max_year
+    );
+
+    create_other_pages(
+        $_, $collected, $archive, $options, $min_year, $max_year
+    ) for @year_weeks;
+
+    create_json_feed( \@year_weeks, $collected, $options );
 }
-warn "Additional arguments have been skipped\n" if @ARGV;
-
-$options{ template    } = path( $options{ 'template-filename' } )->slurp_utf8();
-$options{ 'feed-path' } = 'feed.json';
-$options{ 'feed-url'  } = URI->new_abs( @options{ qw( feed-path blog-url ) } )
-    ->as_string();
-
-my $collected = collect_weekly_entries(
-    collect_daily_entries(
-        read_tumblelog_entries( $tumblelog_filename )
-    )
-);
-
-my @year_weeks = sort { $b cmp $a } keys %$collected;
-my ( $max_year, undef ) = split_year_week( $year_weeks[  0 ] );
-my ( $min_year, undef ) = split_year_week( $year_weeks[ -1 ] );
-
-my $archive = create_archive( \@year_weeks );
-
-create_index(
-    \@year_weeks, $collected, $archive, \%options, $min_year, $max_year
-);
-
-create_other_pages( $_, $collected, $archive, \%options, $min_year, $max_year )
-    for @year_weeks;
-
-create_json_feed( \@year_weeks, $collected, \%options );
-
 
 sub create_index {
 
