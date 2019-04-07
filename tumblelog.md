@@ -17,6 +17,7 @@ with `tumblelog.pl`.
 ## Help
 
 - [Create a static tumblelog with Perl](http://johnbokma.com/blog/2019/03/30/tumblelog-perl.html).
+- [A JSON feed for tumblelog](http://johnbokma.com/blog/2019/04/03/a-json-feed-for-tumblelog.html)
 - [tumblelog at Github](https://github.com/john-bokma/tumblelog).
 - [Contact me by email](http://johnbokma.com/email.html).
 - [Markdown Cheatsheet](
