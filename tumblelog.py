@@ -287,31 +287,31 @@ def create_option_parser():
 
     parser = OptionParser(usage=usage)
     parser.add_option('-t', '--template-filename', dest='template-filename',
-                      help='Filename of template, required',
+                      help='filename of template, required',
                       metavar='TEMPLATE', default=None)
     parser.add_option('-o', '--output-dir', dest='output-dir',
-                      help='Directory to store HTML files in, required',
+                      help='directory to store HTML files in, required',
                       metavar='HTDOCS', default=None)
     parser.add_option('-a', '--author', dest='author',
-                      help='Author of the blog, required',
+                      help='author of the blog, required',
                       metavar='AUTHOR', default=None)
     parser.add_option('-n', '--name', dest='name',
-                      help='Name of the blog, required',
+                      help='name of the blog, required',
                       metavar='BLOGNAME', default=None)
     parser.add_option('-b', '--blog-url', dest='blog-url',
                       help='URL of the blog, required',
                       metavar='URL', default=None)
     parser.add_option('-d', '--days', dest='days',
-                      help='Number of days to show on the index; default 14',
+                      help='number of days to show on the index; default 14',
                       metavar='DAYS', type='int', default=14)
     parser.add_option('-c', '--css', dest='css',
                       help='URL of the stylesheet to use; default styles.css',
                       metavar='URL', default='styles.css')
     parser.add_option('--date-format', dest='date-format',
-                      help='How to format the date; default %d %b %Y',
+                      help='how to format the date; default %d %b %Y',
                       metavar='FORMAT', default='%d %b %Y')
     parser.add_option('-q', '--quiet', action='store_true', dest='quiet',
-                      help="Don't show progress", default=False)
+                      help="don't show progress", default=False)
 
     return parser
 
