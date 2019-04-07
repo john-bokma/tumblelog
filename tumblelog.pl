@@ -225,7 +225,8 @@ sub create_page {
         s/ $RE_ARCHIVE    /$archive_html/gx;
     }
 
-    path( "$options->{ 'output-dir' }/$path" )->spew_utf8( $html );
+    path( "$options->{ 'output-dir' }/$path" )
+        ->append_utf8( { truncate => 1 }, $html );
     $options->{ quiet } or print "Created '$path'\n";
     return;
 }
@@ -334,7 +335,8 @@ sub create_json_feed {
     my $path = $options->{ 'feed-path' };
     my $json = JSON::XS->new->utf8->indent->space_after->canonical
         ->encode( $feed );
-    path( "$options->{ 'output-dir' }/$path" )->spew_raw( $json );
+    path( "$options->{ 'output-dir' }/$path" )
+        ->append_raw( { truncate => 1 }, $json );
     $options->{ quiet } or print "Created '$path'\n";
 
     return;
