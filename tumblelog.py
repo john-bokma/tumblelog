@@ -135,7 +135,7 @@ def create_page(path, body_html, archive_html, options,
     html = re.sub(RE_NAME,       escape(options['name']), html)
     html = re.sub(RE_AUTHOR,     escape(options['author']), html)
     html = re.sub(RE_FEED_URL,   options['feed-url'], html)
-    html = re.sub(RE_BODY,       body_html, html, count=1)
+    html = re.sub(RE_BODY,       lambda x: body_html, html, count=1)
     html = re.sub(RE_ARCHIVE,    archive_html, html)
 
     Path(options['output-dir']).joinpath(path).write_text(
