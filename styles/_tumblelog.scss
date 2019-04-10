@@ -159,9 +159,9 @@ img {
 }
 
 section {
-    margin-top: 10px;
+    margin: 10px 10px 6px 10px;
     border-top: $border;
-    padding: 0 10px 6px 10px;
+
     header {
         h2 {
             font-size: 20px;
@@ -194,7 +194,8 @@ dl.tl-archive {
 }
 
 footer {
-    padding: 6px 10px;
-    font-size: 12px;
+    margin: 0 10px;
     border-top: $border;
+    padding: 6px 0;
+    font-size: 12px;
 }
