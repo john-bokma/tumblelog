@@ -11,7 +11,7 @@
   </head>
   <body>
     <div id="tl-page">
-      <header>
+      <header id="tl-main-header">
         <div class="tl-title">
           <h1>[% name %]</h1>
           <div>a tumblelog</div>
@@ -27,11 +27,13 @@
       </header>
       <main>
 [% body %]
+      </main>
+      <section>
         <header>
-          <h2 class="tl-archives-heading">Archives</h2>
+          <h2>Archives</h2>
         </header>
 [% archive %]
-      </main>
+      </section>
       <footer>
         Copyright &copy; [% year-range %] [% author %].
         Pages generated with

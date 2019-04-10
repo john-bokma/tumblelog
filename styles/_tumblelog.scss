@@ -27,7 +27,6 @@ body {
 
 #tl-page {
     margin: 14px auto;
-    padding: 10px;
     width: 480px;
     background-color: $page-background-color;
     color: $text-color;
@@ -39,6 +38,10 @@ body {
     #tl-page {
         width: 320px;
     }
+}
+
+#tl-main-header {
+    padding: 10px 10px 0 10px;
 }
 
 .tl-title {
@@ -75,6 +78,10 @@ ul.tl-navigation {
     }
 }
 
+main {
+    padding: 0 10px;
+}
+
 .tl-date {
     display: block;
     clear: both;
@@ -87,7 +94,6 @@ ul.tl-navigation {
 }
 
 article {
-
     h2, h3, h4 {
         color: $heading-color;
     }
@@ -152,11 +158,16 @@ img {
     height: auto;
 }
 
-h2.tl-archives-heading {
+section {
+    margin-top: 10px;
     border-top: $border;
-    padding-top: 10px;
-    font-size: 20px;
-    color: $heading-color;
+    padding: 0 10px 6px 10px;
+    header {
+        h2 {
+            font-size: 20px;
+            color: $heading-color;
+        }
+    }
 }
 
 dl.tl-archive {
@@ -183,8 +194,7 @@ dl.tl-archive {
 }
 
 footer {
-    margin-top: 6px;
-    padding-top: 6px;
+    padding: 6px 10px;
     font-size: 12px;
     border-top: $border;
 }
