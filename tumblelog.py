@@ -16,14 +16,14 @@ from collections import defaultdict, deque
 from commonmark import commonmark
 
 
-RE_YEAR_RANGE = r'(?x) \[% \s+ year-range \s+ %\]'
-RE_LABEL      = r'(?x) \[% \s+ label      \s+ %\]'
-RE_CSS        = r'(?x) \[% \s+ css        \s+ %\]'
-RE_NAME       = r'(?x) \[% \s+ name       \s+ %\]'
-RE_AUTHOR     = r'(?x) \[% \s+ author     \s+ %\]'
-RE_FEED_URL   = r'(?x) \[% \s+ feed-url   \s+ %\]'
-RE_BODY       = r'(?x) \[% \s+ body       \s+ %\] \n'
-RE_ARCHIVE    = r'(?x) \[% \s+ archive    \s+ %\] \n'
+RE_YEAR_RANGE = re.compile(r'(?x) \[% \s+ year-range \s+ %\]')
+RE_LABEL      = re.compile(r'(?x) \[% \s+ label      \s+ %\]')
+RE_CSS        = re.compile(r'(?x) \[% \s+ css        \s+ %\]')
+RE_NAME       = re.compile(r'(?x) \[% \s+ name       \s+ %\]')
+RE_AUTHOR     = re.compile(r'(?x) \[% \s+ author     \s+ %\]')
+RE_FEED_URL   = re.compile(r'(?x) \[% \s+ feed-url   \s+ %\]')
+RE_BODY       = re.compile(r'(?x) \[% \s+ body       \s+ %\] \n')
+RE_ARCHIVE    = re.compile(r'(?x) \[% \s+ archive    \s+ %\] \n')
 
 
 class NoEntriesError(Exception):
@@ -129,14 +129,14 @@ def create_page(path, body_html, archive_html, options,
     css = ''.join(['../' * slashes, options['css']])
 
     html = options['template']
-    html = re.sub(RE_YEAR_RANGE, year_range, html)
-    html = re.sub(RE_LABEL,      escape(label), html)
-    html = re.sub(RE_CSS,        css, html)
-    html = re.sub(RE_NAME,       escape(options['name']), html)
-    html = re.sub(RE_AUTHOR,     escape(options['author']), html)
-    html = re.sub(RE_FEED_URL,   options['feed-url'], html)
-    html = re.sub(RE_BODY,       lambda x: body_html, html, count=1)
-    html = re.sub(RE_ARCHIVE,    archive_html, html)
+    html = RE_YEAR_RANGE.sub( year_range, html)
+    html = RE_LABEL.sub(escape(label), html)
+    html = RE_CSS.sub(css, html)
+    html = RE_NAME.sub(escape(options['name']), html)
+    html = RE_AUTHOR.sub(escape(options['author']), html)
+    html = RE_FEED_URL.sub(options['feed-url'], html)
+    html = RE_BODY.sub(lambda x: body_html, html, count=1)
+    html = RE_ARCHIVE.sub(archive_html, html)
 
     Path(options['output-dir']).joinpath(path).write_text(
         html, encoding='utf-8')
