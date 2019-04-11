@@ -1,0 +1,75 @@
+/* (c) John Bokma, 2019
+ *
+ * This stylesheet is free software; you can redistribute it and/or modify it
+ * under the same terms as Perl itself.
+ *
+ * Palette taken in part from 'Adrift in Dreams' by Skyblue2u
+ * https://www.colourlovers.com/palette/580974/Adrift_in_Dreams
+ */
+
+$font-stack: "San Fransisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
+$code-font-stack:
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace;
+
+$background-color: #a8dba8;
+$page-background-color: #cff09e;
+$main-header-background-color: #3b8686;
+$main-header-color: #eee;
+$main-nav-color: #eee;
+$slogan-color: #eee;
+$text-color: black;
+$heading-color: #c02942;
+$label-color: #0b486b;
+$border-color: #0b486b;
+$date-color: #0b486b;
+$self-color: #999;
+$link-color: #d95b43;
+$pre-background-color: #eee;
+$blockquote-background-color: #cff09e;
+$blockquote-border-color: #0b486b;
+$footer-background-color: #0b486b;
+$footer-color: white;
+
+$border: solid 1px $border-color;
+$border-radius: initial;
+
+@import 'tumblelog';
+
+#tl-page {
+    margin: 0 auto;
+}
+
+#tl-main-header {
+    background-color: $main-header-background-color;
+    h1 {
+        color: $main-header-color;
+    }
+    div {
+        color: $slogan-color;
+    }
+    a {
+        color: $main-nav-color;
+    }
+}
+
+footer {
+    background-color: $footer-background-color;
+    color: $footer-color;
+    margin: 0;
+    padding: 10px 10px;
+    text-align: center;
+    a {
+        color: inherit;
+    }
+}
+
+blockquote {
+    border-radius: $border-radius;
+    border-left: solid 3px $blockquote-border-color;
+}
