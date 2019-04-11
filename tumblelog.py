@@ -15,6 +15,8 @@ from datetime import datetime
 from collections import defaultdict, deque
 from commonmark import commonmark
 
+RE_WEEK = re.compile(r'%V')
+RE_YEAR = re.compile(r'%Y')
 
 RE_YEAR_RANGE = re.compile(r'(?x) \[% \s+ year-range \s+ %\]')
 RE_LABEL      = re.compile(r'(?x) \[% \s+ label      \s+ %\]')
@@ -41,6 +43,11 @@ def split_year_week(year_week):
 
 def parse_date(str):
     return datetime.strptime(str, '%Y-%m-%d')
+
+def year_week_label(format, year, week):
+    str = RE_WEEK.sub(week, format)
+    str = RE_YEAR.sub(year, str)
+    return str
 
 def read_tumblelog_entries(filename):
     with open(filename, encoding='utf8') as f:
@@ -206,7 +213,8 @@ def create_other_pages(
     create_page(
         path + f'/{week}.html',
         week_body_html, archive_html, options,
-        f'week {week}, {year}', min_year, max_year
+        year_week_label(options['label-format'], year, week),
+        min_year, max_year
     )
 
 def create_json_feed(year_weeks, collected, options):
@@ -308,8 +316,11 @@ def create_option_parser():
                       help='URL of the stylesheet to use; default styles.css',
                       metavar='URL', default='styles.css')
     parser.add_option('--date-format', dest='date-format',
-                      help='how to format the date; default %d %b %Y',
+                      help="how to format the date; default '%d %b %Y'",
                       metavar='FORMAT', default='%d %b %Y')
+    parser.add_option('--label-format', dest='label-format',
+                      help="how to format the label; default 'week %V, %Y'",
+                      metavar='FORMAT', default='week %V, %Y')
     parser.add_option('-q', '--quiet', action='store_true', dest='quiet',
                       help="don't show progress", default=False)
 

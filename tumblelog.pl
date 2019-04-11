@@ -39,6 +39,7 @@ sub get_options {
         'days'              => 14,
         'css'               => 'styles.css',
         'date-format'       => '%d %b %Y',
+        'label-format'      => 'week %V, %Y',
         'quiet'             => undef,
         'help'              => undef,
     );
@@ -53,6 +54,7 @@ sub get_options {
         'days=i',
         'css=s',
         'date-format=s',
+        'label-format=s',
         'quiet',
         'help',
     );
@@ -196,7 +198,8 @@ sub create_other_pages {
     create_page(
         "archive/$year/week/$week.html",
         $week_body_html, $archive_html, $options,
-        "week $week, $year" , $min_year, $max_year
+        year_week_label( $options->{ 'label-format' }, $year, $week ),
+        $min_year, $max_year
     );
     return;
 }
@@ -342,6 +345,15 @@ sub create_json_feed {
     return;
 }
 
+sub year_week_label {
+
+    my ( $format, $year, $week ) = @_;
+
+    ( my $str = $format ) =~ s/%V/ sprintf '%02d', $week /ge;
+    $str =~ s/%Y/ sprintf '%04d', $year /ge;
+    return $str;
+}
+
 sub join_year_week {
 
     my ( $year, $week ) = @_;
@@ -424,6 +436,9 @@ DESCRIPTION
 
         The --date-format argument specifies the date format to use
         for blog entries. It defaults to '%d %b %Y'.
+
+        The --label-format argument specifies the format to use for the
+        ISO 8601 week label. It defaults to 'week %V, %Y'
 
         The --quiet option prevents the program from printing information
         regarding the progress.
