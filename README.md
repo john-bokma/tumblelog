@@ -11,6 +11,11 @@ for the required additional parameters for the JSON feed.
 Please read my blog entry [Create a static tumblelog with Python](http://johnbokma.com/blog/2019/04/07/tumblelog-python.html), which
 has a thorough explanation on how to use this program.
 
+## SEO friendly titles
+
+New: You can now specify a title after the ISO 8601 date which is
+assigned to the `title` element of the day page, see [SEO friendly titles for tumblelog](http://johnbokma.com/blog/2019/04/12/seo-friendly-titles-for-tumblelog.html).
+
 ## Examples
 
 The `screenshots` directory has several examples of themes that come
