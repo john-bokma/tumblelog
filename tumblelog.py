@@ -18,6 +18,7 @@ from commonmark import commonmark
 RE_WEEK = re.compile(r'%V')
 RE_YEAR = re.compile(r'%Y')
 
+RE_TITLE      = re.compile(r'(?x) \[% \s+ title      \s+ %\]')
 RE_YEAR_RANGE = re.compile(r'(?x) \[% \s+ year-range \s+ %\]')
 RE_LABEL      = re.compile(r'(?x) \[% \s+ label      \s+ %\]')
 RE_CSS        = re.compile(r'(?x) \[% \s+ css        \s+ %\]')
@@ -58,18 +59,21 @@ def read_tumblelog_entries(filename):
     return entries
 
 def collect_daily_entries(entries):
-    pattern = re.compile('(\d{4}-\d{2}-\d{2})\n(.*)', flags=re.DOTALL)
+    pattern = re.compile('(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
     date = None
-    collected = defaultdict(list)
-
+    collected = dict()
     for entry in entries:
         match = pattern.match(entry)
         if match:
             date = match.group(1)
-            entry = match.group(2)
+            collected[date] = {
+                'title': match.group(2).strip(),
+                'entries': []
+            }
+            entry = match.group(3)
         if date is None:
             raise NoDateSpecified('No date specified for first tumblelog entry')
-        collected[date].append(entry)
+        collected[date]['entries'].append(entry)
 
     return collected
 
@@ -128,7 +132,7 @@ def html_for_entry(entry):
         '</article>\n'
     ])
 
-def create_page(path, body_html, archive_html, options,
+def create_page(path, title, body_html, archive_html, options,
                 label, min_year, max_year):
     year_range = min_year if min_year == max_year else f'{min-year}-{max_year}'
 
@@ -136,6 +140,7 @@ def create_page(path, body_html, archive_html, options,
     css = ''.join(['../' * slashes, options['css']])
 
     html = options['template']
+    html = RE_TITLE.sub(title, html)
     html = RE_YEAR_RANGE.sub( year_range, html)
     html = RE_LABEL.sub(escape(label), html)
     html = RE_CSS.sub(css, html)
@@ -160,7 +165,7 @@ def create_index(year_weeks, collected, archive, options, min_year, max_year):
             body_html += html_for_date(
                 date, options['date-format'], 'archive'
             )
-            for entry in collected[year_week][date]:
+            for entry in collected[year_week][date]['entries']:
                 body_html += html_for_entry(entry)
             todo -= 1
             if not todo:
@@ -171,10 +176,13 @@ def create_index(year_weeks, collected, archive, options, min_year, max_year):
 
     archive_html = html_for_archive(archive, None, 'archive')
 
+    label = 'home'
+    title = ' - '.join([options['name'], label])
+
     Path(options['output-dir']).mkdir(parents=True, exist_ok=True)
     create_page(
-        'index.html', body_html, archive_html, options,
-        'home', min_year, max_year
+        'index.html', title, body_html, archive_html, options,
+        label, min_year, max_year
     )
 
 def create_other_pages(
@@ -186,10 +194,17 @@ def create_other_pages(
         day_body_html = html_for_date(
             date, options['date-format'], '../..'
         )
-        for entry in collected[year_week][date]:
+        for entry in collected[year_week][date]['entries']:
             day_body_html += html_for_entry(entry)
 
         archive_html = html_for_archive(archive, None, '../..')
+
+        label = parse_date( date ).strftime(options['date-format'])
+        title = collected[year_week][date]['title']
+        if title:
+            title = ' - '.join([title, options['name']])
+        else:
+            title = ' - '.join([options['name'], label])
 
         year, month, day = date.split('-')
         path = f'archive/{year}/{month}'
@@ -197,9 +212,8 @@ def create_other_pages(
             parents=True, exist_ok=True)
         create_page(
             path + f'/{day}.html',
-            day_body_html, archive_html, options,
-            parse_date( date ).strftime(options['date-format']),
-            min_year, max_year
+            title, day_body_html, archive_html, options,
+            label, min_year, max_year
         )
 
         week_body_html += day_body_html
@@ -207,14 +221,16 @@ def create_other_pages(
     archive_html = html_for_archive(archive, year_week, '../..')
 
     year, week = split_year_week(year_week)
+    label = year_week_label(options['label-format'], year, week)
+    title = ' - '.join([options['name'], label])
+
     path = f'archive/{year}/week'
     Path(options['output-dir']).joinpath(path).mkdir(
         parents=True, exist_ok=True)
     create_page(
         path + f'/{week}.html',
-        week_body_html, archive_html, options,
-        year_week_label(options['label-format'], year, week),
-        min_year, max_year
+        title, week_body_html, archive_html, options,
+        label, min_year, max_year
     )
 
 def create_json_feed(year_weeks, collected, options):
@@ -224,13 +240,15 @@ def create_json_feed(year_weeks, collected, options):
         dates = sorted(collected[year_week], reverse=True)
         for date in dates:
             html = ''
-            for entry in collected[year_week][date]:
+            for entry in collected[year_week][date]['entries']:
                 html += html_for_entry(entry)
 
             year, month, day = date.split('-')
             url = urllib.parse.urljoin(
                 options['blog-url'], f'archive/{year}/{month}/{day}.html')
-            title = parse_date(date).strftime(options['date-format'])
+            title = collected[year_week][date]['title']
+            if not title:
+                title = parse_date(date).strftime(options['date-format'])
             items.append({
                 'id':    url,
                 'url':   url,

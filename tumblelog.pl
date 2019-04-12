@@ -16,6 +16,7 @@ use CommonMark;
 use Time::Piece;
 use Getopt::Long;
 
+my $RE_TITLE      = qr/\[% \s+ title      \s+ %\]/x;
 my $RE_YEAR_RANGE = qr/\[% \s+ year-range \s+ %\]/x;
 my $RE_LABEL      = qr/\[% \s+ label      \s+ %\]/x;
 my $RE_CSS        = qr/\[% \s+ css        \s+ %\]/x;
@@ -146,7 +147,7 @@ sub create_index {
             );
 
             $body_html .= html_for_entry( $_ )
-                for @{ $collected->{ $year_week }{ $date } };
+                for @{ $collected->{ $year_week }{ $date }{ entries } };
 
             --$todo or last YEAR_WEEK;
         }
@@ -154,10 +155,13 @@ sub create_index {
 
     my $archive_html = html_for_archive( $archive, undef, 'archive' );
 
+    my $label = 'home';
+    my $title = join ' - ', $options->{ name }, $label;
+
     path( $options->{ 'output-dir' } )->mkpath();
     create_page(
-        'index.html', $body_html, $archive_html, $options,
-        'home', $min_year, $max_year
+        'index.html', $title, $body_html, $archive_html, $options,
+        $label, $min_year, $max_year
     );
     return;
 }
@@ -173,19 +177,28 @@ sub create_other_pages {
         my $day_body_html = html_for_date(
             $date, $options->{ 'date-format' }, '../..'
         );
-        for my $entry ( @{ $collected->{ $year_week }{ $date } } ) {
-            $day_body_html .= html_for_entry( $entry );
-        }
+
+        $day_body_html .= html_for_entry( $_ )
+            for @{ $collected->{ $year_week }{ $date }{ entries } };
 
         my $archive_html = html_for_archive( $archive, undef, '../..' );
+
+        my $label = parse_date( $date )
+            ->strftime( $options->{ 'date-format' } );
+        my $title = $collected->{ $year_week }{ $date }{ title };
+        if ( $title ne '' ) {
+            $title = join ' - ', $title, $options->{ name }
+        }
+        else {
+            $title = join ' - ', $options->{ name }, $label;
+        }
 
         my ( $year, $month, $day ) = split /-/, $date;
         path( "$options->{ 'output-dir' }/archive/$year/$month")->mkpath();
         create_page(
             "archive/$year/$month/$day.html",
-            $day_body_html, $archive_html, $options,
-            parse_date( $date )->strftime( $options->{ 'date-format' } ),
-            $min_year, $max_year
+            $title, $day_body_html, $archive_html, $options,
+            $label, $min_year, $max_year
         );
 
         $week_body_html .= $day_body_html;
@@ -194,19 +207,21 @@ sub create_other_pages {
     my $archive_html = html_for_archive( $archive, $year_week, '../..' );
 
     my ( $year, $week ) = split_year_week( $year_week );
+    my $label = year_week_label( $options->{ 'label-format' }, $year, $week );
+    my $title = join ' - ', $options->{ name }, $label;
+
     path( "$options->{ 'output-dir' }/archive/$year/week" )->mkpath();
     create_page(
         "archive/$year/week/$week.html",
-        $week_body_html, $archive_html, $options,
-        year_week_label( $options->{ 'label-format' }, $year, $week ),
-        $min_year, $max_year
+        $title, $week_body_html, $archive_html, $options,
+        $label, $min_year, $max_year
     );
     return;
 }
 
 sub create_page {
 
-    my ( $path, $body_html, $archive_html, $options,
+    my ( $path, $title, $body_html, $archive_html, $options,
          $label, $min_year, $max_year ) = @_;
 
     my $year_range = $min_year eq $max_year ?
@@ -218,6 +233,7 @@ sub create_page {
     my $html = $options->{ template };
 
     for ( $html ) {
+        s/ $RE_TITLE      /$title/gx;
         s/ $RE_YEAR_RANGE /$year_range/gx;
         s/ $RE_LABEL      / encode_entities( $label ) /gxe;
         s/ $RE_CSS        /$css/gx;
@@ -304,15 +320,18 @@ sub create_json_feed {
         for my $date ( @dates ) {
             my $html;
             $html .= html_for_entry( $_ )
-                for @{ $collected->{ $year_week }{ $date } };
+                for @{ $collected->{ $year_week }{ $date }{ entries } };
 
             my ( $year, $month, $day ) = split /-/, $date;
             my $url = URI->new_abs(
                 "archive/$year/$month/$day.html",
                 $options->{ 'blog-url' }
             )->as_string();
-            my $title = parse_date( $date )
-                ->strftime( $options->{ 'date-format' } );
+            my $title = $collected->{ $year_week }{ $date }{ title };
+            if ( $title eq '' ) {
+                $title = parse_date( $date )
+                    ->strftime( $options->{ 'date-format' } );
+            }
             push @items, {
                 id    => $url,
                 url   => $url,
@@ -384,6 +403,14 @@ sub collect_weekly_entries {
     return \%collected;
 }
 
+sub strip {
+
+    my $str = shift;
+    $str =~ s/^\s+//;
+    $str =~ s/\s+$//;
+    return $str;
+}
+
 sub collect_daily_entries {
 
     my $entries = shift;
@@ -391,12 +418,16 @@ sub collect_daily_entries {
     my $date;
     my %collected;
     for my $entry ( @$entries ) {
-        if ( $entry =~ /^(\d{4}-\d{2}-\d{2})\n(.*)/s ) {
+        if ( $entry =~ /^(\d{4}-\d{2}-\d{2})(.*?)\n(.*)/s ) {
             $date = $1;
-            $entry = $2;
+            $collected{ $date } = {
+                title   => strip($2),
+                entries => [],
+            };
+            $entry = $3;
         }
         defined $date or die "No date specified for first tumblelog entry";
-        push @{ $collected{ $date } }, $entry;
+        push @{ $collected{ $date }{ entries } }, $entry;
     }
 
     return \%collected;
