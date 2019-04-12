@@ -16,15 +16,15 @@ use CommonMark;
 use Time::Piece;
 use Getopt::Long;
 
-my $RE_TITLE      = qr/\[% \s+ title      \s+ %\]/x;
-my $RE_YEAR_RANGE = qr/\[% \s+ year-range \s+ %\]/x;
-my $RE_LABEL      = qr/\[% \s+ label      \s+ %\]/x;
-my $RE_CSS        = qr/\[% \s+ css        \s+ %\]/x;
-my $RE_NAME       = qr/\[% \s+ name       \s+ %\]/x;
-my $RE_AUTHOR     = qr/\[% \s+ author     \s+ %\]/x;
-my $RE_FEED_URL   = qr/\[% \s+ feed-url   \s+ %\]/x;
-my $RE_BODY       = qr/\[% \s+ body       \s+ %\]\n/x;
-my $RE_ARCHIVE    = qr/\[% \s+ archive    \s+ %\]\n/x;
+my $RE_TITLE      = qr/\[% \s* title      \s* %\]/x;
+my $RE_YEAR_RANGE = qr/\[% \s* year-range \s* %\]/x;
+my $RE_LABEL      = qr/\[% \s* label      \s* %\]/x;
+my $RE_CSS        = qr/\[% \s* css        \s* %\]/x;
+my $RE_NAME       = qr/\[% \s* name       \s* %\]/x;
+my $RE_AUTHOR     = qr/\[% \s* author     \s* %\]/x;
+my $RE_FEED_URL   = qr/\[% \s* feed-url   \s* %\]/x;
+my $RE_BODY       = qr/\[% \s* body       \s* %\] \n/x;
+my $RE_ARCHIVE    = qr/\[% \s* archive    \s* %\] \n/x;
 
 
 create_blog( get_options() );

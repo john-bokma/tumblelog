@@ -18,15 +18,15 @@ from commonmark import commonmark
 RE_WEEK = re.compile(r'%V')
 RE_YEAR = re.compile(r'%Y')
 
-RE_TITLE      = re.compile(r'(?x) \[% \s+ title      \s+ %\]')
-RE_YEAR_RANGE = re.compile(r'(?x) \[% \s+ year-range \s+ %\]')
-RE_LABEL      = re.compile(r'(?x) \[% \s+ label      \s+ %\]')
-RE_CSS        = re.compile(r'(?x) \[% \s+ css        \s+ %\]')
-RE_NAME       = re.compile(r'(?x) \[% \s+ name       \s+ %\]')
-RE_AUTHOR     = re.compile(r'(?x) \[% \s+ author     \s+ %\]')
-RE_FEED_URL   = re.compile(r'(?x) \[% \s+ feed-url   \s+ %\]')
-RE_BODY       = re.compile(r'(?x) \[% \s+ body       \s+ %\] \n')
-RE_ARCHIVE    = re.compile(r'(?x) \[% \s+ archive    \s+ %\] \n')
+RE_TITLE      = re.compile(r'(?x) \[% \s* title      \s* %\]')
+RE_YEAR_RANGE = re.compile(r'(?x) \[% \s* year-range \s* %\]')
+RE_LABEL      = re.compile(r'(?x) \[% \s* label      \s* %\]')
+RE_CSS        = re.compile(r'(?x) \[% \s* css        \s* %\]')
+RE_NAME       = re.compile(r'(?x) \[% \s* name       \s* %\]')
+RE_AUTHOR     = re.compile(r'(?x) \[% \s* author     \s* %\]')
+RE_FEED_URL   = re.compile(r'(?x) \[% \s* feed-url   \s* %\]')
+RE_BODY       = re.compile(r'(?x) \[% \s* body       \s* %\] \n')
+RE_ARCHIVE    = re.compile(r'(?x) \[% \s* archive    \s* %\] \n')
 
 
 class NoEntriesError(Exception):
