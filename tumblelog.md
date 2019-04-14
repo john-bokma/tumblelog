@@ -37,7 +37,7 @@ Yellow Chrysanthemum flowers.
 
 > I am Gandalf, and Gandalf means me!
 
--- J.R.R. Tolkien, The Hobbit: or There and Back Again
+― J.R.R. Tolkien, The Hobbit: or There and Back Again
 
 Some example Perl code:
 
