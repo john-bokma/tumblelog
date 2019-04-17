@@ -245,7 +245,7 @@ sub create_page {
     my $html = $options->{ template };
 
     for ( $html ) {
-        s/ $RE_TITLE      /$title/gx;
+        s/ $RE_TITLE      / encode_entities( $title )/gxe;
         s/ $RE_YEAR_RANGE /$year_range/gx;
         s/ $RE_LABEL      / encode_entities( $label ) /gxe;
         s/ $RE_CSS        /$css/gx;
