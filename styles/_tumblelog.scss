@@ -31,11 +31,7 @@ body {
     background-color: $page-background-color;
     color: $text-color;
     border-radius: $border-radius;
-}
-
-@media screen
-    and (max-width: 479px) {
-    #tl-page {
+    @media screen and (max-width: 479px) {
         width: 320px;
     }
 }
@@ -167,6 +163,40 @@ section {
             font-size: 20px;
             color: $heading-color;
         }
+    }
+}
+
+$arrow-space: 30px;
+nav.tl-next-prev {
+
+    border-top: $border;
+    padding: 6px 0;
+
+    .tl-right-arrow {
+        width: $arrow-space;
+        text-align: right;
+        display: inline-block;
+    }
+    .next {
+        vertical-align: middle;
+        width: 460px - $arrow-space;
+        text-align: right;
+        display: inline-block;
+        @media screen and (max-width: 479px) {
+            width: 300px - $arrow-space;
+        }
+    }
+    .prev {
+        vertical-align: middle;
+        width: 460px - $arrow-space;
+        display: inline-block;
+        @media screen and (max-width: 479px) {
+            width: 300px - $arrow-space;
+        }
+    }
+    .tl-left-arrow {
+        width: $arrow-space;
+        display: inline-block;
     }
 }
 

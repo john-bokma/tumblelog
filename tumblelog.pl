@@ -109,48 +109,40 @@ sub create_blog {
 
     my $options = shift;
 
-    my $collected = collect_weekly_entries(
-        collect_daily_entries(
-            read_tumblelog_entries( $options->{ filename } )
-        )
+    my $days = collect_days( read_tumblelog_entries( $options->{ filename } ) );
+
+    my $max_year = ( split_date( $days->[  0 ]{ date } ) )[ 0 ];
+    my $min_year = ( split_date( $days->[ -1 ]{ date } ) )[ 0 ];
+
+    my $archive = create_archive( $days );
+
+    create_index( $days, $archive, $options, $min_year, $max_year );
+
+    create_day_and_week_pages(
+        $days, $archive, $options, $min_year, $max_year
     );
 
-    my @year_weeks = sort { $b cmp $a } keys %$collected;
-    my $max_year = ( split_year_week( $year_weeks[  0 ] ) )[ 0 ];
-    my $min_year = ( split_year_week( $year_weeks[ -1 ] ) )[ 0 ];
+    create_json_feed( $days, $options );
 
-    my $archive = create_archive( \@year_weeks );
-
-    create_index(
-        \@year_weeks, $collected, $archive, $options, $min_year, $max_year
-    );
-
-    create_other_pages(
-        $_, $collected, $archive, $options, $min_year, $max_year
-    ) for @year_weeks;
-
-    create_json_feed( \@year_weeks, $collected, $options );
+    return;
 }
 
 sub create_index {
 
-    my ( $period, $collected, $archive, $options, $min_year, $max_year ) = @_;
+    my ( $days, $archive, $options, $min_year, $max_year ) = @_;
 
     my $body_html;
     my $todo = $options->{ days };
-  YEAR_WEEK:
-    for my $year_week ( @$period ) {
-        my @dates = sort { $b cmp $a } keys %{ $collected->{ $year_week } };
-        for my $date ( @dates ) {
-            $body_html .= html_for_date(
-                $date, $options->{ 'date-format' }, 'archive'
-            );
 
-            $body_html .= html_for_entry( $_ )
-                for @{ $collected->{ $year_week }{ $date }{ entries } };
+    for my $day ( @$days ) {
 
-            --$todo or last YEAR_WEEK;
-        }
+        $body_html .= html_for_date(
+            $day->{ date }, $options->{ 'date-format' }, 'archive'
+        );
+
+        $body_html .= html_for_entry( $_ ) for @{ $day->{ entries } };
+
+        --$todo or last;
     }
 
     my $archive_html = html_for_archive( $archive, undef, 'archive' );
@@ -163,46 +155,66 @@ sub create_index {
         'index.html', $title, $body_html, $archive_html, $options,
         $label, $min_year, $max_year
     );
+
     return;
 }
 
-sub create_other_pages {
+sub create_day_and_week_pages {
 
-    my ( $year_week, $collected, $archive, $options,
-         $min_year, $max_year ) = @_;
+    my ( $days, $archive, $options, $min_year, $max_year ) = @_;
 
+    my $year_week;
     my $week_body_html;
-    my @dates = sort { $b cmp $a } keys %{ $collected->{ $year_week } };
-    for my $date ( @dates ) {
+    my $current_year_week = get_year_week( $days->[ 0 ]{ date } );
+    my $day_archive_html = html_for_archive( $archive, undef, '../..' );
+    my $index = 0;
+    for my $day ( @$days ) {
+
         my $day_body_html = html_for_date(
-            $date, $options->{ 'date-format' }, '../..'
+            $day->{ date }, $options->{ 'date-format' }, '../..'
         );
 
-        $day_body_html .= html_for_entry( $_ )
-            for @{ $collected->{ $year_week }{ $date }{ entries } };
+        $day_body_html .= html_for_entry( $_ ) for @{ $day->{ entries } };
 
-        my $archive_html = html_for_archive( $archive, undef, '../..' );
+        my ( $label, $title ) = label_and_title( $day, $options );
+        my ( $year, $month, $day_number ) = split_date( $day->{ date } );
+        my $next_prev_html = html_for_next_prev( $days, $index, $options );
 
-        my $label = parse_date( $date )
-            ->strftime( $options->{ 'date-format' } );
-        my $title = $collected->{ $year_week }{ $date }{ title };
-        if ( $title ne '' ) {
-            $title = join ' - ', $title, $options->{ name }
-        }
-        else {
-            $title = join ' - ', $options->{ name }, $label;
-        }
-
-        my ( $year, $month, $day ) = split /-/, $date;
         path( "$options->{ 'output-dir' }/archive/$year/$month")->mkpath();
         create_page(
-            "archive/$year/$month/$day.html",
-            $title, $day_body_html, $archive_html, $options,
+            "archive/$year/$month/$day_number.html",
+            $title, $day_body_html . $next_prev_html, $day_archive_html,
+            $options,
             $label, $min_year, $max_year
         );
 
-        $week_body_html .= $day_body_html;
+        $year_week = get_year_week( $day->{ date } );
+        if ( $year_week eq $current_year_week ) {
+            $week_body_html .= $day_body_html;
+        }
+        else {
+            create_week_page(
+                $current_year_week, $week_body_html, $archive, $options,
+                $min_year, $max_year
+            );
+            $current_year_week = $year_week;
+            $week_body_html = $day_body_html;
+        }
+        $index++;
     }
+
+    create_week_page(
+        $year_week, $week_body_html, $archive, $options,
+        $min_year, $max_year
+    );
+
+    return;
+}
+
+sub create_week_page {
+
+    my ( $year_week, $body_html, $archive, $options,
+         $min_year, $max_year ) = @_;
 
     my $archive_html = html_for_archive( $archive, $year_week, '../..' );
 
@@ -213,7 +225,7 @@ sub create_other_pages {
     path( "$options->{ 'output-dir' }/archive/$year/week" )->mkpath();
     create_page(
         "archive/$year/week/$week.html",
-        $title, $week_body_html, $archive_html, $options,
+        $title, $body_html, $archive_html, $options,
         $label, $min_year, $max_year
     );
     return;
@@ -247,6 +259,7 @@ sub create_page {
     path( "$options->{ 'output-dir' }/$path" )
         ->append_utf8( { truncate => 1 }, $html );
     $options->{ quiet } or print "Created '$path'\n";
+
     return;
 }
 
@@ -254,7 +267,7 @@ sub html_for_date {
 
     my ( $date, $date_format, $path ) = @_;
 
-    my ( $year, $month, $day ) = split /-/, $date;
+    my ( $year, $month, $day ) = split_date( $date );
     my $uri = "$path/$year/$month/$day.html";
 
     return qq(<time class="tl-date" datetime="$date"><a href="$uri">)
@@ -264,9 +277,8 @@ sub html_for_date {
 
 sub html_for_entry {
 
-    my $entry = shift;
     return qq(<article>\n)
-        . CommonMark->markdown_to_html( $entry  )
+        . CommonMark->markdown_to_html( shift  )
         . "</article>\n";
 }
 
@@ -293,55 +305,106 @@ sub html_for_archive {
         $html .= "      </ul>\n    </dd>\n";
     }
     $html .= "  </dl>\n</nav>\n";
+
+    return $html;
+}
+
+sub html_link_for_day {
+
+    my ( $day, $options ) = @_;
+
+    my $title = $day->{ title };
+    my $label = parse_date( $day->{ date } )
+        ->strftime( $options->{ 'date-format' } );
+    $title = $label if $title eq '';
+
+    my $safe_label = encode_entities( $label );
+    my $safe_title = encode_entities( $title );
+    my ( $year, $month, $day_number ) = split_date( $day->{ date } );
+    my $uri = "../../$year/$month/$day_number.html";
+
+    return qq(<a href="$uri" title="$safe_label">$safe_title</a>);
+}
+
+sub html_for_next_prev {
+
+    my ( $days, $index, $options ) = @_;
+
+    return '' if @$days == 1;
+
+    my $html = qq(<nav class="tl-next-prev">\n);
+
+    if ( $index ) {
+        $html .= '  <div class="next">'
+            . html_link_for_day( $days->[ $index - 1 ], $options )
+            . "</div>"
+            . qq(<div class="tl-right-arrow">\x{2192}</div>\n);
+    }
+
+    if ( $index < $#$days ) {
+        $html .= qq(  <div class="tl-left-arrow">\x{2190}</div>)
+            . '<div class="prev">'
+            . html_link_for_day( $days->[ $index + 1 ], $options )
+            . "</div>\n";
+    }
+
+    $html .= "</nav>\n";
+
     return $html;
 }
 
 sub create_archive {
 
-    my $year_weeks = shift;
+    my $days = shift;
 
+    my %seen;
     my %archive;
-    for my $year_week ( @$year_weeks ) {
-        my ( $year, $week ) = split_year_week( $year_week );
-        unshift @{ $archive{ $year } }, $week;
+    for my $day ( @$days ) {
+        my $tp = parse_date( $day->{ date } );
+        my $year = $tp->year();
+        my $week = $tp->week();
+        my $year_week = join_year_week( $year, $week );
+        if ( !exists $seen{ $year_week } ) {
+            unshift @{ $archive{ $year } }, $week;
+            $seen{ $year_week } = 1;
+        }
     }
+
     return \%archive
 }
 
 sub create_json_feed {
 
-    my ( $period, $collected, $options ) = @_;
+    my ( $days, $options ) = @_;
 
     my @items;
     my $todo = $options->{ days };
-  YEAR_WEEK:
-    for my $year_week ( @$period ) {
-        my @dates = sort { $b cmp $a } keys %{ $collected->{ $year_week } };
-        for my $date ( @dates ) {
-            my $html;
-            $html .= html_for_entry( $_ )
-                for @{ $collected->{ $year_week }{ $date }{ entries } };
 
-            my ( $year, $month, $day ) = split /-/, $date;
-            my $url = URI->new_abs(
-                "archive/$year/$month/$day.html",
-                $options->{ 'blog-url' }
-            )->as_string();
-            my $title = $collected->{ $year_week }{ $date }{ title };
-            if ( $title eq '' ) {
-                $title = parse_date( $date )
-                    ->strftime( $options->{ 'date-format' } );
-            }
-            push @items, {
-                id    => $url,
-                url   => $url,
-                title => $title,
-                content_html   => $html,
-                date_published => $date,
-            };
+    for my $day ( @$days ) {
+        my $html;
+        $html .= html_for_entry( $_ )
+            for @{ $day->{ entries } };
 
-            --$todo or last YEAR_WEEK;
+        my ( $year, $month, $day_number ) = split_date( $day->{ date } );
+        my $url = URI->new_abs(
+            "archive/$year/$month/$day_number.html",
+            $options->{ 'blog-url' }
+        )->as_string();
+        my $title = $day->{ title };
+        if ( $title eq '' ) {
+            $title = parse_date( $day->{ date } )->strftime(
+                $options->{ 'date-format' }
+            );
         }
+        push @items, {
+            id    => $url,
+            url   => $url,
+            title => $title,
+            content_html   => $html,
+            date_published => $day->{ date },
+        };
+
+        --$todo or last;
     }
 
     my $feed = {
@@ -364,6 +427,22 @@ sub create_json_feed {
     return;
 }
 
+sub label_and_title {
+
+    my ( $day, $options ) = @_;
+
+    my $label = parse_date( $day->{ date } )
+        ->strftime( $options->{ 'date-format' } );
+    my $title = $day->{ title };
+    if ( $title ne '' ) {
+        $title = join ' - ', $title, $options->{ name }
+    }
+    else {
+        $title = join ' - ', $options->{ name }, $label;
+    }
+    return ( $label, $title );
+}
+
 sub year_week_label {
 
     my ( $format, $year, $week ) = @_;
@@ -371,6 +450,13 @@ sub year_week_label {
     ( my $str = $format ) =~ s/%V/ sprintf '%02d', $week /ge;
     $str =~ s/%Y/ sprintf '%04d', $year /ge;
     return $str;
+}
+
+sub get_year_week {
+
+    my $date = shift;
+    my $tp = parse_date( $date );
+    return join_year_week( $tp->year(), $tp->week() );
 }
 
 sub join_year_week {
@@ -384,23 +470,14 @@ sub split_year_week {
     return split /-/, shift;
 }
 
+sub split_date {
+
+    return split /-/, shift;
+}
+
 sub parse_date {
 
     return Time::Piece->strptime( shift, '%Y-%m-%d' );
-}
-
-sub collect_weekly_entries {
-
-    my $entries = shift;
-
-    my %collected;
-    my @dates = sort { $b cmp $a } keys %$entries;
-    for my $date ( @dates ) {
-        my $tp = parse_date( $date );
-        my $year_week = join_year_week( $tp->year(), $tp->week() );
-        $collected{ $year_week }{ $date } = $entries->{ $date };
-    }
-    return \%collected;
 }
 
 sub strip {
@@ -411,26 +488,29 @@ sub strip {
     return $str;
 }
 
-sub collect_daily_entries {
+sub collect_days {
 
     my $entries = shift;
 
     my $date;
-    my %collected;
+    my @days;
     for my $entry ( @$entries ) {
         if ( $entry =~ /^(\d{4}-\d{2}-\d{2})(.*?)\n(.*)/s ) {
             $date = $1;
-            $collected{ $date } = {
+            push @days, {
+                date    => $date,
                 title   => strip($2),
                 entries => [],
             };
             $entry = $3;
         }
         defined $date or die "No date specified for first tumblelog entry";
-        push @{ $collected{ $date }{ entries } }, $entry;
+        push @{ $days[ -1 ]{ entries } }, $entry;
     }
 
-    return \%collected;
+    @days = sort { $b->{ date } cmp $a->{ date } } @days;
+
+    return \@days;
 }
 
 sub read_tumblelog_entries {
