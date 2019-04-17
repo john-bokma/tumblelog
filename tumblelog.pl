@@ -313,17 +313,16 @@ sub html_link_for_day {
 
     my ( $day, $options ) = @_;
 
-    my $title = $day->{ title };
-    my $label = parse_date( $day->{ date } )
-        ->strftime( $options->{ 'date-format' } );
+    my $title = encode_entities( $day->{ title } );
+    my $label = encode_entities(
+        parse_date( $day->{ date } )->strftime( $options->{ 'date-format' } )
+    );
     $title = $label if $title eq '';
 
-    my $safe_label = encode_entities( $label );
-    my $safe_title = encode_entities( $title );
     my ( $year, $month, $day_number ) = split_date( $day->{ date } );
     my $uri = "../../$year/$month/$day_number.html";
 
-    return qq(<a href="$uri" title="$safe_label">$safe_title</a>);
+    return qq(<a href="$uri" title="$label">$title</a>);
 }
 
 sub html_for_next_prev {
@@ -435,7 +434,7 @@ sub label_and_title {
         ->strftime( $options->{ 'date-format' } );
     my $title = $day->{ title };
     if ( $title ne '' ) {
-        $title = join ' - ', $title, $options->{ name }
+        $title = join ' - ', $title, $options->{ name };
     }
     else {
         $title = join ' - ', $options->{ name }, $label;
