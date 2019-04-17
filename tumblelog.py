@@ -9,6 +9,7 @@ import re
 import json
 from html import escape
 import urllib.parse
+from operator import itemgetter
 from pathlib import Path
 from optparse import OptionParser
 from datetime import datetime
@@ -37,10 +38,13 @@ class NoDateSpecified(Exception):
 
 
 def join_year_week(year, week):
-    return f'{year}-{week}'
+    return f'{year:04d}-{week:02d}'
 
 def split_year_week(year_week):
     return year_week.split('-')
+
+def split_date(date):
+    return date.split('-')
 
 def parse_date(str):
     return datetime.strptime(str, '%Y-%m-%d')
@@ -50,6 +54,10 @@ def year_week_label(format, year, week):
     str = RE_YEAR.sub(year, str)
     return str
 
+def get_year_week(date):
+    dt = parse_date(date)
+    return join_year_week(*dt.isocalendar()[0:2])
+
 def read_tumblelog_entries(filename):
     with open(filename, encoding='utf8') as f:
         entries = [item for item in f.read().split('%\n') if item]
@@ -58,43 +66,82 @@ def read_tumblelog_entries(filename):
 
     return entries
 
-def collect_daily_entries(entries):
+def collect_days(entries):
     pattern = re.compile('(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
     date = None
-    collected = dict()
+    days = deque()
     for entry in entries:
         match = pattern.match(entry)
         if match:
             date = match.group(1)
-            collected[date] = {
+            days.append({
+                'date': date,
                 'title': match.group(2).strip(),
                 'entries': []
-            }
+            })
             entry = match.group(3)
         if date is None:
             raise NoDateSpecified('No date specified for first tumblelog entry')
-        collected[date]['entries'].append(entry)
 
-    return collected
+        days[-1]['entries'].append(entry)
 
-def collect_weekly_entries(entries):
-    collected = defaultdict(dict)
-    dates = sorted(entries.keys(), reverse=True)
+    days = sorted(days, key=itemgetter('date'), reverse=True)
 
-    for date in dates:
-        dt = parse_date(date)
-        year_week = join_year_week(*dt.isocalendar()[0:2])
-        collected[year_week][date] = entries[date]
+    return days
 
-    return collected
+def create_archive(days):
 
-def create_archive(year_weeks):
+    seen = {}
     archive = defaultdict(deque)
-    for year_week in year_weeks:
-        year, week = split_year_week( year_week )
-        archive[year].appendleft(week)
+    for day in days:
+        dt = parse_date(day['date'])
+        year, week = dt.isocalendar()[0:2]
+        year_week = join_year_week(year, week)
+        if year_week not in seen:
+            archive[year].appendleft(week)
+            seen[year_week] = 1
 
     return archive
+
+def html_link_for_day(day, options):
+
+    title = escape(day['title'])
+    label = escape(parse_date(day['date']).strftime(options['date-format']))
+    if not title:
+        title = label
+
+    year, month, day_number = split_date(day['date'])
+    uri = f'../../{year}/{month}/{day_number}.html'
+
+    return f'<a href="{uri}" title="{label}">{title}</a>'
+
+def html_for_next_prev(days, index, options):
+
+    length = len(days)
+    if length == 1:
+        return ''
+
+    html = '<nav class="tl-next-prev">\n'
+
+    if index:
+        html += ''.join([
+            '  <div class="next">',
+            html_link_for_day(days[index - 1], options),
+            '</div>',
+            '<div class="tl-right-arrow">\u2192</div>\n'
+        ])
+
+    if index < length - 1:
+        html += ''.join([
+            '  <div class="tl-left-arrow">\u2190</div>',
+            '<div class="prev">',
+            html_link_for_day(days[index + 1], options),
+            '</div>\n'
+        ])
+
+    html += '</nav>\n'
+
+    return html
 
 def html_for_archive(archive, current_year_week, path):
     html = '<nav>\n  <dl class="tl-archive">\n'
@@ -132,6 +179,16 @@ def html_for_entry(entry):
         '</article>\n'
     ])
 
+def label_and_title(day, options):
+    label = parse_date(day['date']).strftime(options['date-format'])
+    title = day['title']
+    if title:
+        title = ' - '.join([title, options['name']])
+    else:
+        title = ' - '.join([options['name'], label])
+
+    return label, title
+
 def create_page(path, title, body_html, archive_html, options,
                 label, min_year, max_year):
     year_range = min_year if min_year == max_year else f'{min-year}-{max_year}'
@@ -140,7 +197,7 @@ def create_page(path, title, body_html, archive_html, options,
     css = ''.join(['../' * slashes, options['css']])
 
     html = options['template']
-    html = RE_TITLE.sub(title, html)
+    html = RE_TITLE.sub(escape(title), html)
     html = RE_YEAR_RANGE.sub( year_range, html)
     html = RE_LABEL.sub(escape(label), html)
     html = RE_CSS.sub(css, html)
@@ -156,23 +213,19 @@ def create_page(path, title, body_html, archive_html, options,
     if not options['quiet']:
         print(f"Created '{path}'")
 
-def create_index(year_weeks, collected, archive, options, min_year, max_year):
+def create_index(days, archive, options, min_year, max_year):
     body_html = ''
     todo = options['days']
-    for year_week in year_weeks:
-        dates = sorted(collected[year_week], reverse=True)
-        for date in dates:
-            body_html += html_for_date(
-                date, options['date-format'], 'archive'
-            )
-            for entry in collected[year_week][date]['entries']:
-                body_html += html_for_entry(entry)
-            todo -= 1
-            if not todo:
-                break
-        else:
-            continue
-        break
+
+    for day in days:
+        body_html += html_for_date(
+            day['date'], options['date-format'], 'archive'
+        )
+        for entry in day['entries']:
+            body_html += html_for_entry(entry)
+        todo -= 1
+        if not todo:
+            break
 
     archive_html = html_for_archive(archive, None, 'archive')
 
@@ -185,38 +238,8 @@ def create_index(year_weeks, collected, archive, options, min_year, max_year):
         label, min_year, max_year
     )
 
-def create_other_pages(
-        year_week, collected, archive, options, min_year, max_year):
-
-    week_body_html = ''
-    dates = sorted(collected[year_week], reverse=True)
-    for date in dates:
-        day_body_html = html_for_date(
-            date, options['date-format'], '../..'
-        )
-        for entry in collected[year_week][date]['entries']:
-            day_body_html += html_for_entry(entry)
-
-        archive_html = html_for_archive(archive, None, '../..')
-
-        label = parse_date( date ).strftime(options['date-format'])
-        title = collected[year_week][date]['title']
-        if title:
-            title = ' - '.join([title, options['name']])
-        else:
-            title = ' - '.join([options['name'], label])
-
-        year, month, day = date.split('-')
-        path = f'archive/{year}/{month}'
-        Path(options['output-dir']).joinpath(path).mkdir(
-            parents=True, exist_ok=True)
-        create_page(
-            path + f'/{day}.html',
-            title, day_body_html, archive_html, options,
-            label, min_year, max_year
-        )
-
-        week_body_html += day_body_html
+def create_week_page(year_week, body_html, archive, options,
+                     min_year, max_year):
 
     archive_html = html_for_archive(archive, year_week, '../..')
 
@@ -229,40 +252,80 @@ def create_other_pages(
         parents=True, exist_ok=True)
     create_page(
         path + f'/{week}.html',
-        title, week_body_html, archive_html, options,
+        title, body_html, archive_html, options,
         label, min_year, max_year
     )
 
-def create_json_feed(year_weeks, collected, options):
+def create_day_and_week_pages(days, archive, options, min_year, max_year):
+
+    week_body_html = ''
+    current_year_week = get_year_week(days[0]['date'])
+    day_archive_html = html_for_archive(archive, None, '../..')
+    index = 0
+    for day in days:
+        day_body_html = html_for_date(
+            day['date'], options['date-format'], '../..'
+        )
+        for entry in day['entries']:
+            day_body_html += html_for_entry(entry)
+            label, title = label_and_title(day, options)
+            year, month, day_number = split_date(day['date'])
+            next_prev_html = html_for_next_prev(days, index, options)
+
+        path = f'archive/{year}/{month}'
+        Path(options['output-dir']).joinpath(path).mkdir(
+            parents=True, exist_ok=True)
+        create_page(
+            path + f'/{day_number}.html',
+            title, day_body_html + next_prev_html, day_archive_html,
+            options,
+            label, min_year, max_year
+        )
+
+        year_week = get_year_week(day['date'])
+        if year_week == current_year_week:
+            week_body_html += day_body_html
+        else:
+            create_week_page(
+                current_year_week, week_body_html, archive, options,
+                min_year, max_year
+            )
+            current_year_week = year_week
+            week_body_html = day_body_html
+
+        index += 1
+
+    create_week_page(
+        year_week, week_body_html, archive, options,
+        min_year, max_year
+    )
+
+def create_json_feed(days, options):
     items = []
     todo = options['days']
-    for year_week in year_weeks:
-        dates = sorted(collected[year_week], reverse=True)
-        for date in dates:
-            html = ''
-            for entry in collected[year_week][date]['entries']:
-                html += html_for_entry(entry)
 
-            year, month, day = date.split('-')
-            url = urllib.parse.urljoin(
-                options['blog-url'], f'archive/{year}/{month}/{day}.html')
-            title = collected[year_week][date]['title']
-            if not title:
-                title = parse_date(date).strftime(options['date-format'])
-            items.append({
-                'id':    url,
-                'url':   url,
-                'title': title,
-                'content_html':   html,
-                'date_published': date
-            })
+    for day in days:
+        html = ''
+        for entry in day['entries']:
+            html += html_for_entry(entry)
 
-            todo -= 1
-            if not todo:
-                break
-        else:
-            continue
-        break
+        year, month, day_number = split_date(day['date'])
+        url = urllib.parse.urljoin(
+            options['blog-url'], f'archive/{year}/{month}/{day_number}.html')
+        title = day['title']
+        if not title:
+            title = parse_date(day['date']).strftime(options['date-format'])
+
+        items.append({
+            'id':    url,
+            'url':   url,
+            'title': title,
+            'content_html':   html,
+            'date_published': day['date']
+        })
+        todo -= 1
+        if not todo:
+            break
 
     feed = {
         'version':       'https://jsonfeed.org/version/1',
@@ -285,24 +348,17 @@ def create_json_feed(year_weeks, collected, options):
         print(f"Created '{path}'")
 
 def create_blog(options):
-    collected = collect_weekly_entries(
-        collect_daily_entries(
-            read_tumblelog_entries(options['filename'])
-        )
-    )
+    days = collect_days(read_tumblelog_entries(options['filename']))
 
-    year_weeks = sorted(collected.keys(), reverse=True)
-    max_year = split_year_week(year_weeks[0])[0]
-    min_year = split_year_week(year_weeks[-1])[0]
+    max_year = (split_date(days[0]['date']))[0]
+    min_year = (split_date(days[-1]['date']))[0]
 
-    archive = create_archive(year_weeks)
+    archive = create_archive(days)
 
-    create_index(year_weeks, collected, archive, options, min_year, max_year)
-    for year_week in year_weeks:
-        create_other_pages(
-            year_week, collected, archive, options, min_year, max_year)
+    create_index(days, archive, options, min_year, max_year)
+    create_day_and_week_pages(days, archive, options, min_year, max_year)
 
-    create_json_feed(year_weeks, collected, options)
+    create_json_feed(days, options)
 
 def create_option_parser():
     usage = """
