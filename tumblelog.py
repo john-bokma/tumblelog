@@ -198,12 +198,12 @@ def create_page(path, title, body_html, archive_html, options,
 
     html = options['template']
     html = RE_TITLE.sub(escape(title), html)
-    html = RE_YEAR_RANGE.sub( year_range, html)
+    html = RE_YEAR_RANGE.sub(escape(year_range), html)
     html = RE_LABEL.sub(escape(label), html)
-    html = RE_CSS.sub(css, html)
+    html = RE_CSS.sub(escape(css), html)
     html = RE_NAME.sub(escape(options['name']), html)
     html = RE_AUTHOR.sub(escape(options['author']), html)
-    html = RE_FEED_URL.sub(options['feed-url'], html)
+    html = RE_FEED_URL.sub(escape(options['feed-url']), html)
     html = RE_BODY.sub(lambda x: body_html, html, count=1)
     html = RE_ARCHIVE.sub(archive_html, html)
 
