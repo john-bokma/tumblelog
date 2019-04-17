@@ -191,7 +191,10 @@ def label_and_title(day, options):
 
 def create_page(path, title, body_html, archive_html, options,
                 label, min_year, max_year):
-    year_range = min_year if min_year == max_year else f'{min-year}-{max_year}'
+    if min_year == max_year:
+        year_range = min_year
+    else:
+        year_range = f'{min-year}\u2013{max_year}'
 
     slashes = path.count('/')
     css = ''.join(['../' * slashes, options['css']])

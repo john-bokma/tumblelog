@@ -236,7 +236,7 @@ sub create_page {
          $label, $min_year, $max_year ) = @_;
 
     my $year_range = $min_year eq $max_year ?
-        $min_year : "$min_year - $max_year";
+        $min_year : "$min_year\x{2013}$max_year";
 
     my $slashes = $path =~ tr{/}{};
     my $css = join( '', '../' x $slashes, $options->{ css } );
