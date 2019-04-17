@@ -10,7 +10,6 @@ use warnings;
 
 use URI;
 use JSON::XS;
-use HTML::Entities;
 use Path::Tiny;
 use CommonMark;
 use Time::Piece;
@@ -245,13 +244,13 @@ sub create_page {
     my $html = $options->{ template };
 
     for ( $html ) {
-        s/ $RE_TITLE      / encode_entities( $title )/gxe;
-        s/ $RE_YEAR_RANGE /$year_range/gx;
-        s/ $RE_LABEL      / encode_entities( $label ) /gxe;
-        s/ $RE_CSS        /$css/gx;
-        s/ $RE_NAME       / encode_entities( $options->{ name } ) /gxe;
-        s/ $RE_AUTHOR     / encode_entities( $options->{ author } ) /gxe;
-        s/ $RE_FEED_URL   /$options->{ 'feed-url' }/gx;
+        s/ $RE_TITLE      / escape( $title )/gxe;
+        s/ $RE_YEAR_RANGE / escape( $year_range )/gxe;
+        s/ $RE_LABEL      / escape( $label ) /gxe;
+        s/ $RE_CSS        / escape( $css )/gxe;
+        s/ $RE_NAME       / escape( $options->{ name } ) /gxe;
+        s/ $RE_AUTHOR     / escape( $options->{ author } ) /gxe;
+        s/ $RE_FEED_URL   / escape( $options->{ 'feed-url' } )/gxe;
         s/ $RE_BODY       /$body_html/x;
         s/ $RE_ARCHIVE    /$archive_html/gx;
     }
@@ -313,8 +312,8 @@ sub html_link_for_day {
 
     my ( $day, $options ) = @_;
 
-    my $title = encode_entities( $day->{ title } );
-    my $label = encode_entities(
+    my $title = escape( $day->{ title } );
+    my $label = escape(
         parse_date( $day->{ date } )->strftime( $options->{ 'date-format' } )
     );
     $title = $label if $title eq '';
@@ -477,6 +476,20 @@ sub split_date {
 sub parse_date {
 
     return Time::Piece->strptime( shift, '%Y-%m-%d' );
+}
+
+sub escape {
+
+    my $str = shift;
+
+    for ( $str ) {
+        s/&/&amp;/g;
+        s/</&lt;/g;
+        s/>/&gt;/g;
+        s/"/&quot;/g;
+        s/'/&#x27;/g;
+    }
+    return $str;
 }
 
 sub strip {
