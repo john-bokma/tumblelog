@@ -6,12 +6,13 @@
 # under the same terms as Python itself.
 
 import re
+import sys
 import json
-from html import escape
+import argparse
 import urllib.parse
+from html import escape
 from operator import itemgetter
 from pathlib import Path
-from optparse import OptionParser
 from datetime import datetime
 from collections import defaultdict, deque
 from commonmark import commonmark
@@ -363,50 +364,55 @@ def create_blog(options):
 
     create_json_feed(days, options)
 
-def create_option_parser():
+def create_argument_parser():
     usage = """
-  %prog --template-filename TEMPLATE --output-dir HTDOCS
+  %(prog)s --template-filename TEMPLATE --output-dir HTDOCS
       --author AUTHOR -name BLOGNAME --blog-url URL
       [--days DAYS ] [--css URL] [--date-format DATE] [--quiet] FILE
-  %prog --help"""
+  %(prog)s --help"""
 
-    parser = OptionParser(usage=usage)
-    parser.add_option('-t', '--template-filename', dest='template-filename',
-                      help='filename of template, required',
-                      metavar='TEMPLATE', default=None)
-    parser.add_option('-o', '--output-dir', dest='output-dir',
-                      help='directory to store HTML files in, required',
-                      metavar='HTDOCS', default=None)
-    parser.add_option('-a', '--author', dest='author',
-                      help='author of the blog, required',
-                      metavar='AUTHOR', default=None)
-    parser.add_option('-n', '--name', dest='name',
-                      help='name of the blog, required',
-                      metavar='BLOGNAME', default=None)
-    parser.add_option('-b', '--blog-url', dest='blog-url',
-                      help='URL of the blog, required',
-                      metavar='URL', default=None)
-    parser.add_option('-d', '--days', dest='days',
-                      help='number of days to show on the index; default 14',
-                      metavar='DAYS', type='int', default=14)
-    parser.add_option('-c', '--css', dest='css',
-                      help='URL of the stylesheet to use; default styles.css',
-                      metavar='URL', default='styles.css')
-    parser.add_option('--date-format', dest='date-format',
-                      help="how to format the date; default '%d %b %Y'",
-                      metavar='FORMAT', default='%d %b %Y')
-    parser.add_option('--label-format', dest='label-format',
-                      help="how to format the label; default 'week %V, %Y'",
-                      metavar='FORMAT', default='week %V, %Y')
-    parser.add_option('-q', '--quiet', action='store_true', dest='quiet',
-                      help="don't show progress", default=False)
+    parser = argparse.ArgumentParser(usage=usage)
+    parser.add_argument('-t', '--template-filename', dest='template-filename',
+                        help='filename of template, required',
+                        metavar='TEMPLATE', default=None)
+    parser.add_argument('-o', '--output-dir', dest='output-dir',
+                        help='directory to store HTML files in, required',
+                        metavar='HTDOCS', default=None)
+    parser.add_argument('-a', '--author', dest='author',
+                        help='author of the blog, required',
+                        metavar='AUTHOR', default=None)
+    parser.add_argument('-n', '--name', dest='name',
+                        help='name of the blog, required',
+                        metavar='BLOGNAME', default=None)
+    parser.add_argument('-b', '--blog-url', dest='blog-url',
+                        help='URL of the blog, required',
+                        metavar='URL', default=None)
+    parser.add_argument('-d', '--days', dest='days',
+                        help='number of days to show on the index;'
+                            ' default: %(default)s',
+                        metavar='DAYS', type=int, default=14)
+    parser.add_argument('-c', '--css', dest='css',
+                        help='URL of the stylesheet to use;'
+                            ' default: %(default)s',
+                        metavar='URL', default='styles.css')
+    parser.add_argument('--date-format', dest='date-format',
+                        help='how to format the date;'
+                            " default: '%(default)s'",
+                        metavar='FORMAT', default='%d %b %Y')
+    parser.add_argument('--label-format', dest='label-format',
+                        help='how to format the label;'
+                            "default '%(default)s'",
+                        metavar='FORMAT', default='week %V, %Y')
+    parser.add_argument('-q', '--quiet', action='store_true', dest='quiet',
+                        help="don't show progress", default=False)
 
     return parser
 
 def get_options():
-    parser = create_option_parser()
-    options, args = parser.parse_args()
-    options_dict = vars(options)
+    parser = create_argument_parser()
+    arguments, args = parser.parse_known_args()
+    options_dict = vars(arguments)
+
 
     required = {
         'template-filename':
