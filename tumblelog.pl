@@ -15,12 +15,15 @@ use CommonMark;
 use Time::Piece;
 use Getopt::Long;
 
+my $VERSION = '1.0';
+
 my $RE_TITLE      = qr/\[% \s* title      \s* %\]/x;
 my $RE_YEAR_RANGE = qr/\[% \s* year-range \s* %\]/x;
 my $RE_LABEL      = qr/\[% \s* label      \s* %\]/x;
 my $RE_CSS        = qr/\[% \s* css        \s* %\]/x;
 my $RE_NAME       = qr/\[% \s* name       \s* %\]/x;
 my $RE_AUTHOR     = qr/\[% \s* author     \s* %\]/x;
+my $RE_VERSION    = qr/\[% \s* version    \s* %\]/x;
 my $RE_FEED_URL   = qr/\[% \s* feed-url   \s* %\]/x;
 my $RE_BODY       = qr/\[% \s* body       \s* %\] \n/x;
 my $RE_ARCHIVE    = qr/\[% \s* archive    \s* %\] \n/x;
@@ -41,6 +44,7 @@ sub get_config {
         'date-format'       => '%d %b %Y',
         'label-format'      => 'week %V, %Y',
         'quiet'             => undef,
+        'version'           => undef,
         'help'              => undef,
     );
 
@@ -62,6 +66,11 @@ sub get_config {
 
     if ( $arguments{ help } ) {
         show_help();
+        exit;
+    }
+
+    if ( $arguments{ version } ) {
+        print "$VERSION\n";
         exit;
     }
 
@@ -251,6 +260,7 @@ sub create_page {
         s/ $RE_CSS        / escape( $css )/gxe;
         s/ $RE_NAME       / escape( $config->{ name } ) /gxe;
         s/ $RE_AUTHOR     / escape( $config->{ author } ) /gxe;
+        s/ $RE_VERSION    / escape( $VERSION ) /gxe;
         s/ $RE_FEED_URL   / escape( $config->{ 'feed-url' } )/gxe;
         s/ $RE_BODY       /$body_html/x;
         s/ $RE_ARCHIVE    /$archive_html/gx;
@@ -546,6 +556,7 @@ SYNOPSIS
         tumblelog.pl --template-filename TEMPLATE --output-dir HTDOCS
             --author AUTHOR -name BLOGNAME --blog-url URL
             [--days DAYS ] [--css CSS] [--date-format FORMAT] [--quiet] FILE
+        tumblelog.pl --version
         tumblelog.pl --help
 DESCRIPTION
         Processes the given FILE and creates static HTML pages using
@@ -566,6 +577,8 @@ DESCRIPTION
 
         The --quiet option prevents the program from printing information
         regarding the progress.
+
+        The --version option shows the version number and exits.
 
         The --help option shows this information.
 END_HELP

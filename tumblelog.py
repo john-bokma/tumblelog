@@ -17,6 +17,8 @@ from datetime import datetime
 from collections import defaultdict, deque
 from commonmark import commonmark
 
+VERSION = '1.0'
+
 RE_WEEK = re.compile(r'%V')
 RE_YEAR = re.compile(r'%Y')
 
@@ -26,6 +28,7 @@ RE_LABEL      = re.compile(r'(?x) \[% \s* label      \s* %\]')
 RE_CSS        = re.compile(r'(?x) \[% \s* css        \s* %\]')
 RE_NAME       = re.compile(r'(?x) \[% \s* name       \s* %\]')
 RE_AUTHOR     = re.compile(r'(?x) \[% \s* author     \s* %\]')
+RE_VERSION    = re.compile(r'(?x) \[% \s* version    \s* %\]')
 RE_FEED_URL   = re.compile(r'(?x) \[% \s* feed-url   \s* %\]')
 RE_BODY       = re.compile(r'(?x) \[% \s* body       \s* %\] \n')
 RE_ARCHIVE    = re.compile(r'(?x) \[% \s* archive    \s* %\] \n')
@@ -207,6 +210,7 @@ def create_page(path, title, body_html, archive_html, config,
     html = RE_CSS.sub(escape(css), html)
     html = RE_NAME.sub(escape(config['name']), html)
     html = RE_AUTHOR.sub(escape(config['author']), html)
+    html = RE_VERSION.sub(escape(VERSION), html)
     html = RE_FEED_URL.sub(escape(config['feed-url']), html)
     html = RE_BODY.sub(lambda x: body_html, html, count=1)
     html = RE_ARCHIVE.sub(archive_html, html)
@@ -402,6 +406,8 @@ def create_argument_parser():
                         help='how to format the label;'
                             "default '%(default)s'",
                         metavar='FORMAT', default='week %V, %Y')
+    parser.add_argument('-v', '--version', action='store_true', dest='version',
+                        help="show version and exit", default=False)
     parser.add_argument('-q', '--quiet', action='store_true', dest='quiet',
                         help="don't show progress", default=False)
 
@@ -412,6 +418,9 @@ def get_config():
     arguments, args = parser.parse_known_args()
     config = vars(arguments)
 
+    if config['version']:
+        print(VERSION)
+        sys.exit()
 
     required = {
         'template-filename':
