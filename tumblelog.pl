@@ -26,11 +26,11 @@ my $RE_BODY       = qr/\[% \s* body       \s* %\] \n/x;
 my $RE_ARCHIVE    = qr/\[% \s* archive    \s* %\] \n/x;
 
 
-create_blog( get_options() );
+create_blog( get_config() );
 
-sub get_options {
+sub get_config {
 
-    my %options = (
+    my %arguments = (
         'template-filename' => undef,
         'output-dir'        => undef,
         'author'            => undef,
@@ -45,7 +45,7 @@ sub get_options {
     );
 
     GetOptions(
-        \%options,
+        \%arguments,
         'template-filename=s',
         'output-dir=s',
         'author=s',
@@ -56,10 +56,11 @@ sub get_options {
         'date-format=s',
         'label-format=s',
         'quiet',
+        'version',
         'help',
     );
 
-    if ( $options{ help }) {
+    if ( $arguments{ help } ) {
         show_help();
         exit;
     }
@@ -78,7 +79,7 @@ sub get_options {
     );
 
     for my $name ( sort keys %required ) {
-        if ( !defined $options{ $name } ) {
+        if ( !defined $arguments{ $name } ) {
             warn "$required{ $name }\n\n";
             show_help();
             exit( 1 );
@@ -93,50 +94,51 @@ sub get_options {
     }
     warn "Additional arguments have been skipped\n" if @ARGV;
 
-    $options{ filename } = $filename;
-    $options{ template } = path( $options{ 'template-filename' } )
+    my %config = %arguments;
+    $config{ filename } = $filename;
+    $config{ template } = path( $config{ 'template-filename' } )
         ->slurp_utf8();
-    $options{ 'feed-path' } = 'feed.json';
-    $options{ 'feed-url' } = URI->new_abs(
-        @options{ qw( feed-path blog-url ) }
+    $config{ 'feed-path' } = 'feed.json';
+    $config{ 'feed-url' } = URI->new_abs(
+        @config{ qw( feed-path blog-url ) }
     )->as_string();
 
-    return \%options;
+    return \%config;
 }
 
 sub create_blog {
 
-    my $options = shift;
+    my $config = shift;
 
-    my $days = collect_days( read_tumblelog_entries( $options->{ filename } ) );
+    my $days = collect_days( read_tumblelog_entries( $config->{ filename } ) );
 
     my $max_year = ( split_date( $days->[  0 ]{ date } ) )[ 0 ];
     my $min_year = ( split_date( $days->[ -1 ]{ date } ) )[ 0 ];
 
     my $archive = create_archive( $days );
 
-    create_index( $days, $archive, $options, $min_year, $max_year );
+    create_index( $days, $archive, $config, $min_year, $max_year );
 
     create_day_and_week_pages(
-        $days, $archive, $options, $min_year, $max_year
+        $days, $archive, $config, $min_year, $max_year
     );
 
-    create_json_feed( $days, $options );
+    create_json_feed( $days, $config );
 
     return;
 }
 
 sub create_index {
 
-    my ( $days, $archive, $options, $min_year, $max_year ) = @_;
+    my ( $days, $archive, $config, $min_year, $max_year ) = @_;
 
     my $body_html;
-    my $todo = $options->{ days };
+    my $todo = $config->{ days };
 
     for my $day ( @$days ) {
 
         $body_html .= html_for_date(
-            $day->{ date }, $options->{ 'date-format' }, 'archive'
+            $day->{ date }, $config->{ 'date-format' }, 'archive'
         );
 
         $body_html .= html_for_entry( $_ ) for @{ $day->{ entries } };
@@ -147,11 +149,11 @@ sub create_index {
     my $archive_html = html_for_archive( $archive, undef, 'archive' );
 
     my $label = 'home';
-    my $title = join ' - ', $options->{ name }, $label;
+    my $title = join ' - ', $config->{ name }, $label;
 
-    path( $options->{ 'output-dir' } )->mkpath();
+    path( $config->{ 'output-dir' } )->mkpath();
     create_page(
-        'index.html', $title, $body_html, $archive_html, $options,
+        'index.html', $title, $body_html, $archive_html, $config,
         $label, $min_year, $max_year
     );
 
@@ -160,7 +162,7 @@ sub create_index {
 
 sub create_day_and_week_pages {
 
-    my ( $days, $archive, $options, $min_year, $max_year ) = @_;
+    my ( $days, $archive, $config, $min_year, $max_year ) = @_;
 
     my $year_week;
     my $week_body_html;
@@ -170,20 +172,20 @@ sub create_day_and_week_pages {
     for my $day ( @$days ) {
 
         my $day_body_html = html_for_date(
-            $day->{ date }, $options->{ 'date-format' }, '../..'
+            $day->{ date }, $config->{ 'date-format' }, '../..'
         );
 
         $day_body_html .= html_for_entry( $_ ) for @{ $day->{ entries } };
 
-        my ( $label, $title ) = label_and_title( $day, $options );
+        my ( $label, $title ) = label_and_title( $day, $config );
         my ( $year, $month, $day_number ) = split_date( $day->{ date } );
-        my $next_prev_html = html_for_next_prev( $days, $index, $options );
+        my $next_prev_html = html_for_next_prev( $days, $index, $config );
 
-        path( "$options->{ 'output-dir' }/archive/$year/$month")->mkpath();
+        path( "$config->{ 'output-dir' }/archive/$year/$month")->mkpath();
         create_page(
             "archive/$year/$month/$day_number.html",
             $title, $day_body_html . $next_prev_html, $day_archive_html,
-            $options,
+            $config,
             $label, $min_year, $max_year
         );
 
@@ -193,7 +195,7 @@ sub create_day_and_week_pages {
         }
         else {
             create_week_page(
-                $current_year_week, $week_body_html, $archive, $options,
+                $current_year_week, $week_body_html, $archive, $config,
                 $min_year, $max_year
             );
             $current_year_week = $year_week;
@@ -203,7 +205,7 @@ sub create_day_and_week_pages {
     }
 
     create_week_page(
-        $year_week, $week_body_html, $archive, $options,
+        $year_week, $week_body_html, $archive, $config,
         $min_year, $max_year
     );
 
@@ -212,19 +214,18 @@ sub create_day_and_week_pages {
 
 sub create_week_page {
 
-    my ( $year_week, $body_html, $archive, $options,
-         $min_year, $max_year ) = @_;
+    my ( $year_week, $body_html, $archive, $config, $min_year, $max_year ) = @_;
 
     my $archive_html = html_for_archive( $archive, $year_week, '../..' );
 
     my ( $year, $week ) = split_year_week( $year_week );
-    my $label = year_week_label( $options->{ 'label-format' }, $year, $week );
-    my $title = join ' - ', $options->{ name }, $label;
+    my $label = year_week_label( $config->{ 'label-format' }, $year, $week );
+    my $title = join ' - ', $config->{ name }, $label;
 
-    path( "$options->{ 'output-dir' }/archive/$year/week" )->mkpath();
+    path( "$config->{ 'output-dir' }/archive/$year/week" )->mkpath();
     create_page(
         "archive/$year/week/$week.html",
-        $title, $body_html, $archive_html, $options,
+        $title, $body_html, $archive_html, $config,
         $label, $min_year, $max_year
     );
     return;
@@ -232,32 +233,32 @@ sub create_week_page {
 
 sub create_page {
 
-    my ( $path, $title, $body_html, $archive_html, $options,
+    my ( $path, $title, $body_html, $archive_html, $config,
          $label, $min_year, $max_year ) = @_;
 
     my $year_range = $min_year eq $max_year ?
         $min_year : "$min_year\x{2013}$max_year";
 
     my $slashes = $path =~ tr{/}{};
-    my $css = join( '', '../' x $slashes, $options->{ css } );
+    my $css = join( '', '../' x $slashes, $config->{ css } );
 
-    my $html = $options->{ template };
+    my $html = $config->{ template };
 
     for ( $html ) {
         s/ $RE_TITLE      / escape( $title )/gxe;
         s/ $RE_YEAR_RANGE / escape( $year_range )/gxe;
         s/ $RE_LABEL      / escape( $label ) /gxe;
         s/ $RE_CSS        / escape( $css )/gxe;
-        s/ $RE_NAME       / escape( $options->{ name } ) /gxe;
-        s/ $RE_AUTHOR     / escape( $options->{ author } ) /gxe;
-        s/ $RE_FEED_URL   / escape( $options->{ 'feed-url' } )/gxe;
+        s/ $RE_NAME       / escape( $config->{ name } ) /gxe;
+        s/ $RE_AUTHOR     / escape( $config->{ author } ) /gxe;
+        s/ $RE_FEED_URL   / escape( $config->{ 'feed-url' } )/gxe;
         s/ $RE_BODY       /$body_html/x;
         s/ $RE_ARCHIVE    /$archive_html/gx;
     }
 
-    path( "$options->{ 'output-dir' }/$path" )
+    path( "$config->{ 'output-dir' }/$path" )
         ->append_utf8( { truncate => 1 }, $html );
-    $options->{ quiet } or print "Created '$path'\n";
+    $config->{ quiet } or print "Created '$path'\n";
 
     return;
 }
@@ -310,11 +311,11 @@ sub html_for_archive {
 
 sub html_link_for_day {
 
-    my ( $day, $options ) = @_;
+    my ( $day, $config ) = @_;
 
     my $title = escape( $day->{ title } );
     my $label = escape(
-        parse_date( $day->{ date } )->strftime( $options->{ 'date-format' } )
+        parse_date( $day->{ date } )->strftime( $config->{ 'date-format' } )
     );
     $title = $label if $title eq '';
 
@@ -326,7 +327,7 @@ sub html_link_for_day {
 
 sub html_for_next_prev {
 
-    my ( $days, $index, $options ) = @_;
+    my ( $days, $index, $config ) = @_;
 
     return '' if @$days == 1;
 
@@ -334,7 +335,7 @@ sub html_for_next_prev {
 
     if ( $index ) {
         $html .= '  <div class="next">'
-            . html_link_for_day( $days->[ $index - 1 ], $options )
+            . html_link_for_day( $days->[ $index - 1 ], $config )
             . "</div>"
             . qq(<div class="tl-right-arrow">\x{2192}</div>\n);
     }
@@ -342,7 +343,7 @@ sub html_for_next_prev {
     if ( $index < $#$days ) {
         $html .= qq(  <div class="tl-left-arrow">\x{2190}</div>)
             . '<div class="prev">'
-            . html_link_for_day( $days->[ $index + 1 ], $options )
+            . html_link_for_day( $days->[ $index + 1 ], $config )
             . "</div>\n";
     }
 
@@ -373,10 +374,10 @@ sub create_archive {
 
 sub create_json_feed {
 
-    my ( $days, $options ) = @_;
+    my ( $days, $config ) = @_;
 
     my @items;
-    my $todo = $options->{ days };
+    my $todo = $config->{ days };
 
     for my $day ( @$days ) {
         my $html;
@@ -386,12 +387,12 @@ sub create_json_feed {
         my ( $year, $month, $day_number ) = split_date( $day->{ date } );
         my $url = URI->new_abs(
             "archive/$year/$month/$day_number.html",
-            $options->{ 'blog-url' }
+            $config->{ 'blog-url' }
         )->as_string();
         my $title = $day->{ title };
         if ( $title eq '' ) {
             $title = parse_date( $day->{ date } )->strftime(
-                $options->{ 'date-format' }
+                $config->{ 'date-format' }
             );
         }
         push @items, {
@@ -407,36 +408,36 @@ sub create_json_feed {
 
     my $feed = {
         version       => 'https://jsonfeed.org/version/1',
-        title         => $options->{ 'name' },
-        home_page_url => $options->{ 'blog-url' },
-        feed_url      => $options->{ 'feed-url' },
+        title         => $config->{ 'name' },
+        home_page_url => $config->{ 'blog-url' },
+        feed_url      => $config->{ 'feed-url' },
         author        => {
-            name => $options->{ author },
+            name => $config->{ author },
         },
         items => \@items,
     };
-    my $path = $options->{ 'feed-path' };
+    my $path = $config->{ 'feed-path' };
     my $json = JSON::XS->new->utf8->indent->space_after->canonical
         ->encode( $feed );
-    path( "$options->{ 'output-dir' }/$path" )
+    path( "$config->{ 'output-dir' }/$path" )
         ->append_raw( { truncate => 1 }, $json );
-    $options->{ quiet } or print "Created '$path'\n";
+    $config->{ quiet } or print "Created '$path'\n";
 
     return;
 }
 
 sub label_and_title {
 
-    my ( $day, $options ) = @_;
+    my ( $day, $config ) = @_;
 
     my $label = parse_date( $day->{ date } )
-        ->strftime( $options->{ 'date-format' } );
+        ->strftime( $config->{ 'date-format' } );
     my $title = $day->{ title };
     if ( $title ne '' ) {
-        $title = join ' - ', $title, $options->{ name };
+        $title = join ' - ', $title, $config->{ name };
     }
     else {
-        $title = join ' - ', $options->{ name }, $label;
+        $title = join ' - ', $config->{ name }, $label;
     }
     return ( $label, $title );
 }
