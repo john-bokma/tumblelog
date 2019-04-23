@@ -18,7 +18,8 @@ assigned to the `title` element of the day page, see [SEO friendly titles for tu
 
 ## Examples
 
-![The four styles that come with tumblelog](https://repository-images.githubusercontent.com/178557390/12a9ae80-6614-11e9-8417-cc432831ce79)
+![A screenshot of the four styles that come with tumblelog](https://repository-images.githubusercontent.com/178557390/12a9ae80-6614-11e9-8417-cc432831ce79)
+
 A screenshot of the four styles that come with tumblelog.
 
 The `screenshots` directory has 1:1 examples of themes that come
