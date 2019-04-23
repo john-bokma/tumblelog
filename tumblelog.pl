@@ -307,7 +307,7 @@ sub html_for_archive {
             }
             else {
                 my $uri = "$path/$year/week/$week.html";
-                $html .= "        <li>"
+                $html .= '        <li>'
                     . qq(<a href="$uri" title="$year_week">)
                     . $week . "</a></li>\n";
             }
@@ -346,7 +346,7 @@ sub html_for_next_prev {
     if ( $index ) {
         $html .= '  <div class="next">'
             . html_link_for_day( $days->[ $index - 1 ], $config )
-            . "</div>"
+            . '</div>'
             . qq(<div class="tl-right-arrow">\x{2192}</div>\n);
     }
 
@@ -527,7 +527,7 @@ sub collect_days {
             };
             $entry = $3;
         }
-        defined $date or die "No date specified for first tumblelog entry";
+        defined $date or die 'No date specified for first tumblelog entry';
         push @{ $days[ -1 ]{ entries } }, $entry;
     }
 
@@ -541,7 +541,7 @@ sub read_tumblelog_entries {
     my $filename = shift;
     my $entries = [ split /^%\n/m, path( $filename )->slurp_utf8() ];
 
-    @$entries or die "No blog entries found";
+    @$entries or die 'No blog entries found';
 
     return $entries;
 }
