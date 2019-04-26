@@ -15,7 +15,7 @@ use CommonMark;
 use Time::Piece;
 use Getopt::Long;
 
-my $VERSION = '1.0';
+my $VERSION = '1.0.1';
 
 my $RE_TITLE      = qr/\[% \s* title      \s* %\]/x;
 my $RE_YEAR_RANGE = qr/\[% \s* year-range \s* %\]/x;
@@ -374,7 +374,8 @@ sub create_archive {
         my $week = $tp->week();
         my $year_week = join_year_week( $year, $week );
         if ( !exists $seen{ $year_week } ) {
-            unshift @{ $archive{ $year } }, $week;
+            unshift @{ $archive{ sprintf '%04d', $year } },
+                sprintf '%02d', $week;
             $seen{ $year_week } = 1;
         }
     }

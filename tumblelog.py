@@ -17,7 +17,7 @@ from datetime import datetime
 from collections import defaultdict, deque
 from commonmark import commonmark
 
-VERSION = '1.0'
+VERSION = '1.0.1'
 
 RE_WEEK = re.compile(r'%V')
 RE_YEAR = re.compile(r'%Y')
@@ -102,7 +102,7 @@ def create_archive(days):
         year, week = dt.isocalendar()[0:2]
         year_week = join_year_week(year, week)
         if year_week not in seen:
-            archive[year].appendleft(week)
+            archive[f'{year:04d}'].appendleft(f'{week:02d}')
             seen[year_week] = 1
 
     return archive
@@ -152,7 +152,7 @@ def html_for_archive(archive, current_year_week, path):
     for year in sorted(archive.keys(), reverse=True):
         html += f'    <dt>{year}</dt>\n    <dd>\n      <ul>\n'
         for week in archive[year]:
-            year_week = join_year_week(year, week)
+            year_week = join_year_week(int(year), int(week))
             if current_year_week is not None and year_week == current_year_week:
                 html += f'        <li class="tl-self">{week}</li>\n'
             else:
