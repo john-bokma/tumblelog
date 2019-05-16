@@ -17,7 +17,7 @@ from datetime import datetime
 from collections import defaultdict, deque
 from commonmark import commonmark
 
-VERSION = '1.0.1'
+VERSION = '1.0.2'
 
 RE_WEEK = re.compile(r'%V')
 RE_YEAR = re.compile(r'%Y')
@@ -147,7 +147,7 @@ def html_for_next_prev(days, index, config):
 
     return html
 
-def html_for_archive(archive, current_year_week, path):
+def html_for_archive(archive, current_year_week, path, label_format):
     html = '<nav>\n  <dl class="tl-archive">\n'
     for year in sorted(archive.keys(), reverse=True):
         html += f'    <dt>{year}</dt>\n    <dd>\n      <ul>\n'
@@ -156,10 +156,11 @@ def html_for_archive(archive, current_year_week, path):
             if current_year_week is not None and year_week == current_year_week:
                 html += f'        <li class="tl-self">{week}</li>\n'
             else:
+                title = escape(year_week_label(label_format, year, week))
                 uri = f'{path}/{year}/week/{week}.html'
                 html += ''.join([
                     '        <li>',
-                    f'<a href="{uri}" title="{year_week}">{week}</a></li>\n'
+                    f'<a href="{uri}" title="{title}">{week}</a></li>\n'
                 ])
         html += '      </ul>\n    </dd>\n'
     html += '  </dl>\n</nav>\n'
@@ -235,7 +236,8 @@ def create_index(days, archive, config, min_year, max_year):
         if not todo:
             break
 
-    archive_html = html_for_archive(archive, None, 'archive')
+    archive_html = html_for_archive(
+        archive, None, 'archive', config['label-format'])
 
     label = 'home'
     title = ' - '.join([config['name'], label])
@@ -248,7 +250,8 @@ def create_index(days, archive, config, min_year, max_year):
 
 def create_week_page(year_week, body_html, archive, config, min_year, max_year):
 
-    archive_html = html_for_archive(archive, year_week, '../..')
+    archive_html = html_for_archive(
+        archive, year_week, '../..', config['label-format'])
 
     year, week = split_year_week(year_week)
     label = year_week_label(config['label-format'], year, week)
@@ -267,7 +270,8 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
 
     week_body_html = ''
     current_year_week = get_year_week(days[0]['date'])
-    day_archive_html = html_for_archive(archive, None, '../..')
+    day_archive_html = html_for_archive(
+        archive, None, '../..', config['label-format'])
     index = 0
     for day in days:
         day_body_html = html_for_date(

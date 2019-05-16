@@ -15,7 +15,7 @@ use CommonMark;
 use Time::Piece;
 use Getopt::Long;
 
-my $VERSION = '1.0.1';
+my $VERSION = '1.0.2';
 
 my $RE_TITLE      = qr/\[% \s* title      \s* %\]/x;
 my $RE_YEAR_RANGE = qr/\[% \s* year-range \s* %\]/x;
@@ -155,7 +155,9 @@ sub create_index {
         --$todo or last;
     }
 
-    my $archive_html = html_for_archive( $archive, undef, 'archive' );
+    my $archive_html = html_for_archive(
+        $archive, undef, 'archive', $config->{ 'label-format' }
+    );
 
     my $label = 'home';
     my $title = join ' - ', $config->{ name }, $label;
@@ -176,7 +178,9 @@ sub create_day_and_week_pages {
     my $year_week;
     my $week_body_html;
     my $current_year_week = get_year_week( $days->[ 0 ]{ date } );
-    my $day_archive_html = html_for_archive( $archive, undef, '../..' );
+    my $day_archive_html = html_for_archive(
+        $archive, undef, '../..', $config->{ 'label-format' }
+    );
     my $index = 0;
     for my $day ( @$days ) {
 
@@ -225,7 +229,9 @@ sub create_week_page {
 
     my ( $year_week, $body_html, $archive, $config, $min_year, $max_year ) = @_;
 
-    my $archive_html = html_for_archive( $archive, $year_week, '../..' );
+    my $archive_html = html_for_archive(
+        $archive, $year_week, '../..', $config->{ 'label-format' }
+    );
 
     my ( $year, $week ) = split_year_week( $year_week );
     my $label = year_week_label( $config->{ 'label-format' }, $year, $week );
@@ -294,7 +300,7 @@ sub html_for_entry {
 
 sub html_for_archive {
 
-    my ( $archive, $current_year_week, $path ) = @_;
+    my ( $archive, $current_year_week, $path, $label_format ) = @_;
 
     my $html = qq(<nav>\n  <dl class="tl-archive">\n);
     for my $year ( sort { $b <=> $a } keys %$archive ) {
@@ -306,9 +312,12 @@ sub html_for_archive {
                 $html .= qq(        <li class="tl-self">$week</li>\n);
             }
             else {
+                my $title = escape(
+                    year_week_label( $label_format, $year, $week )
+                );
                 my $uri = "$path/$year/week/$week.html";
                 $html .= '        <li>'
-                    . qq(<a href="$uri" title="$year_week">)
+                    . qq(<a href="$uri" title="$title">)
                     . $week . "</a></li>\n";
             }
         }
