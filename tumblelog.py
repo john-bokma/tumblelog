@@ -17,7 +17,7 @@ from datetime import datetime
 from collections import defaultdict, deque
 from commonmark import commonmark
 
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 
 RE_WEEK = re.compile(r'%V')
 RE_YEAR = re.compile(r'%Y')
@@ -71,7 +71,7 @@ def read_tumblelog_entries(filename):
     return entries
 
 def collect_days(entries):
-    pattern = re.compile('(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
+    pattern = re.compile(r'(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
     date = None
     days = deque()
     for entry in entries:
@@ -352,7 +352,7 @@ def create_json_feed(days, config):
     p = Path(config['output-dir']).joinpath(path)
     with p.open(mode='w', encoding='utf-8') as f:
         json.dump(feed, f, indent=3, ensure_ascii=False, sort_keys=True,
-            separators=(',', ': '))
+                  separators=(',', ': '))
         print('', file=f)
 
     if not config['quiet']:
@@ -396,15 +396,15 @@ def create_argument_parser():
                         metavar='URL', default=None)
     parser.add_argument('-d', '--days', dest='days',
                         help='number of days to show on the index;'
-                            ' default: %(default)s',
+                        ' default: %(default)s',
                         metavar='DAYS', type=int, default=14)
     parser.add_argument('-c', '--css', dest='css',
                         help='URL of the stylesheet to use;'
-                            ' default: %(default)s',
+                        ' default: %(default)s',
                         metavar='URL', default='styles.css')
     parser.add_argument('--date-format', dest='date-format',
                         help='how to format the date;'
-                            " default: '%(default)s'",
+                        " default: '%(default)s'",
                         metavar='FORMAT', default='%d %b %Y')
     parser.add_argument('--label-format', dest='label-format',
                         help='how to format the label;'
@@ -442,7 +442,7 @@ def get_config():
         if config[name] is None:
             parser.error(required[name])
 
-    if len(args) == 0:
+    if not args:
         parser.error('Specify a filename that contains the blog entries')
     if len(args) > 1:
         print('Additional arguments have been skipped', file=sys.stderr)
