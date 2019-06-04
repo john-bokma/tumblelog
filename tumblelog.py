@@ -17,7 +17,7 @@ from datetime import datetime
 from collections import defaultdict, deque
 from commonmark import commonmark
 
-VERSION = '1.0.3'
+VERSION = '1.0.4'
 
 RE_WEEK = re.compile(r'%V')
 RE_YEAR = re.compile(r'%Y')
@@ -199,7 +199,7 @@ def create_page(path, title, body_html, archive_html, config,
     if min_year == max_year:
         year_range = min_year
     else:
-        year_range = f'{min-year}\u2013{max_year}'
+        year_range = f'{min_year}\u2013{max_year}'
 
     slashes = path.count('/')
     css = ''.join(['../' * slashes, config['css']])
