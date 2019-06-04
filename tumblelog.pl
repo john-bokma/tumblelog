@@ -15,7 +15,7 @@ use CommonMark;
 use Time::Piece;
 use Getopt::Long;
 
-my $VERSION = '1.0.4';
+my $VERSION = '1.0.5';
 
 my $RE_TITLE      = qr/\[% \s* title      \s* %\]/x;
 my $RE_YEAR_RANGE = qr/\[% \s* year-range \s* %\]/x;
