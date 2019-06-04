@@ -17,10 +17,7 @@ from datetime import datetime
 from collections import defaultdict, deque
 from commonmark import commonmark
 
-VERSION = '1.0.4'
-
-RE_WEEK = re.compile(r'%V')
-RE_YEAR = re.compile(r'%Y')
+VERSION = '1.0.5'
 
 RE_TITLE      = re.compile(r'(?x) \[% \s* title      \s* %\]')
 RE_YEAR_RANGE = re.compile(r'(?x) \[% \s* year-range \s* %\]')
@@ -50,17 +47,14 @@ def split_year_week(year_week):
 def split_date(date):
     return date.split('-')
 
-def parse_date(str):
-    return datetime.strptime(str, '%Y-%m-%d')
+def parse_date(date):
+    return datetime.strptime(date, '%Y-%m-%d')
 
-def year_week_label(format, year, week):
-    str = RE_WEEK.sub(week, format)
-    str = RE_YEAR.sub(year, str)
-    return str
+def year_week_label(fmt, year, week):
+    return fmt.replace('%Y', year).replace('%V', week)
 
 def get_year_week(date):
-    dt = parse_date(date)
-    return join_year_week(*dt.isocalendar()[0:2])
+    return join_year_week(*parse_date(date).isocalendar()[0:2])
 
 def read_tumblelog_entries(filename):
     with open(filename, encoding='utf8') as f:
@@ -98,8 +92,7 @@ def create_archive(days):
     seen = {}
     archive = defaultdict(deque)
     for day in days:
-        dt = parse_date(day['date'])
-        year, week = dt.isocalendar()[0:2]
+        year, week = parse_date(day['date']).isocalendar()[0:2]
         year_week = join_year_week(year, week)
         if year_week not in seen:
             archive[f'{year:04d}'].appendleft(f'{week:02d}')
@@ -348,15 +341,15 @@ def create_json_feed(days, config):
         },
         'items': items
     }
-    path = config['feed-path']
-    p = Path(config['output-dir']).joinpath(path)
+    feed_path = config['feed-path']
+    p = Path(config['output-dir']).joinpath(feed_path)
     with p.open(mode='w', encoding='utf-8') as f:
         json.dump(feed, f, indent=3, ensure_ascii=False, sort_keys=True,
                   separators=(',', ': '))
         print('', file=f)
 
     if not config['quiet']:
-        print(f"Created '{path}'")
+        print(f"Created '{feed_path}'")
 
 def create_blog(config):
     days = collect_days(read_tumblelog_entries(config['filename']))
@@ -408,7 +401,7 @@ def create_argument_parser():
                         metavar='FORMAT', default='%d %b %Y')
     parser.add_argument('--label-format', dest='label-format',
                         help='how to format the label;'
-                            "default '%(default)s'",
+                        "default '%(default)s'",
                         metavar='FORMAT', default='week %V, %Y')
     parser.add_argument('-v', '--version', action='store_true', dest='version',
                         help="show version and exit", default=False)
