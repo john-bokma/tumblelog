@@ -125,8 +125,12 @@ a {
     color: $link-color;
 }
 
+p {
+    margin: 14px 0;
+}
+
 pre {
-    margin: 0;
+    margin: 14px 0;
     padding: 5px;
     background-color: $pre-background-color;
     border-radius: $border-radius;
