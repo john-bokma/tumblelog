@@ -15,7 +15,7 @@ use CommonMark;
 use Time::Piece;
 use Getopt::Long;
 
-my $VERSION = '1.0.5';
+my $VERSION = '1.0.6';
 
 my $RE_TITLE      = qr/\[% \s* title      \s* %\]/x;
 my $RE_YEAR_RANGE = qr/\[% \s* year-range \s* %\]/x;
@@ -24,6 +24,7 @@ my $RE_CSS        = qr/\[% \s* css        \s* %\]/x;
 my $RE_NAME       = qr/\[% \s* name       \s* %\]/x;
 my $RE_AUTHOR     = qr/\[% \s* author     \s* %\]/x;
 my $RE_VERSION    = qr/\[% \s* version    \s* %\]/x;
+my $RE_PAGE_URL   = qr/\[% \s* page-url   \s* %\]/x;
 my $RE_FEED_URL   = qr/\[% \s* feed-url   \s* %\]/x;
 my $RE_BODY       = qr/\[% \s* body       \s* %\] \n/x;
 my $RE_ARCHIVE    = qr/\[% \s* archive    \s* %\] \n/x;
@@ -256,18 +257,23 @@ sub create_page {
 
     my $slashes = $path =~ tr{/}{};
     my $css = join( '', '../' x $slashes, $config->{ css } );
+    my $page_url = URI->new_abs(
+        $path eq 'index.html' ? '/' : $path,
+        $config->{ 'blog-url' }
+    );
 
     my $html = $config->{ template };
 
     for ( $html ) {
-        s/ $RE_TITLE      / escape( $title )/gxe;
-        s/ $RE_YEAR_RANGE / escape( $year_range )/gxe;
+        s/ $RE_TITLE      / escape( $title ) /gxe;
+        s/ $RE_YEAR_RANGE / escape( $year_range ) /gxe;
         s/ $RE_LABEL      / escape( $label ) /gxe;
         s/ $RE_CSS        / escape( $css )/gxe;
         s/ $RE_NAME       / escape( $config->{ name } ) /gxe;
         s/ $RE_AUTHOR     / escape( $config->{ author } ) /gxe;
         s/ $RE_VERSION    / escape( $VERSION ) /gxe;
-        s/ $RE_FEED_URL   / escape( $config->{ 'feed-url' } )/gxe;
+        s/ $RE_PAGE_URL   / escape( $page_url ) /gxe;
+        s/ $RE_FEED_URL   / escape( $config->{ 'feed-url' } ) /gxe;
         s/ $RE_BODY       /$body_html/x;
         s/ $RE_ARCHIVE    /$archive_html/gx;
     }

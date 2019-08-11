@@ -17,7 +17,7 @@ from datetime import datetime
 from collections import defaultdict, deque
 from commonmark import commonmark
 
-VERSION = '1.0.5'
+VERSION = '1.0.6'
 
 RE_TITLE      = re.compile(r'(?x) \[% \s* title      \s* %\]')
 RE_YEAR_RANGE = re.compile(r'(?x) \[% \s* year-range \s* %\]')
@@ -26,6 +26,7 @@ RE_CSS        = re.compile(r'(?x) \[% \s* css        \s* %\]')
 RE_NAME       = re.compile(r'(?x) \[% \s* name       \s* %\]')
 RE_AUTHOR     = re.compile(r'(?x) \[% \s* author     \s* %\]')
 RE_VERSION    = re.compile(r'(?x) \[% \s* version    \s* %\]')
+RE_PAGE_URL   = re.compile(r'(?x) \[% \s* page-url   \s* %\]')
 RE_FEED_URL   = re.compile(r'(?x) \[% \s* feed-url   \s* %\]')
 RE_BODY       = re.compile(r'(?x) \[% \s* body       \s* %\] \n')
 RE_ARCHIVE    = re.compile(r'(?x) \[% \s* archive    \s* %\] \n')
@@ -196,6 +197,10 @@ def create_page(path, title, body_html, archive_html, config,
 
     slashes = path.count('/')
     css = ''.join(['../' * slashes, config['css']])
+    page_url = urllib.parse.urljoin(
+        config['blog-url'],
+        '/' if path == 'index.html' else path
+    )
 
     html = config['template']
     html = RE_TITLE.sub(escape(title), html)
@@ -205,6 +210,7 @@ def create_page(path, title, body_html, archive_html, config,
     html = RE_NAME.sub(escape(config['name']), html)
     html = RE_AUTHOR.sub(escape(config['author']), html)
     html = RE_VERSION.sub(escape(VERSION), html)
+    html = RE_PAGE_URL.sub(escape(page_url), html)
     html = RE_FEED_URL.sub(escape(config['feed-url']), html)
     html = RE_BODY.sub(lambda x: body_html, html, count=1)
     html = RE_ARCHIVE.sub(archive_html, html)
