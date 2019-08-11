@@ -16,6 +16,13 @@ has a thorough explanation on how to use this program.
 New: You can now specify a title after the ISO 8601 date which is
 assigned to the `title` element of the day page, see [SEO friendly titles for tumblelog](http://johnbokma.com/blog/2019/04/12/seo-friendly-titles-for-tumblelog.html).
 
+## Twitter Card and Facebook Sharing support
+
+New: support has been added for Twitter Card and Facebook Sharing, see
+[Adding Twitter Card and Facebook Sharing support to Tumblelog - John
+Bokma](http://johnbokma.com/blog/2019/08/11/adding-twitter-card-and-facebook-sharing-support-to-tumblelog.html)
+for more information.
+
 ## Examples
 
 ![A screenshot of the four styles that come with tumblelog](https://repository-images.githubusercontent.com/178557390/12a9ae80-6614-11e9-8417-cc432831ce79)
