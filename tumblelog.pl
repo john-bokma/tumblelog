@@ -15,7 +15,7 @@ use CommonMark;
 use Time::Piece;
 use Getopt::Long;
 
-my $VERSION = '1.0.6';
+my $VERSION = '1.0.7';
 
 my $RE_TITLE      = qr/\[% \s* title      \s* %\]/x;
 my $RE_YEAR_RANGE = qr/\[% \s* year-range \s* %\]/x;
@@ -384,9 +384,7 @@ sub create_archive {
     my %seen;
     my %archive;
     for my $day ( @$days ) {
-        my $tp = parse_date( $day->{ date } );
-        my $year = $tp->year();
-        my $week = $tp->week();
+        my ( $year, $week ) = get_year_and_week( parse_date( $day->{ date } ) );
         my $year_week = join_year_week( $year, $week );
         if ( !exists $seen{ $year_week } ) {
             unshift @{ $archive{ sprintf '%04d', $year } },
@@ -477,11 +475,16 @@ sub year_week_label {
     return $str;
 }
 
+sub get_year_and_week {
+
+    my $tp = shift;
+    return ( $tp->strftime('%G'), $tp->week() );
+}
+
 sub get_year_week {
 
     my $date = shift;
-    my $tp = parse_date( $date );
-    return join_year_week( $tp->year(), $tp->week() );
+    return join_year_week( get_year_and_week( parse_date( $date ) ) );
 }
 
 sub join_year_week {
