@@ -15,7 +15,7 @@ use CommonMark;
 use Time::Piece;
 use Getopt::Long;
 
-my $VERSION = '1.0.7';
+my $VERSION = '1.0.8';
 
 my $RE_TITLE      = qr/\[% \s* title      \s* %\]/x;
 my $RE_YEAR_RANGE = qr/\[% \s* year-range \s* %\]/x;
@@ -148,7 +148,8 @@ sub create_index {
     for my $day ( @$days ) {
 
         $body_html .= html_for_date(
-            $day->{ date }, $config->{ 'date-format' }, 'archive'
+            $day->{ date }, $config->{ 'date-format' }, $day->{ title },
+            'archive'
         );
 
         $body_html .= html_for_entry( $_ ) for @{ $day->{ entries } };
@@ -186,7 +187,8 @@ sub create_day_and_week_pages {
     for my $day ( @$days ) {
 
         my $day_body_html = html_for_date(
-            $day->{ date }, $config->{ 'date-format' }, '../..'
+            $day->{ date }, $config->{ 'date-format' }, $day->{ title },
+            '../..'
         );
 
         $day_body_html .= html_for_entry( $_ ) for @{ $day->{ entries } };
@@ -287,14 +289,17 @@ sub create_page {
 
 sub html_for_date {
 
-    my ( $date, $date_format, $path ) = @_;
+    my ( $date, $date_format, $title, $path ) = @_;
 
     my ( $year, $month, $day ) = split_date( $date );
     my $uri = "$path/$year/$month/$day.html";
 
-    return qq(<time class="tl-date" datetime="$date"><a href="$uri">)
-        . parse_date( $date )->strftime( $date_format )
-        . "</a></time>\n";
+    my $link_text = escape( parse_date( $date )->strftime( $date_format ) );
+    my $title_text = $title ne '' ? escape( $title ) : $link_text;
+
+    return qq(<time class="tl-date" datetime="$date">)
+        . qq(<a href="$uri" title="$title_text">$link_text</a>)
+        . "</time>\n";
 }
 
 sub html_for_entry {

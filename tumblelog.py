@@ -17,7 +17,7 @@ from datetime import datetime
 from collections import defaultdict, deque
 from commonmark import commonmark
 
-VERSION = '1.0.7'
+VERSION = '1.0.8'
 
 RE_TITLE      = re.compile(r'(?x) \[% \s* title      \s* %\]')
 RE_YEAR_RANGE = re.compile(r'(?x) \[% \s* year-range \s* %\]')
@@ -161,14 +161,16 @@ def html_for_archive(archive, current_year_week, path, label_format):
 
     return html
 
-def html_for_date(date, date_format, path):
+def html_for_date(date, date_format, title, path):
     year, month, day = date.split('-')
     uri = f'{path}/{year}/{month}/{day}.html'
 
+    link_text = escape(parse_date(date).strftime(date_format))
+    title_text = escape(title) if title else link_text
+
     return ''.join([
-        f'<time class="tl-date" datetime="{date}"><a href="{uri}">',
-        parse_date(date).strftime(date_format),
-        '</a></time>\n'
+        f'<time class="tl-date" datetime="{date}">',
+        f'<a href="{uri}" title="{title_text}">{link_text}</a></time>\n'
     ])
 
 def html_for_entry(entry):
@@ -227,7 +229,7 @@ def create_index(days, archive, config, min_year, max_year):
 
     for day in days:
         body_html += html_for_date(
-            day['date'], config['date-format'], 'archive'
+            day['date'], config['date-format'], day['title'], 'archive'
         )
         for entry in day['entries']:
             body_html += html_for_entry(entry)
@@ -274,7 +276,7 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
     index = 0
     for day in days:
         day_body_html = html_for_date(
-            day['date'], config['date-format'], '../..'
+            day['date'], config['date-format'], day['title'], '../..'
         )
         for entry in day['entries']:
             day_body_html += html_for_entry(entry)
