@@ -21,7 +21,7 @@ Photo of a cat.
 </figure>
 ```
 
-This allows for styling of both the image and the caption.
+This allows for CSS styling of both the image and the caption.
 
 ## Perl version
 
@@ -48,7 +48,7 @@ for more information.
 
 ## Examples
 
-![A screenshot of the four styles that come with tumblelog](https://repository-images.githubusercontent.com/178557390/12a9ae80-6614-11e9-8417-cc432831ce79)
+![A screenshot of the four styles that come with tumblelog](https://repository-images.githubusercontent.com/178557390/b0ba5e80-d991-11e9-9022-c061e713a9ad)
 
 A screenshot of the four styles that come with tumblelog.
 
