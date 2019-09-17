@@ -9,15 +9,16 @@ import re
 import sys
 import json
 import argparse
+import commonmark
+import commonmark.node
 import urllib.parse
 from html import escape
 from operator import itemgetter
 from pathlib import Path
 from datetime import datetime
 from collections import defaultdict, deque
-from commonmark import commonmark
 
-VERSION = '1.0.8'
+VERSION = '2.0.0'
 
 RE_TITLE      = re.compile(r'(?x) \[% \s* title      \s* %\]')
 RE_YEAR_RANGE = re.compile(r'(?x) \[% \s* year-range \s* %\]')
@@ -37,7 +38,6 @@ class NoEntriesError(Exception):
 
 class NoDateSpecified(Exception):
     """Thrown in case the first blog entry has no date"""
-
 
 def join_year_week(year, week):
     return f'{year:04d}-{week:02d}'
@@ -173,10 +173,46 @@ def html_for_date(date, date_format, title, path):
         f'<a href="{uri}" title="{title_text}">{link_text}</a></time>\n'
     ])
 
+def rewrite_ast(ast):
+    """ Rewrite an image at the start of a paragraph followed by some text
+        to an image with a figcaption inside a figure element """
+    nodes_to_rewrite = []
+    for node, entering in ast.walker():
+        if node.t == 'paragraph' and not entering:
+            child = node.first_child
+            if child and child.t == 'image' and node.last_child is not child:
+                sibling = child.nxt
+                if sibling.t == 'softbreak':
+                    sibling.unlink()
+
+                figcaption = commonmark.node.Node('custom_block', None)
+                figcaption.on_enter = '<figcaption>'
+                figcaption.on_exit = '</figcaption>'
+
+                sibling = child.nxt
+                while sibling:
+                    nxt = sibling.nxt
+                    figcaption.append_child(sibling) # unlinks for us
+                    sibling = nxt
+
+                figure = commonmark.node.Node('custom_block', None)
+                figure.on_enter = '<figure>'
+                figure.on_exit = '</figure>'
+                figure.append_child(child)
+                figure.append_child(figcaption)
+
+                node.insert_before(figure)
+                node.unlink()
+
 def html_for_entry(entry):
+
+    ast = commonmark.Parser().parse(entry)
+    rewrite_ast(ast)
+    renderer = commonmark.HtmlRenderer()
+
     return ''.join([
         '<article>\n',
-        commonmark(entry),
+        renderer.render(ast),
         '</article>\n'
     ])
 
@@ -415,7 +451,6 @@ def create_argument_parser():
                         help="show version and exit", default=False)
     parser.add_argument('-q', '--quiet', action='store_true', dest='quiet',
                         help="don't show progress", default=False)
-
     return parser
 
 def get_config():

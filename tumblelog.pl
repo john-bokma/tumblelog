@@ -11,11 +11,11 @@ use warnings;
 use URI;
 use JSON::XS;
 use Path::Tiny;
-use CommonMark;
+use CommonMark qw(:opt :node :event);
 use Time::Piece;
 use Getopt::Long;
 
-my $VERSION = '1.0.8';
+my $VERSION = '2.0.0';
 
 my $RE_TITLE      = qr/\[% \s* title      \s* %\]/x;
 my $RE_YEAR_RANGE = qr/\[% \s* year-range \s* %\]/x;
@@ -302,10 +302,59 @@ sub html_for_date {
         . "</time>\n";
 }
 
+sub rewrite_ast {
+
+    # Rewrite an image at the start of a paragraph followed by some text
+    # to an image with a figcaption inside a figure element
+
+    my $ast = shift;
+
+    my @nodes;
+    my $iter = $ast->iterator;
+    while ( my ( $ev_type, $node ) = $iter->next() ) {
+        if ( $node->get_type() == NODE_PARAGRAPH && $ev_type == EVENT_EXIT ) {
+            my $child = $node->first_child();
+            next unless defined $child && $child->get_type() == NODE_IMAGE;
+            next if $node->last_child() == $child;
+
+            my $sibling = $child->next();
+            if ( $sibling->get_type() == NODE_SOFTBREAK ) {
+                # remove this sibling
+                $sibling->unlink();
+            }
+
+            my $figcaption = CommonMark->create_custom_block(
+                on_enter => '<figcaption>',
+                on_exit  => '</figcaption>',
+            );
+
+            $sibling = $child->next();
+            while ( $sibling ) {
+                my $next = $sibling->next();
+                $figcaption->append_child($sibling);
+                $sibling = $next;
+            }
+            my $figure = CommonMark->create_custom_block(
+                on_enter => '<figure>',
+                on_exit  => '</figure>',
+                children => [$child, $figcaption], # append_child unlinks for us
+            );
+
+            $node->replace( $figure );
+            push @nodes, $node;
+        }
+    }
+
+    return \@nodes;
+}
+
 sub html_for_entry {
 
+    my $ast = CommonMark->parse_document( shift );
+    my $nodes = rewrite_ast($ast);
+
     return qq(<article>\n)
-        . CommonMark->markdown_to_html( shift  )
+        . $ast->render_html( OPT_UNSAFE )  # we want (inline) HTML to work
         . "</article>\n";
 }
 

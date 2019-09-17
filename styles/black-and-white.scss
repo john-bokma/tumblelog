@@ -35,3 +35,16 @@ blockquote {
     border-radius: initial;
     border-left: solid 3px #999;
 }
+
+figure {
+    margin: 0;
+
+    img {
+        display: block;
+    }
+    figcaption {
+        color: #666;
+        padding: 2px;
+        margin-bottom: 1em;
+    }
+}

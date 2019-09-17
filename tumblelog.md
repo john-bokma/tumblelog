@@ -1,4 +1,4 @@
-2019-04-12 Congratulations!
+2019-09-17 Congratulations!
 ## Congratulations!
 If you see this post you sucessfully ran `tumblelog.pl` or `tumblelog.py`.
 
@@ -28,12 +28,12 @@ https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
 ## heading level 2
 ### heading level 3
 #### heading level 4
-##### heading level 5
-## [heading level 2 with link](http://example.com/)
-![Yellow Chrysanthemum flowers](
-http://plurrrr.com/images/yellow-chrysanthemum-flowers.jpg)
 
-Yellow Chrysanthemum flowers.
+## [heading level 2 with link](http://example.com/)
+
+![Succulents planted in a metal bowl](
+http://plurrrr.com/images/succulents.jpg)
+Succulents planted in a metal bowl.
 
 > I am Gandalf, and Gandalf means me!
 

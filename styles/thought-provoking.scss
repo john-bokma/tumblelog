@@ -73,3 +73,16 @@ blockquote {
     border-radius: $border-radius;
     border-left: solid 3px $blockquote-border-color;
 }
+
+figure {
+    margin: 0;
+
+    img {
+        display: block;
+    }
+    figcaption {
+        color: #666;
+        padding: 2px;
+        margin-bottom: 1em;
+    }
+}

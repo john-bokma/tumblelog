@@ -32,3 +32,20 @@ $border: solid 1px $border-color;
 $border-radius: 6px;
 
 @import 'tumblelog';
+
+figure {
+    margin: 0;
+
+    img {
+        display: block;
+        border-radius: $border-radius $border-radius 0 0;
+    }
+    figcaption {
+        color: $background-color;
+        background-color: $text-color;
+        padding: 2px;
+        text-align: center;
+        border-radius: 0 0 $border-radius $border-radius;
+        margin-bottom: 1em;
+    }
+}

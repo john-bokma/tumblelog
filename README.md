@@ -1,5 +1,28 @@
 # tumblelog: a static microblog generator
 
+## New in version 2.0.0
+
+Note that images with text following immediately are rendered as a
+figure with the text in a figcaption element. This means that:
+
+```
+![Alt text](cat.jpg)
+Photo of a cat.
+```
+
+is rendered as HTML as follows:
+
+```
+<figure>
+<img alt="Alt text" src="cat.jpg" />
+<figcaption>
+Photo of a cat.
+</figcaption>
+</figure>
+```
+
+This allows for styling of both the image and the caption.
+
 ## Perl version
 
 Please read my blog entry [Create a static tumblelog with Perl](http://johnbokma.com/blog/2019/03/30/tumblelog-perl.html) which has a thorough explanation on how to use this program. Additionally, read
