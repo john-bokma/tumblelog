@@ -15,7 +15,7 @@ use CommonMark qw(:opt :node :event);
 use Time::Piece;
 use Getopt::Long;
 
-my $VERSION = '2.0.0';
+my $VERSION = '2.0.1';
 
 my $RE_TITLE      = qr/\[% \s* title      \s* %\]/x;
 my $RE_YEAR_RANGE = qr/\[% \s* year-range \s* %\]/x;
@@ -29,6 +29,14 @@ my $RE_FEED_URL   = qr/\[% \s* feed-url   \s* %\]/x;
 my $RE_BODY       = qr/\[% \s* body       \s* %\] \n/x;
 my $RE_ARCHIVE    = qr/\[% \s* archive    \s* %\] \n/x;
 
+
+BEGIN {
+    # Older version of CommonMark which hasn't got this
+    # constant yet, so we can safely set it to 0
+    unless ( main->can('OPT_UNSAFE') ) {
+        eval 'sub OPT_UNSAFE { return 0 }';
+    }
+}
 
 create_blog( get_config() );
 
