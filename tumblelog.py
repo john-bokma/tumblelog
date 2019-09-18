@@ -18,7 +18,7 @@ from pathlib import Path
 from datetime import datetime
 from collections import defaultdict, deque
 
-VERSION = '2.0.0'
+VERSION = '2.0.1'
 
 RE_TITLE      = re.compile(r'(?x) \[% \s* title      \s* %\]')
 RE_YEAR_RANGE = re.compile(r'(?x) \[% \s* year-range \s* %\]')
