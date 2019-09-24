@@ -158,15 +158,13 @@ img {
     height: auto;
 }
 
-section {
+section, .tl-archive {
     margin: 10px 10px 6px 10px;
     border-top: $border;
 
-    header {
-        h2 {
-            font-size: 20px;
-            color: $heading-color;
-        }
+    h2 {
+        font-size: 20px;
+        color: $heading-color;
     }
 }
 
@@ -204,7 +202,7 @@ nav.tl-next-prev {
     }
 }
 
-dl.tl-archive {
+.tl-archive dl {
     margin: 0;
     padding: 0;
 

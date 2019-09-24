@@ -18,7 +18,7 @@ from pathlib import Path
 from datetime import datetime
 from collections import defaultdict, deque
 
-VERSION = '2.0.1'
+VERSION = '2.1.0'
 
 RE_TITLE      = re.compile(r'(?x) \[% \s* title      \s* %\]')
 RE_YEAR_RANGE = re.compile(r'(?x) \[% \s* year-range \s* %\]')
@@ -142,22 +142,22 @@ def html_for_next_prev(days, index, config):
     return html
 
 def html_for_archive(archive, current_year_week, path, label_format):
-    html = '<nav>\n  <dl class="tl-archive">\n'
+    html = '<dl>\n'
     for year in sorted(archive.keys(), reverse=True):
-        html += f'    <dt>{year}</dt>\n    <dd>\n      <ul>\n'
+        html += f'  <dt>{year}</dt>\n  <dd>\n    <ul>\n'
         for week in archive[year]:
             year_week = join_year_week(int(year), int(week))
             if current_year_week is not None and year_week == current_year_week:
-                html += f'        <li class="tl-self">{week}</li>\n'
+                html += f'      <li class="tl-self">{week}</li>\n'
             else:
                 title = escape(year_week_label(label_format, year, week))
                 uri = f'{path}/{year}/week/{week}.html'
                 html += ''.join([
-                    '        <li>',
+                    '      <li>',
                     f'<a href="{uri}" title="{title}">{week}</a></li>\n'
                 ])
-        html += '      </ul>\n    </dd>\n'
-    html += '  </dl>\n</nav>\n'
+        html += '    </ul>\n  </dd>\n'
+    html += '</dl>\n'
 
     return html
 

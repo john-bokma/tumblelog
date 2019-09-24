@@ -15,7 +15,7 @@ use CommonMark qw(:opt :node :event);
 use Time::Piece;
 use Getopt::Long;
 
-my $VERSION = '2.0.1';
+my $VERSION = '2.1.0';
 
 my $RE_TITLE      = qr/\[% \s* title      \s* %\]/x;
 my $RE_YEAR_RANGE = qr/\[% \s* year-range \s* %\]/x;
@@ -370,28 +370,28 @@ sub html_for_archive {
 
     my ( $archive, $current_year_week, $path, $label_format ) = @_;
 
-    my $html = qq(<nav>\n  <dl class="tl-archive">\n);
+    my $html = qq(<dl>\n);
     for my $year ( sort { $b <=> $a } keys %$archive ) {
-        $html .= "    <dt>$year</dt>\n    <dd>\n      <ul>\n";
+        $html .= "  <dt>$year</dt>\n  <dd>\n    <ul>\n";
         for my $week ( @{ $archive->{ $year } } ) {
             my $year_week = join_year_week( $year, $week );
             if ( defined $current_year_week
                      && $year_week eq $current_year_week ) {
-                $html .= qq(        <li class="tl-self">$week</li>\n);
+                $html .= qq(      <li class="tl-self">$week</li>\n);
             }
             else {
                 my $title = escape(
                     year_week_label( $label_format, $year, $week )
                 );
                 my $uri = "$path/$year/week/$week.html";
-                $html .= '        <li>'
+                $html .= '      <li>'
                     . qq(<a href="$uri" title="$title">)
                     . $week . "</a></li>\n";
             }
         }
-        $html .= "      </ul>\n    </dd>\n";
+        $html .= "    </ul>\n  </dd>\n";
     }
-    $html .= "  </dl>\n</nav>\n";
+    $html .= "</dl>\n";
 
     return $html;
 }
