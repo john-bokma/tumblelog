@@ -1,27 +1,8 @@
 # tumblelog: a static microblog generator
 
-## New in version 2.0.0
-
-Note that images with text following immediately are rendered as a
-figure with the text in a figcaption element. This means that:
-
-```
-![Alt text](cat.jpg)
-Photo of a cat.
-```
-
-is rendered as HTML as follows:
-
-```
-<figure>
-<img alt="Alt text" src="cat.jpg" />
-<figcaption>
-Photo of a cat.
-</figcaption>
-</figure>
-```
-
-This allows for CSS styling of both the image and the caption.
+This project is in active development. Please check the
+[CHANGELOG.md](CHANGELOG.md) for what has changed after you have done
+a `git pull`.
 
 ## Perl version
 
