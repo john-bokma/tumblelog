@@ -1,5 +1,9 @@
 # Change Log
 
+## [2.1.1] - 2019-09-26
+
+The file _tumblelog.scss has been slightly reorganised.
+
 ## [2.1.0] - 2019-09-24
 
 This update removes one "nav element with no heading" remark in the W3C
