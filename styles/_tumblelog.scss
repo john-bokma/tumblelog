@@ -161,11 +161,6 @@ img {
 section, .tl-archive {
     margin: 10px 10px 6px 10px;
     border-top: $border;
-
-    h2 {
-        font-size: 20px;
-        color: $heading-color;
-    }
 }
 
 $arrow-space: 30px;
@@ -202,24 +197,32 @@ nav.tl-next-prev {
     }
 }
 
-.tl-archive dl {
-    margin: 0;
-    padding: 0;
+.tl-archive {
 
-    dt {
-        float: left;
+    h2 {
+        font-size: 20px;
+        color: $heading-color;
     }
 
-    dd {
-        margin: 0 0 0 36px;
+    dl {
+        margin: 0;
+        padding: 0;
 
-        ul {
-            display: inline;
-            margin: 0;
-            padding: 0;
+        dt {
+            float: left;
+        }
 
-            li {
+        dd {
+            margin: 0 0 0 36px;
+
+            ul {
                 display: inline;
+                margin: 0;
+                padding: 0;
+
+                li {
+                    display: inline;
+                }
             }
         }
     }
