@@ -15,7 +15,7 @@ use CommonMark qw(:opt :node :event);
 use Time::Piece;
 use Getopt::Long;
 
-my $VERSION = '2.1.0';
+my $VERSION = '2.1.1';
 
 my $RE_TITLE      = qr/\[% \s* title      \s* %\]/x;
 my $RE_YEAR_RANGE = qr/\[% \s* year-range \s* %\]/x;
