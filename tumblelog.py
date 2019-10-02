@@ -18,19 +18,21 @@ from pathlib import Path
 from datetime import datetime
 from collections import defaultdict, deque
 
-VERSION = '2.1.1'
+VERSION = '2.5.0'
 
-RE_TITLE      = re.compile(r'(?x) \[% \s* title      \s* %\]')
-RE_YEAR_RANGE = re.compile(r'(?x) \[% \s* year-range \s* %\]')
-RE_LABEL      = re.compile(r'(?x) \[% \s* label      \s* %\]')
-RE_CSS        = re.compile(r'(?x) \[% \s* css        \s* %\]')
-RE_NAME       = re.compile(r'(?x) \[% \s* name       \s* %\]')
-RE_AUTHOR     = re.compile(r'(?x) \[% \s* author     \s* %\]')
-RE_VERSION    = re.compile(r'(?x) \[% \s* version    \s* %\]')
-RE_PAGE_URL   = re.compile(r'(?x) \[% \s* page-url   \s* %\]')
-RE_FEED_URL   = re.compile(r'(?x) \[% \s* feed-url   \s* %\]')
-RE_BODY       = re.compile(r'(?x) \[% \s* body       \s* %\] \n')
-RE_ARCHIVE    = re.compile(r'(?x) \[% \s* archive    \s* %\] \n')
+RE_TITLE           = re.compile(r'(?x) \[% \s* title         \s* %\]')
+RE_YEAR_RANGE      = re.compile(r'(?x) \[% \s* year-range    \s* %\]')
+RE_LABEL           = re.compile(r'(?x) \[% \s* label         \s* %\]')
+RE_CSS             = re.compile(r'(?x) \[% \s* css           \s* %\]')
+RE_NAME            = re.compile(r'(?x) \[% \s* name          \s* %\]')
+RE_AUTHOR          = re.compile(r'(?x) \[% \s* author        \s* %\]')
+RE_DESCRIPTION     = re.compile(r'(?x) \[% \s* description   \s* %\]')
+RE_VERSION         = re.compile(r'(?x) \[% \s* version       \s* %\]')
+RE_PAGE_URL        = re.compile(r'(?x) \[% \s* page-url      \s* %\]')
+RE_RSS_FEED_URL    = re.compile(r'(?x) \[% \s* rss-feed-url  \s* %\]')
+RE_JSON_FEED_URL   = re.compile(r'(?x) \[% \s* json-feed-url \s* %\]')
+RE_BODY            = re.compile(r'(?x) \[% \s* body          \s* %\] \n')
+RE_ARCHIVE         = re.compile(r'(?x) \[% \s* archive       \s* %\] \n')
 
 
 class NoEntriesError(Exception):
@@ -247,9 +249,11 @@ def create_page(path, title, body_html, archive_html, config,
     html = RE_CSS.sub(escape(css), html)
     html = RE_NAME.sub(escape(config['name']), html)
     html = RE_AUTHOR.sub(escape(config['author']), html)
+    html = RE_DESCRIPTION.sub(escape(config['description']), html)
     html = RE_VERSION.sub(escape(VERSION), html)
     html = RE_PAGE_URL.sub(escape(page_url), html)
-    html = RE_FEED_URL.sub(escape(config['feed-url']), html)
+    html = RE_RSS_FEED_URL.sub(escape(config['rss-feed-url']), html)
+    html = RE_JSON_FEED_URL.sub(escape(config['json-feed-url']), html)
     html = RE_BODY.sub(lambda x: body_html, html, count=1)
     html = RE_ARCHIVE.sub(archive_html, html)
 
@@ -348,28 +352,90 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
         min_year, max_year
     )
 
+def get_url_title_description(day, config):
+
+    description = ''
+    for entry in day['entries']:
+        description += html_for_entry(entry)
+
+    year, month, day_number = split_date(day['date'])
+    url = urllib.parse.urljoin(
+        config['blog-url'], f'archive/{year}/{month}/{day_number}.html')
+
+    title = day['title']
+    if not title:
+        title = parse_date(day['date']).strftime(config['date-format'])
+
+    return (url, title, description)
+
+def get_end_of_day(date):
+    return datetime.strptime(
+        f'{date} 23:59:59', '%Y-%m-%d %H:%M:%S').astimezone()
+
+def create_rss_feed(days, config):
+
+    items = []
+    todo = config['days']
+
+    for day in days:
+        (url, title, description) = get_url_title_description(day, config)
+
+        end_of_day = get_end_of_day(day['date'])
+        pub_date = end_of_day.strftime('%a, %d %b %Y %H:%M:%S %z')
+
+        items.append(
+            ''.join([
+                '<item>'
+                '<title>', escape(title), '</title>'
+                '<link>', escape(url), '</link>'
+                '<guid isPermaLink="true">', escape(url), '</guid>'
+                '<pubDate>', escape(pub_date), '</pubDate>'
+                '<description>', escape(description), '</description>'
+                '</item>'
+            ])
+        )
+        todo -= 1
+        if not todo:
+            break
+
+
+    xml = ''.join([
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">'
+        '<channel>'
+        '<title>', escape(config['name']), '</title>'
+        '<link>', escape(config['blog-url']), '</link>'
+        '<description>', escape(config['description']),'</description>'
+        '<atom:link href="', escape(config['rss-feed-url']),
+        '" rel="self" type="application/rss+xml" />',
+        *items,
+        '</channel>'
+        '</rss>'
+    ])
+    feed_path = config['rss-path']
+    p = Path(config['output-dir']).joinpath(feed_path)
+    with p.open(mode='w', encoding='utf-8') as f:
+        print(xml, file=f)
+
+    if not config['quiet']:
+        print(f"Created '{feed_path}'")
+
 def create_json_feed(days, config):
     items = []
     todo = config['days']
 
     for day in days:
-        html = ''
-        for entry in day['entries']:
-            html += html_for_entry(entry)
+        (url, title, description) = get_url_title_description(day, config)
 
-        year, month, day_number = split_date(day['date'])
-        url = urllib.parse.urljoin(
-            config['blog-url'], f'archive/{year}/{month}/{day_number}.html')
-        title = day['title']
-        if not title:
-            title = parse_date(day['date']).strftime(config['date-format'])
+        end_of_day = get_end_of_day(day['date'])
+        date_published = str(end_of_day).replace(' ', 'T')
 
         items.append({
             'id':    url,
             'url':   url,
             'title': title,
-            'content_html':   html,
-            'date_published': day['date']
+            'content_html':   description,
+            'date_published': date_published,
         })
         todo -= 1
         if not todo:
@@ -379,13 +445,14 @@ def create_json_feed(days, config):
         'version':       'https://jsonfeed.org/version/1',
         'title':         config['name'],
         'home_page_url': config['blog-url'],
-        'feed_url':      config['feed-url'],
+        'feed_url':      config['json-feed-url'],
+        'description':   config['description'],
         'author': {
             'name': config['author']
         },
         'items': items
     }
-    feed_path = config['feed-path']
+    feed_path = config['json-path']
     p = Path(config['output-dir']).joinpath(feed_path)
     with p.open(mode='w', encoding='utf-8') as f:
         json.dump(feed, f, indent=3, ensure_ascii=False, sort_keys=True,
@@ -406,13 +473,16 @@ def create_blog(config):
     create_index(days, archive, config, min_year, max_year)
     create_day_and_week_pages(days, archive, config, min_year, max_year)
 
+    create_rss_feed(days, config)
     create_json_feed(days, config)
 
 def create_argument_parser():
     usage = """
   %(prog)s --template-filename TEMPLATE --output-dir HTDOCS
-      --author AUTHOR -name BLOGNAME --blog-url URL
+      --author AUTHOR --name BLOGNAME --description DESCRIPTION
+      --blog-url URL
       [--days DAYS ] [--css URL] [--date-format DATE] [--quiet] FILE
+  %(prog)s --version
   %(prog)s --help"""
 
     parser = argparse.ArgumentParser(usage=usage)
@@ -428,6 +498,9 @@ def create_argument_parser():
     parser.add_argument('-n', '--name', dest='name',
                         help='name of the blog, required',
                         metavar='BLOGNAME', default=None)
+    parser.add_argument('--description', dest='description',
+                        help='description of the blog, required',
+                        metavar='DESCRIPTION', default=None)
     parser.add_argument('-b', '--blog-url', dest='blog-url',
                         help='URL of the blog, required',
                         metavar='URL', default=None)
@@ -470,7 +543,10 @@ def get_config():
         'author':
             'Use --author to specify an author name',
         'name':
-            'Use --name to specify a name for the blog and its feed',
+            'Use --name to specify a name for the blog and its feeds',
+        'description':
+            'Use --description to specify a description of the blog'
+            ' and its feeds',
         'blog-url':
             'Use --blog-url to specify the URL of the blog itself',
     }
@@ -487,9 +563,12 @@ def get_config():
     with open(config['template-filename'], encoding='utf-8') as f:
         config['template'] = f.read()
 
-    config['feed-path'] = 'feed.json'
-    config['feed-url'] = urllib.parse.urljoin(
-        config['blog-url'], config['feed-path'])
+    config['json-path'] = 'feed.json'
+    config['json-feed-url'] = urllib.parse.urljoin(
+        config['blog-url'], config['json-path'])
+    config['rss-path'] = 'feed.rss'
+    config['rss-feed-url'] = urllib.parse.urljoin(
+        config['blog-url'], config['rss-path'])
 
     return config
 

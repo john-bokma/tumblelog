@@ -3,11 +3,13 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="author" content="[% author %]">
     <title>[% title %]</title>
+    <meta name="author" content="[% author %]">
     <link rel="stylesheet" href="[% css %]">
+    <link rel="alternate" title="[% name %]" type="application/rss+xml"
+          href="[% rss-feed-url %]">
     <link rel="alternate" title="[% name %]" type="application/json"
-          href="[% feed-url %]">
+          href="[% json-feed-url %]">
     <meta property="og:url" content="[% page-url %]">
     <meta property="og:type" content="article">
     <meta property="og:title" content="[% title %]">
@@ -29,7 +31,8 @@
           <ul class="tl-navigation">
             <li><a href="http://example.com/">SOME SITE</a></li>
             <li><a href="/">home</a></li>
-            <li><a href="[% feed-url %]">JSON</a></li>
+            <li><a href="[% rss-feed-url %]" title="RSS feed">RSS</a></li>
+            <li><a href="[% json-feed-url %]" title="JSON feed">JSON</a></li>
           </ul>
         </nav>
       </header>

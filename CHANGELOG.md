@@ -1,5 +1,13 @@
 # Change Log
 
+## [2.5.0] - 2019-10-02
+
+Add an RSS feed
+
+ - Add description option (required)
+ - Deprecate `feed-url` template variable
+ - Add `rss-feed-url`, `json-feed-url`, and `description` template variables
+
 ## [2.1.1] - 2019-09-26
 
 The file _tumblelog.scss has been slightly reorganised.

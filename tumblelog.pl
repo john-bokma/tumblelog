@@ -15,19 +15,21 @@ use CommonMark qw(:opt :node :event);
 use Time::Piece;
 use Getopt::Long;
 
-my $VERSION = '2.1.1';
+my $VERSION = '2.5.0';
 
-my $RE_TITLE      = qr/\[% \s* title      \s* %\]/x;
-my $RE_YEAR_RANGE = qr/\[% \s* year-range \s* %\]/x;
-my $RE_LABEL      = qr/\[% \s* label      \s* %\]/x;
-my $RE_CSS        = qr/\[% \s* css        \s* %\]/x;
-my $RE_NAME       = qr/\[% \s* name       \s* %\]/x;
-my $RE_AUTHOR     = qr/\[% \s* author     \s* %\]/x;
-my $RE_VERSION    = qr/\[% \s* version    \s* %\]/x;
-my $RE_PAGE_URL   = qr/\[% \s* page-url   \s* %\]/x;
-my $RE_FEED_URL   = qr/\[% \s* feed-url   \s* %\]/x;
-my $RE_BODY       = qr/\[% \s* body       \s* %\] \n/x;
-my $RE_ARCHIVE    = qr/\[% \s* archive    \s* %\] \n/x;
+my $RE_TITLE         = qr/\[% \s* title         \s* %\]/x;
+my $RE_YEAR_RANGE    = qr/\[% \s* year-range    \s* %\]/x;
+my $RE_LABEL         = qr/\[% \s* label         \s* %\]/x;
+my $RE_CSS           = qr/\[% \s* css           \s* %\]/x;
+my $RE_NAME          = qr/\[% \s* name          \s* %\]/x;
+my $RE_AUTHOR        = qr/\[% \s* author        \s* %\]/x;
+my $RE_DESCRIPTION   = qr/\[% \s* description   \s* %\]/x;
+my $RE_VERSION       = qr/\[% \s* version       \s* %\]/x;
+my $RE_PAGE_URL      = qr/\[% \s* page-url      \s* %\]/x;
+my $RE_RSS_FEED_URL  = qr/\[% \s* rss-feed-url  \s* %\]/x;
+my $RE_JSON_FEED_URL = qr/\[% \s* json-feed-url \s* %\]/x;
+my $RE_BODY          = qr/\[% \s* body          \s* %\] \n/x;
+my $RE_ARCHIVE       = qr/\[% \s* archive       \s* %\] \n/x;
 
 
 BEGIN {
@@ -47,6 +49,7 @@ sub get_config {
         'output-dir'        => undef,
         'author'            => undef,
         'name'              => undef,
+        'description'       => undef,
         'blog-url'          => undef,
         'days'              => 14,
         'css'               => 'styles.css',
@@ -63,6 +66,7 @@ sub get_config {
         'output-dir=s',
         'author=s',
         'name=s',
+        'description=s',
         'blog-url=s',
         'days=i',
         'css=s',
@@ -91,7 +95,10 @@ sub get_config {
         'author' =>
             'Use --author to specify an author name',
         'name' =>
-            'Use --name to specify a name for the blog and its feed',
+            'Use --name to specify a name for the blog and its feeds',
+        'description' =>
+            'Use --description to specify a description of the blog'
+            .' and its feeds',
         'blog-url' =>
             'Use --blog-url to specify the URL of the blog itself',
     );
@@ -116,9 +123,13 @@ sub get_config {
     $config{ filename } = $filename;
     $config{ template } = path( $config{ 'template-filename' } )
         ->slurp_utf8();
-    $config{ 'feed-path' } = 'feed.json';
-    $config{ 'feed-url' } = URI->new_abs(
-        @config{ qw( feed-path blog-url ) }
+    $config{ 'json-path' } = 'feed.json';
+    $config{ 'json-feed-url' } = URI->new_abs(
+        @config{ qw( json-path blog-url ) }
+    )->as_string();
+    $config{ 'rss-path' } = 'feed.rss';
+    $config{ 'rss-feed-url' } = URI->new_abs(
+        @config{ qw( rss-path blog-url ) }
     )->as_string();
 
     return \%config;
@@ -141,6 +152,7 @@ sub create_blog {
         $days, $archive, $config, $min_year, $max_year
     );
 
+    create_rss_feed( $days, $config );
     create_json_feed( $days, $config );
 
     return;
@@ -275,17 +287,19 @@ sub create_page {
     my $html = $config->{ template };
 
     for ( $html ) {
-        s/ $RE_TITLE      / escape( $title ) /gxe;
-        s/ $RE_YEAR_RANGE / escape( $year_range ) /gxe;
-        s/ $RE_LABEL      / escape( $label ) /gxe;
-        s/ $RE_CSS        / escape( $css )/gxe;
-        s/ $RE_NAME       / escape( $config->{ name } ) /gxe;
-        s/ $RE_AUTHOR     / escape( $config->{ author } ) /gxe;
-        s/ $RE_VERSION    / escape( $VERSION ) /gxe;
-        s/ $RE_PAGE_URL   / escape( $page_url ) /gxe;
-        s/ $RE_FEED_URL   / escape( $config->{ 'feed-url' } ) /gxe;
-        s/ $RE_BODY       /$body_html/x;
-        s/ $RE_ARCHIVE    /$archive_html/gx;
+        s/ $RE_TITLE         / escape( $title ) /gxe;
+        s/ $RE_YEAR_RANGE    / escape( $year_range ) /gxe;
+        s/ $RE_LABEL         / escape( $label ) /gxe;
+        s/ $RE_CSS           / escape( $css )/gxe;
+        s/ $RE_NAME          / escape( $config->{ name } ) /gxe;
+        s/ $RE_AUTHOR        / escape( $config->{ author } ) /gxe;
+        s/ $RE_DESCRIPTION   / escape( $config->{ description } ) /gxe;
+        s/ $RE_VERSION       / escape( $VERSION ) /gxe;
+        s/ $RE_PAGE_URL      / escape( $page_url ) /gxe;
+        s/ $RE_RSS_FEED_URL  / escape( $config->{ 'rss-feed-url' } ) /gxe;
+        s/ $RE_JSON_FEED_URL / escape( $config->{ 'json-feed-url' } ) /gxe;
+        s/ $RE_BODY          /$body_html/x;
+        s/ $RE_ARCHIVE       /$archive_html/gx;
     }
 
     path( "$config->{ 'output-dir' }/$path" )
@@ -458,6 +472,87 @@ sub create_archive {
     return \%archive
 }
 
+sub get_url_title_description {
+
+    my ( $day, $config ) = @_;
+
+    my $description;
+    $description .= html_for_entry( $_ )
+        for @{ $day->{ entries } };
+
+    my ( $year, $month, $day_number ) = split_date( $day->{ date } );
+    my $url = URI->new_abs(
+        "archive/$year/$month/$day_number.html",
+        $config->{ 'blog-url' }
+    )->as_string();
+
+    my $title = $day->{ title };
+    if ( $title eq '' ) {
+        $title = parse_date( $day->{ date } )->strftime(
+            $config->{ 'date-format' }
+        );
+    }
+
+    return ( $url, $title, $description );
+}
+
+sub get_end_of_day {
+
+    return Time::Piece->localtime(
+        Time::Piece->strptime( shift . ' 23:59:59', '%Y-%m-%d %H:%M:%S' )
+    );
+}
+
+sub create_rss_feed {
+
+    my ( $days, $config ) = @_;
+
+    my @items;
+    my $todo = $config->{ days };
+
+    for my $day ( @$days ) {
+
+        my ( $url, $title, $description )
+            = get_url_title_description( $day, $config );
+
+        my $end_of_day = get_end_of_day( $day->{ date } );
+        my $pub_date = $end_of_day->strftime( '%a, %d %b %Y %H:%M:%S %z' );
+
+        push @items, join( '',
+            '<item>',
+            '<title>', escape( $title ), '</title>',
+            '<link>', escape( $url ), '</link>',
+            '<guid isPermaLink="true">', escape( $url ), '</guid>',
+            '<pubDate>', escape( $pub_date ), '</pubDate>',
+            '<description>', escape( $description ), '</description>',
+            '</item>'
+        );
+        --$todo or last;
+    }
+
+    my $xml = join( '',
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
+        '<channel>',
+        '<title>', escape( $config->{ name } ), '</title>',
+        '<link>', escape( $config->{ 'blog-url' } ), '</link>',
+        '<description>', escape( $config->{ description } ),'</description>',
+        '<atom:link href="', escape( $config->{ 'rss-feed-url' } ),
+        '" rel="self" type="application/rss+xml" />',
+        @items,
+        '</channel>',
+        '</rss>',
+        "\n"
+    );
+
+    my $path = $config->{ 'rss-path' };
+    path( "$config->{ 'output-dir' }/$path" )
+        ->append_utf8( { truncate => 1 }, $xml );
+    $config->{ quiet } or print "Created '$path'\n";
+
+    return;
+}
+
 sub create_json_feed {
 
     my ( $days, $config ) = @_;
@@ -466,27 +561,20 @@ sub create_json_feed {
     my $todo = $config->{ days };
 
     for my $day ( @$days ) {
-        my $html;
-        $html .= html_for_entry( $_ )
-            for @{ $day->{ entries } };
 
-        my ( $year, $month, $day_number ) = split_date( $day->{ date } );
-        my $url = URI->new_abs(
-            "archive/$year/$month/$day_number.html",
-            $config->{ 'blog-url' }
-        )->as_string();
-        my $title = $day->{ title };
-        if ( $title eq '' ) {
-            $title = parse_date( $day->{ date } )->strftime(
-                $config->{ 'date-format' }
-            );
-        }
+        my ( $url, $title, $description )
+            = get_url_title_description( $day, $config );
+
+        my $end_of_day = get_end_of_day( $day->{ date } );
+        ( my $date_published = $end_of_day->strftime( '%Y-%m-%dT%H:%M:%S%z' ) )
+            =~ s/(\d\d)$/:$1/;
+
         push @items, {
             id    => $url,
             url   => $url,
             title => $title,
-            content_html   => $html,
-            date_published => $day->{ date },
+            content_html   => $description,
+            date_published => $date_published,
         };
 
         --$todo or last;
@@ -494,15 +582,16 @@ sub create_json_feed {
 
     my $feed = {
         version       => 'https://jsonfeed.org/version/1',
-        title         => $config->{ 'name' },
+        title         => $config->{ name },
         home_page_url => $config->{ 'blog-url' },
-        feed_url      => $config->{ 'feed-url' },
+        feed_url      => $config->{ 'json-feed-url' },
+        description   => $config->{ description },
         author        => {
             name => $config->{ author },
         },
         items => \@items,
     };
-    my $path = $config->{ 'feed-path' };
+    my $path = $config->{ 'json-path' };
     my $json = JSON::XS->new->utf8->indent->space_after->canonical
         ->encode( $feed );
     path( "$config->{ 'output-dir' }/$path" )
@@ -635,14 +724,16 @@ NAME
 
 SYNOPSIS
         tumblelog.pl --template-filename TEMPLATE --output-dir HTDOCS
-            --author AUTHOR -name BLOGNAME --blog-url URL
+            --author AUTHOR --name BLOGNAME --description DESCRIPTION
+            --blog-url URL
             [--days DAYS ] [--css CSS] [--date-format FORMAT] [--quiet] FILE
         tumblelog.pl --version
         tumblelog.pl --help
 DESCRIPTION
         Processes the given FILE and creates static HTML pages using
         TEMPLATE and writes the generated files to directory HTDOCS.
-        Uses the AUTHOR, BLOGNAME, and URL to create a JSON feed.
+        Uses the AUTHOR, BLOGNAME, DESCRIPTION and URL to create a
+        JSON feed and an RSS feed.
 
         The --days argument specifies the number of days to show on the
         main page of the blog. It defaults to 14.
