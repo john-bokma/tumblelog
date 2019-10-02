@@ -125,13 +125,13 @@ def html_for_next_prev(days, index, config):
         html += ''.join([
             '  <div class="next">',
             html_link_for_day(days[index - 1], config),
-            '</div>',
+            '</div>'
             '<div class="tl-right-arrow">\u2192</div>\n'
         ])
 
     if index < length - 1:
         html += ''.join([
-            '  <div class="tl-left-arrow">\u2190</div>',
+            '  <div class="tl-left-arrow">\u2190</div>'
             '<div class="prev">',
             html_link_for_day(days[index + 1], config),
             '</div>\n'
@@ -152,10 +152,10 @@ def html_for_archive(archive, current_year_week, path, label_format):
             else:
                 title = escape(year_week_label(label_format, year, week))
                 uri = f'{path}/{year}/week/{week}.html'
-                html += ''.join([
-                    '      <li>',
+                html += (
+                    '      <li>'
                     f'<a href="{uri}" title="{title}">{week}</a></li>\n'
-                ])
+                )
         html += '    </ul>\n  </dd>\n'
     html += '</dl>\n'
 
@@ -168,10 +168,10 @@ def html_for_date(date, date_format, title, path):
     link_text = escape(parse_date(date).strftime(date_format))
     title_text = escape(title) if title else link_text
 
-    return ''.join([
-        f'<time class="tl-date" datetime="{date}">',
+    return (
+        f'<time class="tl-date" datetime="{date}">'
         f'<a href="{uri}" title="{title_text}">{link_text}</a></time>\n'
-    ])
+    )
 
 def rewrite_ast(ast):
     """ Rewrite an image at the start of a paragraph followed by some text
