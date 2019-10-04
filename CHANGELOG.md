@@ -47,3 +47,17 @@ Photo of a cat.
 ```
 
 This allows for CSS styling of both the image and the caption.
+
+## Older
+
+### Twitter Card and Facebook Sharing support
+
+New: support has been added for Twitter Card and Facebook Sharing, see
+[Adding Twitter Card and Facebook Sharing support to Tumblelog - John
+Bokma](http://johnbokma.com/blog/2019/08/11/adding-twitter-card-and-facebook-sharing-support-to-tumblelog.html)
+for more information.
+
+### SEO friendly titles
+
+New: You can now specify a title after the ISO 8601 date which is
+assigned to the `title` element of the day page, see [SEO friendly titles for tumblelog](http://johnbokma.com/blog/2019/04/12/seo-friendly-titles-for-tumblelog.html).
