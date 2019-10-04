@@ -30,18 +30,25 @@ A screenshot of the four styles that come with tumblelog.
 The `screenshots` directory has 1:1 examples of themes that come
 with `tumblelog`.
 
-## Perl version
+## Perl Version
 
 Please read my blog entry [Create a static tumblelog with Perl](http://johnbokma.com/blog/2019/03/30/tumblelog-perl.html) which has a thorough explanation on how to use this program. Additionally, read
 [a JSON feed for tumblelog](http://johnbokma.com/blog/2019/04/03/a-json-feed-for-tumblelog.html)
 for the required additional parameters for the JSON feed.
 
-## Python version
+## Python Version
 
 Please read my blog entry [Create a static tumblelog with Python](http://johnbokma.com/blog/2019/04/07/tumblelog-python.html), which
 has a thorough explanation on how to use this program.
 
-### Blogs
+## Roadmap
+
+### Later This Month
+
+ - Ability to define stand alone pages like *about*, *contact*, etc.
+ - Calendar view to make it easy to browse to a specific date.
+
+## Blogs
 
 - [Plurrrr: a tumblelog](http://plurrrr.com/) - by John Bokma
 
