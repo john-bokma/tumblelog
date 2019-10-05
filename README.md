@@ -21,9 +21,25 @@ Parameters to control the blog are given via command line
 arguments. The program creates the blog HTML5 pages and both a JSON
 and RSS feed.
 
-## Examples
+For example:
 
-![A screenshot of the four styles that come with tumblelog](https://repository-images.githubusercontent.com/178557390/b0ba5e80-d991-11e9-9022-c061e713a9ad)
+```
+perl tumblelog.pl --template-filename tumblelog.html --output-dir htdocs/ \
+     --author 'Your Name' --name 'Your Blog' --description 'Your Description' \
+     --blog-url 'http://example.com/' --css soothe.css tumblelog.md
+```
+
+If you have Python 3 installed you can run a simple webserver inside
+`htdocs` and view the generated site by entering
+http://localhost:8000/ in your browser:
+
+```
+python3 -m http.server
+```
+
+## Style Examples
+
+![A screenshot of the four styles that come with tumblelog](https://repository-images.githubusercontent.com/178557390/30c42f00-e7ae-11e9-839d-d6bd6faa6e48)
 
 A screenshot of the four styles that come with tumblelog.
 

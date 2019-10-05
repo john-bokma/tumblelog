@@ -18,7 +18,12 @@ from pathlib import Path
 from datetime import datetime
 from collections import defaultdict, deque
 
-VERSION = '2.5.0'
+VERSION = '3.0.0'
+
+RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})\s(.*?)\n(.*)', flags=re.DOTALL)
+RE_AT_PAGE_TITLE = re.compile(
+    r'@([a-z0-9_-]+)\[(.+)\]\s+(\d{4}-\d{2}-\d{2})(!?)\s(.*?)\n(.*)',
+    flags=re.DOTALL)
 
 RE_TITLE           = re.compile(r'(?x) \[% \s* title         \s* %\]')
 RE_YEAR_RANGE      = re.compile(r'(?x) \[% \s* year-range    \s* %\]')
@@ -38,8 +43,8 @@ RE_ARCHIVE         = re.compile(r'(?x) \[% \s* archive       \s* %\] \n')
 class NoEntriesError(Exception):
     """Thrown in case there are no blog entries; the file is empty"""
 
-class NoDateSpecified(Exception):
-    """Thrown in case the first blog entry has no date"""
+class BadEntry(Exception):
+    """Thrown in case the blog entry can not be handled"""
 
 def join_year_week(year, week):
     return f'{year:04d}-{week:02d}'
@@ -67,28 +72,50 @@ def read_tumblelog_entries(filename):
 
     return entries
 
-def collect_days(entries):
-    pattern = re.compile(r'(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
-    date = None
+def collect_days_and_pages(entries):
+
     days = deque()
+    pages = deque()
+    state = 'unknown'
+
     for entry in entries:
-        match = pattern.match(entry)
+        match = RE_DATE_TITLE.match(entry)
         if match:
-            date = match.group(1)
             days.append({
-                'date': date,
+                'date': match.group(1),
                 'title': match.group(2).strip(),
-                'entries': []
+                'entries': [match.group(3)]
             })
-            entry = match.group(3)
-        if date is None:
-            raise NoDateSpecified('No date specified for first tumblelog entry')
+            state = 'date-title'
+            continue
 
-        days[-1]['entries'].append(entry)
+        match = RE_AT_PAGE_TITLE.match(entry)
+        if match:
+            pages.append({
+                'name': match.group(1),
+                'label': match.group(2).strip(),
+                'date': match.group(3),
+                'show-date': match.group(4) == '!',
+                'title': match.group(5).strip(),
+                'entries': [match.group(6)]
+            })
+            state = 'at-page-title'
+            continue
 
-    days = sorted(days, key=itemgetter('date'), reverse=True)
+        if state == 'date-title':
+            days[-1]['entries'].append(entry)
+            continue
 
-    return days
+        if state == 'at-page-title':
+            pages[-1]['entries'].append(entry)
+            continue
+
+        raise BadEntry('No date or page specified for first tumblelog entry')
+
+    days  = sorted(days,  key=itemgetter('date'), reverse=True)
+    pages = sorted(pages, key=itemgetter('date'), reverse=True)
+
+    return days, pages
 
 def create_archive(days):
 
@@ -218,16 +245,6 @@ def html_for_entry(entry):
         '</article>\n'
     ])
 
-def label_and_title(day, config):
-    label = parse_date(day['date']).strftime(config['date-format'])
-    title = day['title']
-    if title:
-        title = ' - '.join([title, config['name']])
-    else:
-        title = ' - '.join([config['name'], label])
-
-    return label, title
-
 def create_page(path, title, body_html, archive_html, config,
                 label, min_year, max_year):
     if min_year == max_year:
@@ -280,7 +297,6 @@ def create_index(days, archive, config, min_year, max_year):
     archive_html = html_for_archive(
         archive, None, 'archive', config['label-format'])
 
-    Path(config['output-dir']).mkdir(parents=True, exist_ok=True)
     create_page(
         'index.html', 'home', body_html, archive_html, config,
         'home', min_year, max_year
@@ -292,8 +308,7 @@ def create_week_page(year_week, body_html, archive, config, min_year, max_year):
         archive, year_week, '../..', config['label-format'])
 
     year, week = split_year_week(year_week)
-    label = year_week_label(config['label-format'], year, week)
-    title = ' - '.join([config['name'], label])
+    title = year_week_title(config['label-format'], year, week)
 
     path = f'archive/{year}/week'
     Path(config['output-dir']).joinpath(path).mkdir(
@@ -351,6 +366,29 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
         year_week, week_body_html, archive, config,
         min_year, max_year
     )
+
+def create_pages(pages, archive, config, min_year, max_year):
+
+    archive_html = html_for_archive(
+        archive, None, 'archive', config['label-format']) if archive else ''
+
+    for page in pages:
+        date = page['date']
+        link_text = escape(parse_date(date).strftime(config['date-format']))
+        if page['show-date']:
+            body_html = (
+                f'<time class="tl-date" datetime="{date}">{link_text}</time>\n')
+        else:
+            body_html = '<div class="tl-topbar"></div>\n'
+
+        for entry in page['entries']:
+            body_html += html_for_entry(entry)
+
+        create_page(
+            f"{page['name']}.html",
+            page['title'], body_html, archive_html, config,
+            page['label'], min_year, max_year
+        )
 
 def get_url_title_description(day, config):
 
@@ -462,19 +500,37 @@ def create_json_feed(days, config):
     if not config['quiet']:
         print(f"Created '{feed_path}'")
 
-def create_blog(config):
-    days = collect_days(read_tumblelog_entries(config['filename']))
+def get_min_max_year(days, pages):
+    min_year = 10_000
+    max_year = -1
 
-    max_year = (split_date(days[0]['date']))[0]
-    min_year = (split_date(days[-1]['date']))[0]
+    if days:
+        min_year = (split_date(days[-1]['date']))[0]
+        max_year = (split_date(days[0]['date']))[0]
+
+    if pages:
+        min_year = min(min_year, (split_date(pages[-1]['date']))[0])
+        max_year = max(min_year, (split_date(pages[0]['date']))[0])
+
+    return min_year, max_year
+
+def create_blog(config):
+    days, pages = collect_days_and_pages(read_tumblelog_entries(
+        config['filename']))
+
+    min_year, max_year = get_min_max_year(days, pages)
+
+    Path(config['output-dir']).mkdir(parents=True, exist_ok=True)
 
     archive = create_archive(days)
+    if days:
+        create_index(days, archive, config, min_year, max_year)
+        create_day_and_week_pages(days, archive, config, min_year, max_year)
 
-    create_index(days, archive, config, min_year, max_year)
-    create_day_and_week_pages(days, archive, config, min_year, max_year)
+        create_rss_feed(days, config)
+        create_json_feed(days, config)
 
-    create_rss_feed(days, config)
-    create_json_feed(days, config)
+    create_pages(pages, archive, config, min_year, max_year)
 
 def create_argument_parser():
     usage = """

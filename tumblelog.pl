@@ -15,7 +15,11 @@ use CommonMark qw(:opt :node :event);
 use Time::Piece;
 use Getopt::Long;
 
-my $VERSION = '2.5.0';
+my $VERSION = '3.0.0';
+
+my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})\s(.*?)\n(.*)/s;
+my $RE_AT_PAGE_TITLE = qr/^@([a-z0-9_-]+)\[(.+)\]
+                          \s+(\d{4}-\d{2}-\d{2})(!?)\s(.*?)\n(.*)/xs;
 
 my $RE_TITLE         = qr/\[% \s* title         \s* %\]/x;
 my $RE_YEAR_RANGE    = qr/\[% \s* year-range    \s* %\]/x;
@@ -135,25 +139,53 @@ sub get_config {
     return \%config;
 }
 
+sub get_min_max_year {
+
+    my ( $days, $pages ) = @_;
+
+    my $min_year = 10_000;
+    my $max_year = -1;
+
+    if ( @$days ) {
+        $min_year = ( split_date( $days->[ -1 ]{ date } ) )[ 0 ];
+        $max_year = ( split_date( $days->[  0 ]{ date } ) )[ 0 ];
+    }
+
+    if ( @$pages ) {
+        my $year = ( split_date( $pages->[ -1 ]{ date } ) )[ 0 ];
+        $min_year = $year if $year < $min_year;
+
+        $year = ( split_date( $pages->[ 0 ]{ date } ) )[ 0 ];
+        $max_year = $year if $year > $max_year;
+    }
+    return ( $min_year, $max_year );
+}
+
 sub create_blog {
 
     my $config = shift;
 
-    my $days = collect_days( read_tumblelog_entries( $config->{ filename } ) );
-
-    my $max_year = ( split_date( $days->[  0 ]{ date } ) )[ 0 ];
-    my $min_year = ( split_date( $days->[ -1 ]{ date } ) )[ 0 ];
-
-    my $archive = create_archive( $days );
-
-    create_index( $days, $archive, $config, $min_year, $max_year );
-
-    create_day_and_week_pages(
-        $days, $archive, $config, $min_year, $max_year
+    my ( $days, $pages ) = collect_days_and_pages(
+        read_tumblelog_entries( $config->{ filename } )
     );
 
-    create_rss_feed( $days, $config );
-    create_json_feed( $days, $config );
+    my ( $min_year, $max_year ) = get_min_max_year( $days, $pages );
+
+    path( $config->{ 'output-dir' } )->mkpath();
+
+    my $archive = create_archive( $days );
+    if ( @$days ) {
+        create_index( $days, $archive, $config, $min_year, $max_year );
+
+        create_day_and_week_pages(
+            $days, $archive, $config, $min_year, $max_year
+        );
+
+        create_rss_feed( $days, $config );
+        create_json_feed( $days, $config );
+    }
+
+    create_pages( $pages, $archive, $config, $min_year, $max_year );
 
     return;
 }
@@ -181,7 +213,6 @@ sub create_index {
         $archive, undef, 'archive', $config->{ 'label-format' }
     );
 
-    path( $config->{ 'output-dir' } )->mkpath();
     create_page(
         'index.html', 'home', $body_html, $archive_html, $config,
         'home', $min_year, $max_year
@@ -244,6 +275,40 @@ sub create_day_and_week_pages {
         $year_week, $week_body_html, $archive, $config,
         $min_year, $max_year
     );
+
+    return;
+}
+
+sub create_pages {
+
+    my ( $pages, $archive, $config, $min_year, $max_year ) = @_;
+
+    my $archive_html = %$archive ? html_for_archive(
+        $archive, undef, 'archive', $config->{ 'label-format' }
+    ) : '';
+
+    for my $page ( @$pages ) {
+        my $date = $page->{ date };
+        my $link_text = escape(
+            parse_date( $date )->strftime( $config->{ 'date-format' } )
+        );
+        my $body_html;
+        if ( $page->{'show-date'} ) {
+            $body_html  = qq(<time class="tl-date" datetime="$date">)
+                . "$link_text</time>\n";
+        }
+        else {
+            $body_html = qq(<div class="tl-topbar"></div>\n);
+        }
+
+        $body_html .= html_for_entry( $_ ) for @{ $page->{ entries } };
+
+        create_page(
+            "$page->{ name }.html",
+            $page->{ title }, $body_html, $archive_html, $config,
+            $page->{ label }, $min_year, $max_year
+        );
+    }
 
     return;
 }
@@ -663,29 +728,54 @@ sub strip {
     return $str;
 }
 
-sub collect_days {
+sub collect_days_and_pages {
 
     my $entries = shift;
 
-    my $date;
     my @days;
+    my @pages;
+    my $state = 'unknown';
+ ENTRY:
     for my $entry ( @$entries ) {
-        if ( $entry =~ /^(\d{4}-\d{2}-\d{2})(.*?)\n(.*)/s ) {
-            $date = $1;
+        if ($entry =~ $RE_DATE_TITLE ) {
             push @days, {
-                date    => $date,
+                date    => $1,
                 title   => strip($2),
-                entries => [],
+                entries => [ $3 ],
             };
-            $entry = $3;
+            $state = 'date-title';
+            next ENTRY;
         }
-        defined $date or die 'No date specified for first tumblelog entry';
-        push @{ $days[ -1 ]{ entries } }, $entry;
+        if ( $entry =~ $RE_AT_PAGE_TITLE ) {
+            push @pages, {
+                name        => $1,
+                label       => strip($2),
+                date        => $3,
+                'show-date' => $4 eq '!',
+                title       => strip($5),
+                entries     => [ $6 ],
+            };
+            $state = 'at-page-title';
+            next ENTRY;
+        }
+
+        if ( $state eq 'date-title' ) {
+            push @{ $days[ -1 ]{ entries } }, $entry;
+            next ENTRY;
+        }
+
+        if ( $state eq 'at-page-title' ) {
+            push @{ $pages[ -1]{ entries } }, $entry;
+            next ENTRY;
+        };
+
+        die 'No date or page specified for first tumblelog entry';
     }
 
-    @days = sort { $b->{ date } cmp $a->{ date } } @days;
+    @days  = sort { $b->{ date } cmp $a->{ date } } @days;
+    @pages = sort { $b->{ date } cmp $a->{ date } } @pages;
 
-    return \@days;
+    return ( \@days, \@pages );
 }
 
 sub read_tumblelog_entries {

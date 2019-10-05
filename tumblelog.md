@@ -1,4 +1,4 @@
-2019-09-17 Congratulations!
+2019-10-05 Congratulations!
 ## Congratulations!
 If you see this post you sucessfully ran `tumblelog.pl` or `tumblelog.py`.
 
@@ -6,7 +6,7 @@ Unicode test: ☺ (smiley face)
 %
 ## Example tumblelog
 See [Plurrrr](http://plurrrr.com/) for an example tumblelog created
-with `tumblelog.pl`.
+with `tumblelog`.
 %
 ## Next Steps
 
@@ -16,14 +16,8 @@ with `tumblelog.pl`.
 %
 ## Help
 
-- [Create a static tumblelog with Perl](http://johnbokma.com/blog/2019/03/30/tumblelog-perl.html).
--
-  [A JSON feed for tumblelog](http://johnbokma.com/blog/2019/04/03/a-json-feed-for-tumblelog.html).
-- [Create a static tumblelog with Python](http://johnbokma.com/blog/2019/04/07/tumblelog-python.html).
-- [tumblelog at Github](https://github.com/john-bokma/tumblelog).
-- [Contact me by email](http://johnbokma.com/email.html).
-- [Markdown Cheatsheet](
-https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
+- [`tumblelog`](http://johnbokma.com/articles/tumblelog/) - Official documentation.
+- [Markdown Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
 %
 ## heading level 2
 ### heading level 3
@@ -46,4 +40,17 @@ Some example Perl code:
 
 print "Hello, world\n";
 ```
+%
+@about[about] 2019-10-05! About
+
+## About
+
+Write something about your tumblelog, yourself, etc.
+
+%
+@subscribe[subscribe] 2019-10-05 Subscribe
+## Subscribe
+
+This tumblelog has two feeds: an [RSS feed](/feed.rss) and a [JSON
+feed](/feed.json). Thank you for subscribing!
 %
