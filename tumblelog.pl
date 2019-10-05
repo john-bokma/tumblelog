@@ -181,13 +181,10 @@ sub create_index {
         $archive, undef, 'archive', $config->{ 'label-format' }
     );
 
-    my $label = 'home';
-    my $title = join ' - ', $config->{ name }, $label;
-
     path( $config->{ 'output-dir' } )->mkpath();
     create_page(
-        'index.html', $title, $body_html, $archive_html, $config,
-        $label, $min_year, $max_year
+        'index.html', 'home', $body_html, $archive_html, $config,
+        'home', $min_year, $max_year
     );
 
     return;
@@ -213,7 +210,10 @@ sub create_day_and_week_pages {
 
         $day_body_html .= html_for_entry( $_ ) for @{ $day->{ entries } };
 
-        my ( $label, $title ) = label_and_title( $day, $config );
+        my $label = parse_date( $day->{ date } )
+            ->strftime( $config->{ 'date-format' } );
+        my $title = $day->{ title } ne '' ? $day->{ title } : $label;
+
         my ( $year, $month, $day_number ) = split_date( $day->{ date } );
         my $next_prev_html = html_for_next_prev( $days, $index, $config );
 
@@ -257,14 +257,12 @@ sub create_week_page {
     );
 
     my ( $year, $week ) = split_year_week( $year_week );
-    my $label = year_week_label( $config->{ 'label-format' }, $year, $week );
-    my $title = join ' - ', $config->{ name }, $label;
-
+    my $title = year_week_title( $config->{ 'label-format' }, $year, $week );
     path( "$config->{ 'output-dir' }/archive/$year/week" )->mkpath();
     create_page(
         "archive/$year/week/$week.html",
         $title, $body_html, $archive_html, $config,
-        $label, $min_year, $max_year
+        $title, $min_year, $max_year
     );
     return;
 }
@@ -395,7 +393,7 @@ sub html_for_archive {
             }
             else {
                 my $title = escape(
-                    year_week_label( $label_format, $year, $week )
+                    year_week_title( $label_format, $year, $week )
                 );
                 my $uri = "$path/$year/week/$week.html";
                 $html .= '      <li>'
@@ -601,23 +599,7 @@ sub create_json_feed {
     return;
 }
 
-sub label_and_title {
-
-    my ( $day, $config ) = @_;
-
-    my $label = parse_date( $day->{ date } )
-        ->strftime( $config->{ 'date-format' } );
-    my $title = $day->{ title };
-    if ( $title ne '' ) {
-        $title = join ' - ', $title, $config->{ name };
-    }
-    else {
-        $title = join ' - ', $config->{ name }, $label;
-    }
-    return ( $label, $title );
-}
-
-sub year_week_label {
+sub year_week_title {
 
     my ( $format, $year, $week ) = @_;
 

@@ -53,7 +53,7 @@ def split_date(date):
 def parse_date(date):
     return datetime.strptime(date, '%Y-%m-%d')
 
-def year_week_label(fmt, year, week):
+def year_week_title(fmt, year, week):
     return fmt.replace('%Y', year).replace('%V', week)
 
 def get_year_week(date):
@@ -152,7 +152,7 @@ def html_for_archive(archive, current_year_week, path, label_format):
             if current_year_week is not None and year_week == current_year_week:
                 html += f'      <li class="tl-self">{week}</li>\n'
             else:
-                title = escape(year_week_label(label_format, year, week))
+                title = escape(year_week_title(label_format, year, week))
                 uri = f'{path}/{year}/week/{week}.html'
                 html += (
                     '      <li>'
@@ -280,13 +280,10 @@ def create_index(days, archive, config, min_year, max_year):
     archive_html = html_for_archive(
         archive, None, 'archive', config['label-format'])
 
-    label = 'home'
-    title = ' - '.join([config['name'], label])
-
     Path(config['output-dir']).mkdir(parents=True, exist_ok=True)
     create_page(
-        'index.html', title, body_html, archive_html, config,
-        label, min_year, max_year
+        'index.html', 'home', body_html, archive_html, config,
+        'home', min_year, max_year
     )
 
 def create_week_page(year_week, body_html, archive, config, min_year, max_year):
@@ -304,7 +301,7 @@ def create_week_page(year_week, body_html, archive, config, min_year, max_year):
     create_page(
         path + f'/{week}.html',
         title, body_html, archive_html, config,
-        label, min_year, max_year
+        title, min_year, max_year
     )
 
 def create_day_and_week_pages(days, archive, config, min_year, max_year):
@@ -320,9 +317,12 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
         )
         for entry in day['entries']:
             day_body_html += html_for_entry(entry)
-            label, title = label_and_title(day, config)
-            year, month, day_number = split_date(day['date'])
-            next_prev_html = html_for_next_prev(days, index, config)
+
+        label = parse_date(day['date']).strftime(config['date-format'])
+        title = day['title'] if day['title'] else label
+
+        year, month, day_number = split_date(day['date'])
+        next_prev_html = html_for_next_prev(days, index, config)
 
         path = f'archive/{year}/{month}'
         Path(config['output-dir']).joinpath(path).mkdir(
@@ -366,7 +366,7 @@ def get_url_title_description(day, config):
     if not title:
         title = parse_date(day['date']).strftime(config['date-format'])
 
-    return (url, title, description)
+    return url, title, description
 
 def get_end_of_day(date):
     return datetime.strptime(
