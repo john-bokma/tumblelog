@@ -1,0 +1,123 @@
+/* (c) John Bokma, 2019
+ *
+ * This stylesheet is free software; you can redistribute it and/or modify it
+ * under the same terms as Perl itself.
+ */
+
+$font-stack: "San Fransisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
+$code-font-stack:
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace;
+
+$background-color: white;
+$page-background-color: white;
+$text-color: #33475b;
+$heading-color: #33475b;
+$label-color: #33475b;
+$border-color: #ff7a59;
+$date-color: #33475b;
+$self-color: #828282;
+$link-color: #00a4bd;
+$pre-background-color: #eaf0f6;
+$blockquote-background-color: white;
+
+$border: solid 3px $border-color;
+$border-radius: initial;
+
+@import 'tumblelog';
+
+#tl-main-header {
+    background-color: #f5f8fa;
+    border-bottom: solid 1px #7c98b6;
+    margin-bottom: 30px;
+}
+
+.tl-title {
+    h1 {
+        font-style: initial;
+        line-height: 52px;
+        padding-top: 0;
+    }
+    span {
+        padding-top: 6px;
+    }
+}
+
+time {
+    position: relative;
+    left: -10px;
+    width: 480px;
+    padding-right: 10px;
+    @media screen and (max-width: 479px) {
+        width: 320px;
+    }
+}
+
+article h2 {
+    font-size: 20px;
+    line-height: 30px;
+    font-weight: bold;
+}
+
+article h3 {
+    font-size: 18px;
+    line-height: 27px;
+}
+
+article h4 {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.tl-archive h2 {
+    font-size: 24px;
+}
+
+figcaption {
+    padding-top: 10px;
+}
+
+section, .tl-archive {
+    margin: 0;
+    padding: 10px 10px 6px 10px;
+}
+
+figure {
+    margin: 0;
+
+    img {
+        display: block;
+        border-radius: $border-radius $border-radius 0 0;
+    }
+    figcaption {
+        color: #666;
+        padding: 2px;
+        border-radius: 0 0 $border-radius $border-radius;
+        margin-bottom: 1em;
+    }
+}
+
+blockquote {
+    padding-left: 10px;
+    border-left: solid 3px $border-color;
+}
+
+footer {
+    margin: 0;
+    padding: 10px 10px;
+    border: none;
+    color: white;
+    background-color: #33475b;
+
+    a {
+        color: #cbd6e2;
+        &:hover {
+            color: #7fd1de;
+        }
+    }
+}
