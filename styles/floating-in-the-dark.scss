@@ -2,8 +2,6 @@
  *
  * This stylesheet is free software; you can redistribute it and/or modify it
  * under the same terms as Perl itself.
- *
- * Palette taken from the Soothe Theme for Emacs by Jason Milkins.
  */
 
 $font-stack: "San Fransisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
@@ -23,10 +21,10 @@ $heading-color: #828282;
 $label-color: #880c1d;
 $border-color: #880c1d;
 $date-color: #f7cf0a;
-$self-color: #828282;                   // GRAY-2
+$self-color: #828282;
 $link-color: #f7cf0a;
-$pre-background-color: #1e252f;         // BLUE-1BG
-$blockquote-background-color: #073e46;  // TURQUOISE-2
+$pre-background-color: #1e252f;
+$blockquote-background-color: black;
 
 $border: solid 3px $border-color;
 $border-radius: initial;
@@ -48,6 +46,7 @@ body {
         font-style: initial;
         line-height: 52px;
         padding-top: 0;
+        padding-bottom: 8px;
     }
     span {
         padding-top: 6px;
@@ -134,7 +133,6 @@ figure {
 blockquote {
     padding-left: 10px;
     border-left: solid 3px #880c1d;
-    background-color: transparent;
 }
 
 nav.tl-next-prev {
