@@ -101,8 +101,9 @@ figure {
     margin: 0;
     padding: 10px;
     background-color: black;
-    border: none;
     color: #777;
+    border-top: none;
+    border-bottom: solid 1px #777;
     h2 {
         text-transform: uppercase;
         color: white;
@@ -122,8 +123,8 @@ footer {
     color: #777;
     margin: 0;
     padding: 10px;
+    border-top: none;
     background-color: black;
-    border-top: solid 1px #777;
     a {
         color: #c30;
     }
