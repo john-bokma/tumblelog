@@ -1,0 +1,130 @@
+/* (c) John Bokma, 2019
+ *
+ * This stylesheet is free software; you can redistribute it and/or modify it
+ * under the same terms as Perl itself.
+ */
+
+$font-stack: "San Fransisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
+$code-font-stack:
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace;
+
+$background-color: white;
+$page-background-color: white;
+$text-color: #0a0a0a;
+$heading-color: #c30;
+$label-color: #777;
+$border-color: #777;
+$date-color: #777;
+$self-color: #777;
+$link-color: $heading-color;
+$pre-background-color: #eee;
+$blockquote-background-color: inherit;
+
+$border: solid 1px $border-color;
+$border-radius: initial;
+
+@import 'tumblelog';
+
+#tl-main-header {
+    text-transform: uppercase;
+    background-color: black;
+    h1 {
+        text-transform: initial;
+        color: white;
+        font-style: normal;
+        font-weight: normal;
+    }
+    div {
+        color: #777;
+    }
+    .tl-navigation {
+        display: block;
+        padding-top: 10px;
+        padding-bottom: 6px;
+        background-color: black;
+        text-align: right;
+        li {
+            display: inline-block;
+            a {
+                padding: 4px 4px 8px 4px;
+                color: white;
+                &:hover {
+                    background-color: #c30;
+                }
+            }
+        }
+    }
+}
+
+time, .tl-topbar, nav.tl-next-prev {
+    position: relative;
+    left: -10px;
+    width: 480px;
+    padding-right: 10px;
+    @media screen and (max-width: 479px) {
+        width: 320px;
+    }
+}
+
+article {
+    a {
+        text-decoration: underline;
+    }
+}
+
+figure {
+    margin: 0;
+
+    img {
+        display: block;
+        box-shadow: 0 4px 8px  0 rgba(0, 0, 0, 0.2),
+                    0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    }
+    figcaption {
+        background-color: black;
+        color: white;
+        padding: 4px;
+        margin-bottom: 1em;
+        a {
+            color: #c30;
+        }
+    }
+}
+
+.tl-archive {
+    margin: 0;
+    padding: 10px;
+    background-color: black;
+    border: none;
+    color: #777;
+    h2 {
+        text-transform: uppercase;
+        color: white;
+        font-weight: normal;
+    }
+    a {
+        color: #c30;
+    }
+}
+
+blockquote {
+    padding-left: 10px;
+    border-left: solid 3px $border-color;
+}
+
+footer {
+    color: #777;
+    margin: 0;
+    padding: 10px;
+    background-color: black;
+    border-top: solid 1px #777;
+    a {
+        color: #c30;
+    }
+}
