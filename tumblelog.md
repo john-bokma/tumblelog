@@ -1,4 +1,4 @@
-2019-10-05 Congratulations!
+2019-10-06 Congratulations!
 ## Congratulations!
 If you see this post you sucessfully ran `tumblelog.pl` or `tumblelog.py`.
 
@@ -20,18 +20,32 @@ with `tumblelog`.
 - [Markdown Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
 %
 ## heading level 2
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus vel
+lobortis magna.
+
 ### heading level 3
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus vel
+lobortis magna.
+
 #### heading level 4
 
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus vel lobortis magna.
+
+%
+2019-10-05 Succulents in a metal bowl.
 ## [heading level 2 with link](http://example.com/)
 
 ![Succulents planted in a metal bowl](
 http://plurrrr.com/images/succulents.jpg)
-Succulents planted in a metal bowl.
+Succulents planted in a metal bowl. See [original here](http://plurrrr.com/archive/2019/05/18.html).
 
-> I am Gandalf, and Gandalf means me!
+> Many that live deserve death. And some that die deserve life. Can
+> you give it to them? Then do not be too eager to deal out death in
+> judgement.
 
-― J.R.R. Tolkien, The Hobbit: or There and Back Again
+― J.R.R. Tolkien, *The Fellowship of the Ring*
 
 Some example Perl code:
 
