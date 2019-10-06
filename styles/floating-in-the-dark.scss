@@ -1,0 +1,150 @@
+/* (c) John Bokma, 2019
+ *
+ * This stylesheet is free software; you can redistribute it and/or modify it
+ * under the same terms as Perl itself.
+ *
+ * Palette taken from the Soothe Theme for Emacs by Jason Milkins.
+ */
+
+$font-stack: "San Fransisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
+$code-font-stack:
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace;
+
+$background-color: initial;
+$page-background-color: initial;
+$text-color: #c6c6c6;
+$heading-color: #828282;
+$label-color: #880c1d;
+$border-color: #880c1d;
+$date-color: #f7cf0a;
+$self-color: #828282;                   // GRAY-2
+$link-color: #f7cf0a;
+$pre-background-color: #1e252f;         // BLUE-1BG
+$blockquote-background-color: #073e46;  // TURQUOISE-2
+
+$border: solid 3px $border-color;
+$border-radius: initial;
+
+@import 'tumblelog';
+
+body {
+    background-image: radial-gradient(circle, #444, #0a0a0a);
+}
+
+#tl-main-header {
+    background-color: black;
+    margin-bottom: 30px;
+}
+
+.tl-title {
+    h1 {
+        color: white;
+        font-style: initial;
+        line-height: 52px;
+        padding-top: 0;
+    }
+    span {
+        padding-top: 6px;
+    }
+}
+
+ul.tl-navigation {
+    float: right;
+    margin: 12px 0;
+}
+
+.tl-date, .tl-topbar {
+    clear: both;
+    position: relative;
+    left: -10px;
+    width: 480px;
+    padding-right: 10px;
+    @media screen and (max-width: 479px) {
+        width: 320px;
+    }
+    background-color: #880c1d;
+    border: none;
+    a {
+        color: white;
+    }
+}
+
+article, nav.tl-next-prev {
+    position: relative;
+    left: -10px;
+    background-color: black;
+    width: 480px;
+    padding: 10px;
+    margin: 20px 0;
+    @media screen and (max-width: 479px) {
+        width: 320px;
+    }
+}
+
+article h2 {
+    font-size: 20px;
+    line-height: 30px;
+    font-weight: bold;
+}
+
+article h3 {
+    font-size: 18px;
+    line-height: 27px;
+}
+
+article h4 {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.tl-archive h2 {
+    font-size: 24px;
+}
+
+section, .tl-archive {
+    margin: 0;
+    padding: 10px 10px 6px 10px;
+}
+
+.tl-archive {
+    background-color: black;
+    border: none;
+}
+
+figure {
+    margin: 0;
+
+    img {
+        display: block;
+        border-radius: $border-radius $border-radius 0 0;
+    }
+    figcaption {
+        color: #666;
+        padding: 4px;
+        margin-bottom: 1em;
+    }
+}
+
+blockquote {
+    padding-left: 10px;
+    border-left: solid 3px #880c1d;
+    background-color: transparent;
+}
+
+nav.tl-next-prev {
+    border: none;
+}
+
+footer {
+    background-color: black;
+    margin: 20px 0 0 0;
+    padding: 10px 10px;
+    border: none;
+}
+
