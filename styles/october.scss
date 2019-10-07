@@ -58,20 +58,20 @@ time, .tl-topbar, nav.tl-next-prev {
     }
 }
 
-article h2 {
-    font-size: 20px;
-    line-height: 30px;
-    font-weight: bold;
-}
-
-article h3 {
-    font-size: 18px;
-    line-height: 27px;
-}
-
-article h4 {
-    font-size: 16px;
-    line-height: 24px;
+article {
+    h2 {
+        font-size: 20px;
+        line-height: 30px;
+        font-weight: bold;
+    }
+    h3 {
+        font-size: 18px;
+        line-height: 27px;
+    }
+    h4 {
+        font-size: 16px;
+        line-height: 24px;
+    }
 }
 
 .tl-archive h2 {
