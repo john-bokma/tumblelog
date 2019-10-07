@@ -1,0 +1,130 @@
+/* (c) John Bokma, 2019
+ *
+ * This stylesheet is free software; you can redistribute it and/or modify it
+ * under the same terms as Perl itself.
+ */
+
+$font-stack: "San Fransisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
+$code-font-stack:
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace;
+
+$background-color: #575d64;
+$page-background-color: #dfe0da;
+$text-color: #10110c;
+$heading-color: #1b1c1f;
+$label-color: #373e42;
+$border-color: #6d2b3d;
+$date-color: #dfe0da;
+$self-color: $label-color;
+$link-color: $text-color;
+$pre-background-color: #eee;
+$blockquote-background-color: inherit;
+
+$border: none;
+$border-radius: initial;
+
+@import 'tumblelog';
+
+#tl-main-header {
+    background-color: $background-color;
+    h1 {
+        color: $label-color;
+        font-weight: normal;
+        text-shadow: rgba(10,10,10,0.5) 2px 2px 1px;
+    }
+    div {
+        color: #373e42;
+    }
+    .tl-navigation {
+        display: block;
+        position: relative;
+        left: -10px;
+        width: 480px;
+        padding-right: 10px;
+        @media screen and (max-width: 479px) {
+            width: 320px;
+        }
+        margin-top: 10px;
+        margin-bottom: 0;
+        background-color: $background-color;
+        text-align: right;
+        li {
+            display: inline-block;
+            a {
+                color: $date-color;
+                text-transform: lowercase;
+                font-size: 12px;
+            }
+        }
+    }
+}
+
+main {
+    position: relative;
+}
+
+time, .tl-topbar {
+    min-height: 42px;
+    border-top: solid 20px $background-color;
+    position: relative;
+    left: -10px;
+    width: 480px;
+    padding-right: 10px;
+    @media screen and (max-width: 479px) {
+        width: 320px;
+    }
+    background-color: #9f2531;
+    font-style: oblique;
+}
+
+blockquote {
+    padding-left: 10px;
+    border-left: solid 3px #9f2531;
+}
+
+article {
+    a {
+        text-decoration: underline;
+    }
+}
+
+.tl-archive {
+    border-top: solid 20px $background-color;
+    position: relative;
+    left: -10px;
+    width: 480px;
+    @media screen and (max-width: 479px) {
+        width: 320px;
+    }
+    h2 {
+        margin-top: 0;
+        padding-right: 10px;
+        color: $date-color;
+        background-color: #9f2531;
+        text-align: right;
+        font-size: 14px;
+        font-style: oblique;
+    }
+    dl {
+        padding: 10px;
+    }
+    a {
+        text-decoration: underline;
+    }
+}
+
+footer {
+    margin: 0;
+    padding: 10px;
+    border-top: none;
+    background-color: #9f2531;
+    a {
+        text-decoration: underline;
+    }
+}
