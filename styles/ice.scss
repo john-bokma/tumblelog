@@ -1,0 +1,103 @@
+/* (c) John Bokma, 2019
+ *
+ * This stylesheet is free software; you can redistribute it and/or modify it
+ * under the same terms as Perl itself.
+ */
+
+$font-stack: "San Fransisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
+$code-font-stack:
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace;
+
+$background-color: #c9dbdf;
+$page-background-color: #e0e7e7;
+$text-color: #646b76;
+$heading-color: #1b1c1f;
+$label-color: #59868f;
+$border-color: $label-color;
+$date-color: $label-color;
+$self-color: $label-color;
+$link-color: $text-color;
+$pre-background-color: #eee;
+$blockquote-background-color: inherit;
+
+$border: solid 2px $border-color;
+$border-radius: initial;
+
+@import 'tumblelog';
+
+#tl-main-header {
+    text-transform: uppercase;
+    h1 {
+        text-transform: initial;
+        font-style: normal;
+        font-weight: normal;
+    }
+    .tl-navigation {
+        display: block;
+        position: relative;
+        left: -10px;
+        width: 480px;
+        padding-right: 10px;
+        @media screen and (max-width: 479px) {
+            width: 320px;
+        }
+        margin-top: 10px;
+        margin-bottom: 20px;
+        background-color: $heading-color;
+        text-align: right;
+        li {
+            display: inline-block;
+            a {
+                color: $page-background-color;
+                font-size: 12px;
+                border-bottom: solid 1px $heading-color;
+                &:hover {
+                    border-bottom: solid 1px $page-background-color;
+                }
+            }
+        }
+    }
+}
+
+article {
+    a {
+        text-decoration: underline;
+    }
+}
+
+figure {
+    margin: 0;
+    margin: 0;
+    box-shadow: 0 4px 8px  0 rgba(0, 0, 0, 0.2),
+                0 6px 20px 0 rgba(0, 0, 0, 0.19);
+
+    img {
+        display: block;
+    }
+    figcaption {
+        background-color: $heading-color;
+        padding: 4px;
+        margin-bottom: 1em;
+    }
+}
+
+blockquote {
+    padding-left: 10px;
+    border-left: solid 3px $border-color;
+}
+
+footer {
+    margin: 0;
+    padding: 10px;
+    border-top: none;
+    background-color: $heading-color;
+    a {
+        text-decoration: underline;
+    }
+}
