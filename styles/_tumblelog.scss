@@ -83,9 +83,9 @@ main {
     clear: both;
     text-align: right;
     border-bottom: $border;
-
+    color: $date-color;
     a {
-        color: $date-color;
+        color: inherit;
     }
 }
 

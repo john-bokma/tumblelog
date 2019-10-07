@@ -20,7 +20,7 @@ $text-color: #c6c6c6;
 $heading-color: #828282;
 $label-color: #880c1d;
 $border-color: #880c1d;
-$date-color: #f7cf0a;
+$date-color: white;
 $self-color: #828282;
 $link-color: #f7cf0a;
 $pre-background-color: #1e252f;
@@ -69,9 +69,6 @@ ul.tl-navigation {
     }
     background-color: #880c1d;
     border: none;
-    a {
-        color: white;
-    }
 }
 
 article, nav.tl-next-prev {
