@@ -92,6 +92,12 @@ blockquote {
     border-left: solid 3px $border-color;
 }
 
+.tl-archive {
+    a {
+        text-decoration: underline;
+    }
+}
+
 footer {
     margin: 0;
     padding: 10px;
