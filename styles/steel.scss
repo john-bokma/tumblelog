@@ -1,0 +1,123 @@
+/* (c) John Bokma, 2019
+ *
+ * This stylesheet is free software; you can redistribute it and/or modify it
+ * under the same terms as Perl itself.
+ */
+
+$font-stack: "San Fransisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
+$code-font-stack:
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace;
+
+$background-color: #1b384a;
+$page-background-color: #102e3f;
+$text-color: #9cb1b3;
+$heading-color: #faeb91;
+$label-color: $heading-color;
+$border-color: none;
+$date-color: $label-color;
+$self-color: $text-color;
+$link-color: $text-color;
+$pre-background-color: $background-color;
+$blockquote-background-color: inherit;
+
+$border: none;
+$border-radius: none;
+
+@import 'tumblelog';
+
+#tl-main-header {
+    background-color: #0a1f2a;
+    margin-bottom: 20px;
+    .tl-title {
+        h1 {
+            font-style: italic;
+            text-transform: lowercase;
+        }
+        span {
+            font-style: italic;
+        }
+    }
+    nav {
+        text-align: right;
+        ul {
+            margin: 0;
+            display: inline-block;
+            font-size: 12px;
+            font-style: italic;
+            padding-top: 10px;
+            padding-bottom: 2px;
+            li {
+                a {
+                    color: $heading-color;
+                    &:hover {
+                        background-color: #881018;
+                    }
+                    padding: 5px 5px 5px 5px;
+                }
+            }
+        }
+    }
+}
+
+.tl-date {
+    display: inline-block;
+    float: right;
+    position: relative;
+    padding: 5px;
+    display: inline-block;
+    background-color: #881018;
+}
+
+.tl-topbar {
+    height: initial;
+}
+
+article, .tl-archive, footer {
+
+    a {
+        text-decoration: underline;
+    }
+}
+
+figure {
+    margin: 0;
+    img {
+        display: block;
+    }
+    figcaption {
+        font-size: 12px;
+        padding: 4px;
+        margin-bottom: 1em;
+    }
+}
+
+blockquote {
+    padding-left: 10px;
+    border-left: solid 2px $text-color;
+}
+
+.tl-archive {
+    margin: 0;
+    padding: 10px;
+    background-color: #881018;
+    h2 {
+        margin-top: 0;
+    }
+    color: $date-color;
+    a {
+        color: inherit;
+    }
+}
+
+footer {
+    margin: 0;
+    padding: 10px;
+    text-align: center;
+    background-color: #0a1f2a;
+}
