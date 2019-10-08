@@ -1,0 +1,116 @@
+/* (c) John Bokma, 2019
+ *
+ * This stylesheet is free software; you can redistribute it and/or modify it
+ * under the same terms as Perl itself.
+ */
+
+$font-stack: "San Fransisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
+$code-font-stack:
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace;
+
+$background-color: white;
+$page-background-color: white;
+$text-color: #333;
+$heading-color: #b9508c;
+$label-color: #c099a2;
+$border-color: #f5bc7c;
+$date-color: #33475b;
+$self-color: #828282;
+$link-color: #a1b64e;
+$pre-background-color: #eaf0f6;
+$blockquote-background-color: white;
+
+$border: solid 3px $border-color;
+$border-radius: initial;
+
+@import 'tumblelog';
+
+#tl-main-header {
+    background-color: #dfecee;
+    margin-bottom: 30px;
+}
+
+.tl-title {
+    h1 {
+        font-style: initial;
+        line-height: 52px;
+        padding-top: 0;
+    }
+    span {
+        padding-top: 6px;
+    }
+}
+
+time, .tl-topbar, nav.tl-next-prev {
+    position: relative;
+    left: -10px;
+    width: 480px;
+    padding-right: 10px;
+    @media screen and (max-width: 479px) {
+        width: 320px;
+    }
+}
+
+article {
+    h2 {
+        font-size: 20px;
+        line-height: 30px;
+        font-weight: bold;
+    }
+    h3 {
+        font-size: 18px;
+        line-height: 27px;
+    }
+    h4 {
+        font-size: 16px;
+        line-height: 24px;
+    }
+}
+
+.tl-archive h2 {
+    font-size: 24px;
+}
+
+figcaption {
+    padding-top: 10px;
+}
+
+section, .tl-archive {
+    margin: 0;
+    padding: 10px 10px 6px 10px;
+}
+
+
+figure {
+    margin: 0;
+
+    img {
+        box-shadow: 0 4px 8px  0 rgba(0, 0, 0, 0.2),
+                    0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        display: block;
+    }
+    figcaption {
+        font-size: 12px;
+        color: #666;
+        padding: 4px;
+        margin-bottom: 1em;
+    }
+}
+
+blockquote {
+    padding-left: 10px;
+    border-left: solid 3px $border-color;
+}
+
+footer {
+    margin: 0;
+    padding: 10px 10px;
+    border: none;
+    background-color: #dfecee;
+}
