@@ -1,0 +1,89 @@
+/* (c) John Bokma, 2019
+ *
+ * This stylesheet is free software; you can redistribute it and/or modify it
+ * under the same terms as Perl itself.
+ */
+
+$font-stack: "San Fransisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
+$code-font-stack:
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace;
+
+$background-color: white;
+$page-background-color: #f0f1ec;
+$text-color: #333;
+$heading-color: #1b5854;
+$label-color: $text-color;
+$border-color: none;
+$date-color: $text-color;
+$self-color: $text-color;
+$link-color: #538b95;
+$pre-background-color: #ddd;
+$blockquote-background-color: inherit;
+
+$border: none;
+$border-radius: initial;
+
+@import 'tumblelog';
+
+#tl-main-header {
+    background-color: white;
+    .tl-title {
+        position: relative;
+        h1 {
+            color: #ccc;
+            text-shadow: rgba(10, 10, 10, 0.5) 2px 2px 1px; // -1px -1px 0 #999;
+        }
+        div {
+            padding-left: 40px;
+            display: block;
+        }
+        span {
+            right: 0;
+            top: 0;
+            position: absolute;
+        }
+    }
+    nav {
+        text-transform: lowercase;
+        .tl-navigation {
+            text-align: right;
+            padding-bottom: 10px;
+        }
+    }
+}
+
+.tl-date, .tl-topbar {
+    float: right;
+}
+
+figure {
+    margin: 0;
+
+    img {
+        display: block;
+        box-shadow: 0 4px 8px  0 rgba(0, 0, 0, 0.2),
+                    0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    }
+    figcaption {
+        font-size: 12px;
+        padding: 4px;
+        margin-bottom: 1em;
+    }
+}
+
+blockquote {
+    padding-left: 10px;
+    border-left: solid 2px $text-color;
+}
+
+.tl-archive, footer {
+    margin: 0;
+    padding: 10px;
+    background-color: #d4dddc;
+}
