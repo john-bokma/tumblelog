@@ -14,8 +14,9 @@ use Path::Tiny;
 use CommonMark qw(:opt :node :event);
 use Time::Piece;
 use Getopt::Long;
+use List::Util 'min';
 
-my $VERSION = '3.0.0';
+my $VERSION = '3.0.1';
 
 my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})\s(.*?)\n(.*)/s;
 my $RE_AT_PAGE_TITLE = qr/^@([a-z0-9_-]+)\[(.+)\]
@@ -143,21 +144,15 @@ sub get_min_max_year {
 
     my ( $days, $pages ) = @_;
 
-    my $min_year = 10_000;
-    my $max_year = -1;
+    my $max_year = ( localtime() )[ 5 ] + 1900; # current year
+    my $min_year = $max_year;
 
-    if ( @$days ) {
-        $min_year = ( split_date( $days->[ -1 ]{ date } ) )[ 0 ];
-        $max_year = ( split_date( $days->[  0 ]{ date } ) )[ 0 ];
-    }
+    $min_year = min( $min_year, ( split_date( $days->[ -1 ]{ date } ) )[ 0 ] )
+        if @$days;
 
-    if ( @$pages ) {
-        my $year = ( split_date( $pages->[ -1 ]{ date } ) )[ 0 ];
-        $min_year = $year if $year < $min_year;
+    $min_year = min( $min_year, ( split_date( $pages->[ -1 ]{ date } ) )[ 0 ] )
+        if @$pages;
 
-        $year = ( split_date( $pages->[ 0 ]{ date } ) )[ 0 ];
-        $max_year = $year if $year > $max_year;
-    }
     return ( $min_year, $max_year );
 }
 

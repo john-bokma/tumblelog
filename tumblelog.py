@@ -18,7 +18,7 @@ from pathlib import Path
 from datetime import datetime
 from collections import defaultdict, deque
 
-VERSION = '3.0.0'
+VERSION = '3.0.1'
 
 RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})\s(.*?)\n(.*)', flags=re.DOTALL)
 RE_AT_PAGE_TITLE = re.compile(
@@ -501,16 +501,15 @@ def create_json_feed(days, config):
         print(f"Created '{feed_path}'")
 
 def get_min_max_year(days, pages):
-    min_year = 10_000
-    max_year = -1
+
+    max_year = datetime.now().year
+    min_year = max_year
 
     if days:
-        min_year = (split_date(days[-1]['date']))[0]
-        max_year = (split_date(days[0]['date']))[0]
+        min_year = min(min_year, (split_date(days[-1]['date']))[0])
 
     if pages:
         min_year = min(min_year, (split_date(pages[-1]['date']))[0])
-        max_year = max(min_year, (split_date(pages[0]['date']))[0])
 
     return min_year, max_year
 
