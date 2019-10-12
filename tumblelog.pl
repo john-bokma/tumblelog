@@ -16,7 +16,7 @@ use Time::Piece;
 use Getopt::Long;
 use List::Util 'min';
 
-my $VERSION = '3.0.1';
+my $VERSION = '3.0.2';
 
 my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})\s(.*?)\n(.*)/s;
 my $RE_AT_PAGE_TITLE = qr/^@([a-z0-9_-]+)\[(.+)\]
@@ -60,6 +60,7 @@ sub get_config {
         'css'               => 'styles.css',
         'date-format'       => '%d %b %Y',
         'label-format'      => 'week %V, %Y',
+        'min-year'          => undef,
         'quiet'             => undef,
         'version'           => undef,
         'help'              => undef,
@@ -77,6 +78,7 @@ sub get_config {
         'css=s',
         'date-format=s',
         'label-format=s',
+        'min-year=i',
         'quiet',
         'version',
         'help',
@@ -147,11 +149,6 @@ sub get_min_max_year {
     my $max_year = ( localtime() )[ 5 ] + 1900; # current year
     my $min_year = $max_year;
 
-    $min_year = min( $min_year, ( split_date( $days->[ -1 ]{ date } ) )[ 0 ] )
-        if @$days;
-
-    $min_year = min( $min_year, ( split_date( $pages->[ -1 ]{ date } ) )[ 0 ] )
-        if @$pages;
 
     return ( $min_year, $max_year );
 }
@@ -164,7 +161,21 @@ sub create_blog {
         read_tumblelog_entries( $config->{ filename } )
     );
 
-    my ( $min_year, $max_year ) = get_min_max_year( $days, $pages );
+    my $max_year = ( localtime() )[ 5 ] + 1900; # current year
+    my $min_year;
+    if ( defined $config->{ 'min-year' } ) {
+        $min_year = $config->{ 'min-year' };
+    }
+    else {
+        $min_year = $max_year;
+        $min_year = min(
+            $min_year, ( split_date( $days->[ -1 ]{ date } ) )[ 0 ]
+        ) if @$days;
+
+        $min_year = min(
+            $min_year, ( split_date( $pages->[ -1 ]{ date } ) )[ 0 ]
+        ) if @$pages;
+    }
 
     path( $config->{ 'output-dir' } )->mkpath();
 
@@ -793,7 +804,8 @@ SYNOPSIS
         tumblelog.pl --template-filename TEMPLATE --output-dir HTDOCS
             --author AUTHOR --name BLOGNAME --description DESCRIPTION
             --blog-url URL
-            [--days DAYS ] [--css CSS] [--date-format FORMAT] [--quiet] FILE
+            [--days DAYS ] [--css CSS] [--date-format FORMAT] [--min-year YEAR]
+            [--quiet] FILE
         tumblelog.pl --version
         tumblelog.pl --help
 DESCRIPTION
@@ -813,6 +825,9 @@ DESCRIPTION
 
         The --label-format argument specifies the format to use for the
         ISO 8601 week label. It defaults to 'week %V, %Y'
+
+        The --min-year argument specificies the minimum year to use for the
+        copyright message.
 
         The --quiet option prevents the program from printing information
         regarding the progress.

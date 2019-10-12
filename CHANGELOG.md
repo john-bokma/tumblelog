@@ -1,5 +1,10 @@
 # Change Log
 
+## [3.0.2] - 2019-10-12
+
+Provides the argument `--min-year` to specify the minimum year to be
+used in the copyright notice.
+
 ## [3.0.1] - 2019-10-11
 
 Calculates the maximum year for copyright from the current local time.

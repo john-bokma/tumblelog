@@ -18,7 +18,7 @@ from pathlib import Path
 from datetime import datetime
 from collections import defaultdict, deque
 
-VERSION = '3.0.1'
+VERSION = '3.0.2'
 
 RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})\s(.*?)\n(.*)', flags=re.DOTALL)
 RE_AT_PAGE_TITLE = re.compile(
@@ -176,7 +176,7 @@ def html_for_archive(archive, current_year_week, path, label_format):
         html += f'  <dt>{year}</dt>\n  <dd>\n    <ul>\n'
         for week in archive[year]:
             year_week = join_year_week(int(year), int(week))
-            if current_year_week is not None and year_week == current_year_week:
+            if year_week == current_year_week:
                 html += f'      <li class="tl-self">{week}</li>\n'
             else:
                 title = escape(year_week_title(label_format, year, week))
@@ -500,24 +500,19 @@ def create_json_feed(days, config):
     if not config['quiet']:
         print(f"Created '{feed_path}'")
 
-def get_min_max_year(days, pages):
-
-    max_year = str(datetime.now().year)
-    min_year = max_year
-
-    if days:
-        min_year = min(min_year, (split_date(days[-1]['date']))[0])
-
-    if pages:
-        min_year = min(min_year, (split_date(pages[-1]['date']))[0])
-
-    return min_year, max_year
-
 def create_blog(config):
     days, pages = collect_days_and_pages(read_tumblelog_entries(
         config['filename']))
 
-    min_year, max_year = get_min_max_year(days, pages)
+    max_year = str(datetime.now().year)
+    if config['min-year'] is not None:
+        min_year = config['min-year']
+    else:
+        min_year = max_year
+        if days:
+            min_year = min(min_year, (split_date(days[-1]['date']))[0])
+        if pages:
+            min_year = min(min_year, (split_date(pages[-1]['date']))[0])
 
     Path(config['output-dir']).mkdir(parents=True, exist_ok=True)
 
@@ -536,7 +531,8 @@ def create_argument_parser():
   %(prog)s --template-filename TEMPLATE --output-dir HTDOCS
       --author AUTHOR --name BLOGNAME --description DESCRIPTION
       --blog-url URL
-      [--days DAYS ] [--css URL] [--date-format DATE] [--quiet] FILE
+      [--days DAYS ] [--css URL] [--date-format DATE] [--min-year YEAR]
+      [--quiet] FILE
   %(prog)s --version
   %(prog)s --help"""
 
@@ -575,10 +571,13 @@ def create_argument_parser():
                         help='how to format the label;'
                         "default '%(default)s'",
                         metavar='FORMAT', default='week %V, %Y')
-    parser.add_argument('-v', '--version', action='store_true', dest='version',
-                        help="show version and exit", default=False)
+    parser.add_argument('--min-year', dest='min-year',
+                        help='minimum year for copyright notice',
+                        metavar='YEAR', default=None)
     parser.add_argument('-q', '--quiet', action='store_true', dest='quiet',
                         help="don't show progress", default=False)
+    parser.add_argument('-v', '--version', action='store_true', dest='version',
+                        help="show version and exit", default=False)
     return parser
 
 def get_config():
