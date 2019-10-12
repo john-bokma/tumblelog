@@ -502,7 +502,7 @@ def create_json_feed(days, config):
 
 def get_min_max_year(days, pages):
 
-    max_year = datetime.now().year
+    max_year = str(datetime.now().year)
     min_year = max_year
 
     if days:
