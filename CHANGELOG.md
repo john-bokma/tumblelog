@@ -1,5 +1,9 @@
 # Change Log
 
+## [3.0.1] - 2019-10-11
+
+Calculates the maximum year for copyright from the current local time.
+
 ## [3.0.0] - 2019-10-05
 
 This version adds the ability to create non-blog pages, for example an *about* page, and a *subscription page*. It should even be possible to create a micro site this way, without a blog. The syntax for the non-blog page marker is as follows:
