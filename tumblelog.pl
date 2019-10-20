@@ -16,7 +16,7 @@ use Time::Piece;
 use Getopt::Long;
 use List::Util 'min';
 
-my $VERSION = '3.0.2';
+my $VERSION = '3.0.3';
 
 my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})\s(.*?)\n(.*)/s;
 my $RE_AT_PAGE_TITLE = qr/^@([a-z0-9_-]+)\[(.+)\]
