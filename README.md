@@ -37,6 +37,16 @@ http://localhost:8000/ in your browser:
 python3 -m http.server
 ```
 
+## Documentation
+
+- Installation of the Perl version: to be written, for now see: [Create a static tumblelog with Perl](http://johnbokma.com/blog/2019/03/30/tumblelog-perl.html)
+
+- [Installation of the Python version](http://johnbokma.com/articles/tumblelog/installation-of-the-python-version-of-tumblelog.html)
+- [Testing tumblelog](http://johnbokma.com/articles/tumblelog/testing-tumblelog.html)
+- [Getting started](http://johnbokma.com/articles/tumblelog/getting-started-with-tumblelog.html)
+- [Using a Makefile](http://johnbokma.com/articles/tumblelog/using-a-makefile.html)
+- [Keeping your tumblelog under version control](http://johnbokma.com/articles/tumblelog/keeping-your-blog-under-version-control-with-git.html)
+
 ## Style Examples
 
 ![A screenshot of the four styles that come with tumblelog](https://repository-images.githubusercontent.com/178557390/30c42f00-e7ae-11e9-839d-d6bd6faa6e48)
@@ -46,20 +56,7 @@ A screenshot of four of the seven styles that come with `tumblelog`.
 The `screenshots` directory has 1:1 examples of themes that come
 with `tumblelog`.
 
-## Perl Version
-
-Please read my blog entry [Create a static tumblelog with Perl](http://johnbokma.com/blog/2019/03/30/tumblelog-perl.html) which has a thorough explanation on how to use this program. Additionally, read
-[a JSON feed for tumblelog](http://johnbokma.com/blog/2019/04/03/a-json-feed-for-tumblelog.html)
-for the required additional parameters for the JSON feed.
-
-## Python Version
-
-Please read my blog entry [Create a static tumblelog with Python](http://johnbokma.com/blog/2019/04/07/tumblelog-python.html), which
-has a thorough explanation on how to use this program.
-
 ## Roadmap
-
-### Later This Month
 
  - Calendar view to make it easy to browse to a specific date.
 
