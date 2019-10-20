@@ -18,7 +18,7 @@ from pathlib import Path
 from datetime import datetime
 from collections import defaultdict, deque
 
-VERSION = '3.0.2'
+VERSION = '3.0.3'
 
 RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})\s(.*?)\n(.*)', flags=re.DOTALL)
 RE_AT_PAGE_TITLE = re.compile(
@@ -248,7 +248,7 @@ def html_for_entry(entry):
 def create_page(path, title, body_html, archive_html, config,
                 label, min_year, max_year):
     if min_year == max_year:
-        year_range = min_year
+        year_range = str(min_year)
     else:
         year_range = f'{min_year}\u2013{max_year}'
 
@@ -504,15 +504,15 @@ def create_blog(config):
     days, pages = collect_days_and_pages(read_tumblelog_entries(
         config['filename']))
 
-    max_year = str(datetime.now().year)
+    max_year = datetime.now().year
     if config['min-year'] is not None:
         min_year = config['min-year']
     else:
         min_year = max_year
         if days:
-            min_year = min(min_year, (split_date(days[-1]['date']))[0])
+            min_year = min(min_year, int((split_date(days[-1]['date']))[0]))
         if pages:
-            min_year = min(min_year, (split_date(pages[-1]['date']))[0])
+            min_year = min(min_year, int((split_date(pages[-1]['date']))[0]))
 
     Path(config['output-dir']).mkdir(parents=True, exist_ok=True)
 
@@ -573,7 +573,7 @@ def create_argument_parser():
                         metavar='FORMAT', default='week %V, %Y')
     parser.add_argument('--min-year', dest='min-year',
                         help='minimum year for copyright notice',
-                        metavar='YEAR', default=None)
+                        metavar='YEAR', type=int, default=None)
     parser.add_argument('-q', '--quiet', action='store_true', dest='quiet',
                         help="don't show progress", default=False)
     parser.add_argument('-v', '--version', action='store_true', dest='version',
