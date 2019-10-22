@@ -18,9 +18,9 @@ use List::Util 'min';
 
 my $VERSION = '3.0.3';
 
-my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})\s(.*?)\n(.*)/s;
+my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})(.*?)\n(.*)/s;
 my $RE_AT_PAGE_TITLE = qr/^@([a-z0-9_-]+)\[(.+)\]
-                          \s+(\d{4}-\d{2}-\d{2})(!?)\s(.*?)\n(.*)/xs;
+                          \s+(\d{4}-\d{2}-\d{2})(!?)(.*?)\n(.*)/xs;
 
 my $RE_TITLE         = qr/\[% \s* title         \s* %\]/x;
 my $RE_YEAR_RANGE    = qr/\[% \s* year-range    \s* %\]/x;
@@ -238,7 +238,6 @@ sub create_day_and_week_pages {
 
         my $label = parse_date( $day->{ date } )
             ->strftime( $config->{ 'date-format' } );
-        my $title = $day->{ title } ne '' ? $day->{ title } : $label;
 
         my ( $year, $month, $day_number ) = split_date( $day->{ date } );
         my $next_prev_html = html_for_next_prev( $days, $index, $config );
@@ -246,7 +245,8 @@ sub create_day_and_week_pages {
         path( "$config->{ 'output-dir' }/archive/$year/$month")->mkpath();
         create_page(
             "archive/$year/$month/$day_number.html",
-            $title, $day_body_html . $next_prev_html, $day_archive_html,
+            $day->{ title }, $day_body_html . $next_prev_html,
+            $day_archive_html,
             $config,
             $label, $min_year, $max_year
         );
@@ -375,7 +375,7 @@ sub html_for_date {
     my $uri = "$path/$year/$month/$day.html";
 
     my $link_text = escape( parse_date( $date )->strftime( $date_format ) );
-    my $title_text = $title ne '' ? escape( $title ) : $link_text;
+    my $title_text = escape( $title );
 
     return qq(<time class="tl-date" datetime="$date">)
         . qq(<a href="$uri" title="$title_text">$link_text</a>)
@@ -476,7 +476,6 @@ sub html_link_for_day {
     my $label = escape(
         parse_date( $day->{ date } )->strftime( $config->{ 'date-format' } )
     );
-    $title = $label if $title eq '';
 
     my ( $year, $month, $day_number ) = split_date( $day->{ date } );
     my $uri = "../../$year/$month/$day_number.html";
@@ -544,14 +543,7 @@ sub get_url_title_description {
         $config->{ 'blog-url' }
     )->as_string();
 
-    my $title = $day->{ title };
-    if ( $title eq '' ) {
-        $title = parse_date( $day->{ date } )->strftime(
-            $config->{ 'date-format' }
-        );
-    }
-
-    return ( $url, $title, $description );
+    return ( $url, $day->{ title }, $description );
 }
 
 sub get_end_of_day {
@@ -733,21 +725,25 @@ sub collect_days_and_pages {
  ENTRY:
     for my $entry ( @$entries ) {
         if ($entry =~ $RE_DATE_TITLE ) {
+            my $title = strip( $2 );
+            $title ne '' or die "A day must have a title ($1)\n";
             push @days, {
                 date    => $1,
-                title   => strip($2),
+                title   => $title,
                 entries => [ $3 ],
             };
             $state = 'date-title';
             next ENTRY;
         }
         if ( $entry =~ $RE_AT_PAGE_TITLE ) {
+            my $title = strip( $5 );
+            $title ne '' or die "A page must have a title (\@$1)\n";
             push @pages, {
                 name        => $1,
                 label       => strip($2),
                 date        => $3,
                 'show-date' => $4 eq '!',
-                title       => strip($5),
+                title       => $title,
                 entries     => [ $6 ],
             };
             $state = 'at-page-title';
