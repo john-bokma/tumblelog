@@ -142,17 +142,6 @@ sub get_config {
     return \%config;
 }
 
-sub get_min_max_year {
-
-    my ( $days, $pages ) = @_;
-
-    my $max_year = ( localtime() )[ 5 ] + 1900; # current year
-    my $min_year = $max_year;
-
-
-    return ( $min_year, $max_year );
-}
-
 sub create_blog {
 
     my $config = shift;
