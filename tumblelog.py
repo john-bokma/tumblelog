@@ -20,9 +20,9 @@ from collections import defaultdict, deque
 
 VERSION = '3.0.3'
 
-RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})\s(.*?)\n(.*)', flags=re.DOTALL)
+RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
 RE_AT_PAGE_TITLE = re.compile(
-    r'@([a-z0-9_-]+)\[(.+)\]\s+(\d{4}-\d{2}-\d{2})(!?)\s(.*?)\n(.*)',
+    r'@([a-z0-9_-]+)\[(.+)\]\s+(\d{4}-\d{2}-\d{2})(!?)(.*?)\n(.*)',
     flags=re.DOTALL)
 
 RE_TITLE           = re.compile(r'(?x) \[% \s* title         \s* %\]')
@@ -81,9 +81,12 @@ def collect_days_and_pages(entries):
     for entry in entries:
         match = RE_DATE_TITLE.match(entry)
         if match:
+            title = match.group(2).strip()
+            if not title:
+                raise BadEntry(f'A day must have a title ({match.group(1)})')
             days.append({
                 'date': match.group(1),
-                'title': match.group(2).strip(),
+                'title': title,
                 'entries': [match.group(3)]
             })
             state = 'date-title'
@@ -91,12 +94,15 @@ def collect_days_and_pages(entries):
 
         match = RE_AT_PAGE_TITLE.match(entry)
         if match:
+            title = match.group(5).strip()
+            if not title:
+                raise BadEntry(f'A page must have a title (@{match.group(1)})')
             pages.append({
                 'name': match.group(1),
                 'label': match.group(2).strip(),
                 'date': match.group(3),
                 'show-date': match.group(4) == '!',
-                'title': match.group(5).strip(),
+                'title': title,
                 'entries': [match.group(6)]
             })
             state = 'at-page-title'
@@ -134,8 +140,6 @@ def html_link_for_day(day, config):
 
     title = escape(day['title'])
     label = escape(parse_date(day['date']).strftime(config['date-format']))
-    if not title:
-        title = label
 
     year, month, day_number = split_date(day['date'])
     uri = f'../../{year}/{month}/{day_number}.html'
@@ -195,7 +199,7 @@ def html_for_date(date, date_format, title, path):
     uri = f'{path}/{year}/{month}/{day}.html'
 
     link_text = escape(parse_date(date).strftime(date_format))
-    title_text = escape(title) if title else link_text
+    title_text = escape(title)
 
     return (
         f'<time class="tl-date" datetime="{date}">'
@@ -334,7 +338,6 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
             day_body_html += html_for_entry(entry)
 
         label = parse_date(day['date']).strftime(config['date-format'])
-        title = day['title'] if day['title'] else label
 
         year, month, day_number = split_date(day['date'])
         next_prev_html = html_for_next_prev(days, index, config)
@@ -344,7 +347,7 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
             parents=True, exist_ok=True)
         create_page(
             path + f'/{day_number}.html',
-            title, day_body_html + next_prev_html, day_archive_html,
+            day['title'], day_body_html + next_prev_html, day_archive_html,
             config,
             label, min_year, max_year
         )
@@ -399,12 +402,8 @@ def get_url_title_description(day, config):
     year, month, day_number = split_date(day['date'])
     url = urllib.parse.urljoin(
         config['blog-url'], f'archive/{year}/{month}/{day_number}.html')
-
-    title = day['title']
-    if not title:
-        title = parse_date(day['date']).strftime(config['date-format'])
-
-    return url, title, description
+    
+    return url, day['title'], description
 
 def get_end_of_day(date):
     return datetime.strptime(
