@@ -258,10 +258,8 @@ def create_page(path, title, body_html, archive_html, config,
 
     slashes = path.count('/')
     css = ''.join(['../' * slashes, config['css']])
-    page_url = urllib.parse.urljoin(
-        config['blog-url'],
-        '/' if path == 'index.html' else path
-    )
+    uri_path = re.sub(r'\bindex\.html$', '', path)
+    page_url = urllib.parse.urljoin(config['blog-url'], uri_path)
 
     html = config['template']
     html = RE_TITLE.sub(escape(title), html)

@@ -342,10 +342,8 @@ sub create_page {
 
     my $slashes = $path =~ tr{/}{};
     my $css = join( '', '../' x $slashes, $config->{ css } );
-    my $page_url = URI->new_abs(
-        $path eq 'index.html' ? '/' : $path,
-        $config->{ 'blog-url' }
-    );
+    ( my $uri_path = $path ) =~ s/\bindex\.html$//;
+    my $page_url = URI->new_abs( $uri_path, $config->{ 'blog-url' } );
 
     my $html = $config->{ template };
 
