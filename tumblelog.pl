@@ -15,6 +15,7 @@ use CommonMark qw(:opt :node :event);
 use Time::Piece;
 use Getopt::Long;
 use List::Util 'min';
+use Encode 'decode';
 
 my $VERSION = '3.0.3';
 
@@ -238,8 +239,8 @@ sub create_day_and_week_pages {
 
         $day_body_html .= html_for_entry( $_ ) for @{ $day->{ entries } };
 
-        my $label = parse_date( $day->{ date } )
-            ->strftime( $config->{ 'date-format' } );
+        my $label = decode_utf8( parse_date( $day->{ date } )
+            ->strftime( $config->{ 'date-format' } ) );
 
         my ( $year, $month, $day_number ) = split_date( $day->{ date } );
         my $next_prev_html = html_for_next_prev( $days, $index, $config );
@@ -287,7 +288,9 @@ sub create_pages {
     for my $page ( @$pages ) {
         my $date = $page->{ date };
         my $link_text = escape(
-            parse_date( $date )->strftime( $config->{ 'date-format' } )
+            decode_utf8(
+                parse_date( $date )->strftime( $config->{ 'date-format' } )
+            )
         );
         my $body_html;
         if ( $page->{'show-date'} ) {
@@ -376,7 +379,11 @@ sub html_for_date {
     my ( $year, $month, $day ) = split_date( $date );
     my $uri = "$path/$year/$month/$day.html";
 
-    my $link_text = escape( parse_date( $date )->strftime( $date_format ) );
+    my $link_text = escape(
+        decode_utf8(
+            parse_date( $date )->strftime( $date_format )
+        )
+    );
     my $title_text = escape( $title );
 
     return qq(<time class="tl-date" datetime="$date">)
@@ -476,7 +483,9 @@ sub html_link_for_day {
 
     my $title = escape( $day->{ title } );
     my $label = escape(
-        parse_date( $day->{ date } )->strftime( $config->{ 'date-format' } )
+        decode_utf8(
+            parse_date( $day->{ date } )->strftime( $config->{ 'date-format' } )
+        )
     );
 
     my ( $year, $month, $day_number ) = split_date( $day->{ date } );
@@ -697,6 +706,12 @@ sub split_date {
 sub parse_date {
 
     return Time::Piece->strptime( shift, '%Y-%m-%d' );
+}
+
+sub decode_utf8 {
+    # UTF8 encoding for the Time::Piece strptime method, see bug #97539
+    # https://rt.cpan.org/Public/Bug/Display.html?id=97539
+    return decode( 'UTF-8', shift, Encode::FB_CROAK )
 }
 
 sub escape {
