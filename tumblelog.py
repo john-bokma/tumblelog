@@ -418,8 +418,10 @@ def create_rss_feed(days, config):
         (url, title, description) = get_url_title_description(day, config)
 
         end_of_day = get_end_of_day(day['date'])
-        pub_date = end_of_day.strftime('%a, %d %b %Y %H:%M:%S %z')
-
+        # RFC #822 in USA locale
+        ctime = end_of_day.ctime()
+        pub_date = (f'{ctime[0:3]}, {end_of_day.day:02d} {ctime[4:7]}'
+                        + end_of_day.strftime(' %Y %H:%M:%S %z'))
         items.append(
             ''.join([
                 '<item>'

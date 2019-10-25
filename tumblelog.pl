@@ -36,6 +36,8 @@ my $RE_JSON_FEED_URL = qr/\[% \s* json-feed-url \s* %\]/x;
 my $RE_BODY          = qr/\[% \s* body          \s* %\] \n/x;
 my $RE_ARCHIVE       = qr/\[% \s* archive       \s* %\] \n/x;
 
+my @MON_LIST = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
+my @DAY_LIST = qw( Sun Mon Tue Wed Thu Fri Sat );
 
 BEGIN {
     # Older version of CommonMark which hasn't got this
@@ -566,7 +568,11 @@ sub create_rss_feed {
             = get_url_title_description( $day, $config );
 
         my $end_of_day = get_end_of_day( $day->{ date } );
-        my $pub_date = $end_of_day->strftime( '%a, %d %b %Y %H:%M:%S %z' );
+        # RFC #822 in USA locale
+        my $pub_date = $DAY_LIST[ $end_of_day->_wday() ]
+            . sprintf( ', %02d ', $end_of_day->mday() )
+            . $MON_LIST[ $end_of_day->_mon ]
+            . $end_of_day->strftime( ' %Y %H:%M:%S %z' );
 
         push @items, join( '',
             '<item>',
