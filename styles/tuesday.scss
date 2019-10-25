@@ -47,7 +47,7 @@ $border-radius: initial;
     }
 }
 
-time, .tl-topbar, nav.tl-next-prev {
+time, .tl-topbar, nav.tl-next-prev, .tl-month-navigation {
     position: relative;
     left: -10px;
     width: 480px;
@@ -106,6 +106,10 @@ figure {
 blockquote {
     padding-left: 10px;
     border-left: solid 3px $border-color;
+}
+
+.tl-month-navigation {
+    padding: 10px 10px 0 10px;
 }
 
 footer {

@@ -202,6 +202,68 @@ nav.tl-next-prev {
     }
 }
 
+.tl-month-navigation {
+    margin: 10px 0;
+    padding: 10px 0 0 0;
+    border-top: $border;
+    list-style: none;
+    display: grid;
+    grid-template-areas: ". . ." ". . ." ". . ." ". . .";
+}
+
+.tl-month-year {
+    a {
+        float: right;
+    }
+}
+
+.tl-days {
+    margin: 0;
+    padding: 0;
+
+    dt {
+        float: left;
+        padding-top: 7px;
+    }
+    dd {
+        padding-top: 7px;
+        margin: 0 0 0 36px;
+    }
+}
+
+.tl-month {
+    width: 274px;
+    margin: 0 auto;
+    margin-bottom: 20px;
+    border:none;
+    border-collapse: collapse;
+
+    caption {
+        padding: 10px 0;
+        text-align: right;
+        font-size: 16px;
+        color: $heading-color;
+    }
+
+    tbody {
+        th {
+            border-right: $border;
+        }
+        th, td {
+            padding: 10px;
+            text-align: right;
+        }
+    }
+}
+
+.tl-year {
+    display: flex;
+    justify-content: space-between;
+    h2 {
+        margin-bottom: 0;
+    }
+}
+
 .tl-archive {
 
     h2 {

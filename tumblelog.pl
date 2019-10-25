@@ -13,11 +13,12 @@ use JSON::XS;
 use Path::Tiny;
 use CommonMark qw(:opt :node :event);
 use Time::Piece;
+use Time::Seconds;
 use Getopt::Long;
 use List::Util 'min';
 use Encode 'decode';
 
-my $VERSION = '3.0.3';
+my $VERSION = '4.0.0';
 
 my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})(.*?)\n(.*)/s;
 my $RE_AT_PAGE_TITLE = qr/^@([a-z0-9_-]+)\[(.+)\]
@@ -179,6 +180,14 @@ sub create_blog {
             $days, $archive, $config, $min_year, $max_year
         );
 
+        create_month_pages(
+            $days, $archive, $config, $min_year, $max_year
+        );
+
+        create_year_pages(
+            $days, $archive, $config, $min_year, $max_year
+        );
+
         create_rss_feed( $days, $config );
         create_json_feed( $days, $config );
     }
@@ -332,6 +341,143 @@ sub create_week_page {
     return;
 }
 
+sub create_month_pages {
+
+    my ( $days, $archive, $config, $min_year, $max_year ) = @_;
+
+    my %years;
+    for my $day ( @$days ) {
+        my ( $year, $month, $day_number ) = split_date( $day->{ date } );
+        unshift @{ $years{ $year }{ $month } }, $day;
+    }
+
+    my @month_names = get_month_names();
+    my $archive_html = html_for_archive(
+        $archive, undef, '../..', $config->{ 'label-format' }
+    );
+
+    for my $year ( sort keys %years ) {
+
+        for my $month ( sort keys %{ $years{ $year } } ) {
+
+            my $days_for_month = $years{ $year }{ $month };
+            my $first_tp = parse_date( $days_for_month->[ 0 ]{ date } );
+            my $month_name = decode_utf8( $first_tp->strftime('%B') );
+            my $nav_bar = html_for_month_nav_bar(
+                $years{ $year }, $month, \@month_names
+            );
+            my $body_html = qq(<div class="tl-topbar"></div>\n)
+                . "<article>\n"
+                . qq(  <h2 class="tl-month-year">$month_name )
+                . qq(<a href="../../$year/">$year</a></h2>)
+                . qq(  <dl class="tl-days">\n)
+                . join( '',
+                        map { html_for_day( $_, $config->{ 'date-format' } ) }
+                            @$days_for_month
+                  )
+                . "  </dl>\n"
+                . $nav_bar
+                . "</article>\n";
+
+            create_page(
+                "archive/$year/$month/index.html",
+                "$month_name, $year", $body_html, $archive_html, $config,
+                decode_utf8( $first_tp->strftime('%b, %Y') ),
+                $min_year, $max_year
+            );
+        }
+    }
+    return;
+}
+
+sub create_year_pages {
+
+    my ( $days, $archive, $config, $min_year, $max_year ) = @_;
+
+    my $start_year = ( split_date( $days->[ -1 ]{ date } ) )[ 0 ];
+    my $end_year   = ( split_date( $days->[  0 ]{ date } ) )[ 0 ];
+
+    my $archive_html = html_for_archive(
+        $archive, undef, '..', $config->{ 'label-format' }
+    );
+
+    my $day_names_row = html_for_day_names_row();
+    my $tp = parse_date( "$start_year-01-01" );
+    my $date_index = $#$days;
+    my $date = $days->[ $date_index ]{ date };
+    for my $year ( $start_year .. $end_year ) {
+
+        my $body_html = qq(<div class="tl-topbar"></div>\n<article>\n)
+            . html_for_year_nav_bar( $start_year, $year, $end_year );
+
+        while ( 1 ) {
+            my $tbody;
+            my $wday;
+            my $week_active = 0;
+            my $month_active = 0;
+            my $current_mon = $tp->mon();
+            my $month_name = decode_utf8( $tp->strftime( '%B' ) );
+            my @row = ( '' ) x 7;
+            while ( 1 ) {
+                $wday = ( $tp->_wday + 6 ) % 7;
+                if ( $date eq $tp->strftime( '%Y-%m-%d' ) ) {
+                    $month_active = 1;
+                    $week_active = 1;
+                    $row[ $wday ] = html_link_for_day_number(
+                        $days->[ $date_index ], $config->{ 'date-format' }
+                    );
+                    if ( $date_index > 0 ) {
+                        $date_index--;
+                        $date = $days->[ $date_index ]{ date };
+                    }
+                }
+                else {
+                    $row[ $wday ] = $tp->mday;
+                }
+
+                if ( $wday == 6 ) {
+                    $tbody .= html_for_row( $tp->week(), \@row, $week_active );
+                    $week_active = 0;
+                    @row = ( '' ) x 7;
+                }
+
+                $tp += ONE_DAY;
+                last if $tp->mon != $current_mon;
+            }
+
+            $tbody .= html_for_row( $tp->week(), \@row, $week_active )
+                if $wday < 6;
+
+            my $caption;
+            if ( $month_active ) {
+                my $uri = sprintf '%02d/', $current_mon;
+                $caption = qq(<a href="$uri">$month_name</a>);
+            }
+            else {
+                $caption = $month_name;
+            }
+
+            $body_html .= qq(  <table class="tl-month">\n)
+                . "    <caption>$caption</caption>\n"
+                . "    <thead>\n"
+                . $day_names_row
+                . "    </thead>\n"
+                . "    <tbody>\n"
+                . $tbody
+                . "    </tbody>\n"
+                . "  </table>\n";
+
+            last if $tp->year != $year;
+        }
+        $body_html .= "</article>\n";
+        create_page(
+            "archive/$year/index.html",
+            $year, $body_html, $archive_html, $config,
+            $year, $min_year, $max_year
+        );
+    }
+}
+
 sub create_page {
 
     my ( $path, $title, $body_html, $archive_html, $config,
@@ -368,6 +514,109 @@ sub create_page {
     $config->{ quiet } or print "Created '$path'\n";
 
     return;
+}
+
+sub html_for_day {
+
+    my ( $day, $date_format ) = @_;
+
+    my $day_number = ( split_date( $day->{ date } ) )[ 2 ];
+    my $uri = "$day_number.html";
+    my $title = escape( $day->{ title } );
+    return qq(    <dt>$day_number</dt><dd><a href="$uri">$title</a></dd>\n);
+}
+
+sub html_for_month_nav_bar {
+
+    my ( $active_months, $current_month, $names ) = @_;
+
+    my $html = qq(  <nav>\n    <ul class="tl-month-navigation">\n);
+    for my $mon ( 1..12 ) {
+        my $month = sprintf '%02d', $mon;
+        my $name = $names->[ $mon - 1 ];
+        if ( exists $active_months->{ $month } ) {
+            if ( $month eq $current_month ) {
+                $html .= qq(      <li class="tl-self">$name</li>\n);
+            }
+            else {
+                $html .= qq(      <li><a href="../$month/">$name</a></li>\n);
+            }
+        }
+        else {
+            $html .= qq(      <li>$name</li>\n);
+        }
+    }
+    $html .= "    </ul>\n  </nav>\n";
+    return $html;
+}
+
+sub html_for_day_names_row {
+
+    my $tp = parse_date('2019-01-07'); # Monday
+
+    my $names;
+    for ( 0..6 ) {
+        my $day_name = decode_utf8( $tp->strftime('%a') );
+        $names .= qq(        <th scope="col">$day_name</th>\n);
+        $tp += ONE_DAY;
+    }
+    return "      <tr>\n        <td></td>\n$names      </tr>\n";
+}
+
+sub html_for_row {
+
+    my ( $week, $row, $week_active ) = @_;
+
+    my $week_html;
+    if ( $week_active ) {
+        my $week_uri = sprintf 'week/%02d.html', $week;
+        $week_html = qq(<a href="$week_uri">$week</a>);
+    }
+    else {
+        $week_html = $week;
+    }
+
+    return "      <tr>\n"
+        . qq(        <th scope="row">$week_html</th>\n)
+        . join( '', map { "        <td>$_</td>\n" } @$row )
+        . "      </tr>\n";
+}
+
+sub html_link_for_day_number {
+
+    my ( $day, $date_format ) = @_;
+
+    my ( $year, $month, $day_number ) = split_date( $day->{ date } );
+    my $uri = "../$year/$month/$day_number.html";
+    my $title = escape( $day->{ title } );
+    my $mday = int( $day_number );
+    return qq(<a href="$uri" title="$title">$mday</a>)
+}
+
+sub html_for_year_nav_bar {
+
+    my ( $start_year, $year, $end_year ) = @_;
+
+    my $nav;
+    if ( $year > $start_year ) {
+        my $prev = $year - 1;
+        $nav = qq(    <div>\x{2190} <a href="../$prev/">$prev</a></div>\n)
+    }
+    else {
+        $nav .= "    <div></div>\n";
+    }
+
+    $nav .= "    <h2>$year</h2>\n";
+
+    if ( $year < $end_year ) {
+        my $next = $year + 1;
+        $nav .= qq(    <div><a href="../$next/">$next</a> \x{2192}</div>\n)
+    }
+    else {
+        $nav .= "    <div></div>\n";
+    }
+
+    return qq(  <div class="tl-year">\n$nav  </div>\n);
 }
 
 sub html_for_date {
@@ -451,7 +700,8 @@ sub html_for_archive {
 
     my $html = qq(<dl>\n);
     for my $year ( sort { $b <=> $a } keys %$archive ) {
-        $html .= "  <dt>$year</dt>\n  <dd>\n    <ul>\n";
+        $html .= qq(  <dt><a href="$path/$year">$year</a></dt>\n)
+            . "  <dd>\n    <ul>\n";
         for my $week ( @{ $archive->{ $year } } ) {
             my $year_week = join_year_week( $year, $week );
             if ( defined $current_year_week
@@ -553,6 +803,16 @@ sub get_url_title_description {
     )->as_string();
 
     return ( $url, $day->{ title }, $description );
+}
+
+sub get_month_names {
+
+    my @names;
+    for my $mon ( 1..12 ) {
+        my $date = sprintf '2019-%02d-01', $mon;
+        push @names, decode_utf8( parse_date( $date )->strftime( '%B' ) );
+    }
+    return @names;
 }
 
 sub get_end_of_day {

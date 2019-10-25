@@ -16,10 +16,10 @@ import urllib.parse
 from html import escape
 from operator import itemgetter
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict, deque
 
-VERSION = '3.0.3'
+VERSION = '4.0.0'
 
 RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
 RE_AT_PAGE_TITLE = re.compile(
@@ -178,7 +178,8 @@ def html_for_next_prev(days, index, config):
 def html_for_archive(archive, current_year_week, path, label_format):
     html = '<dl>\n'
     for year in sorted(archive.keys(), reverse=True):
-        html += f'  <dt>{year}</dt>\n  <dd>\n    <ul>\n'
+        html += (f'  <dt><a href="{path}/{year}">{year}</a></dt>\n'
+                 f'  <dd>\n    <ul>\n')
         for week in archive[year]:
             year_week = join_year_week(int(year), int(week))
             if year_week == current_year_week:
@@ -239,7 +240,6 @@ def rewrite_ast(ast):
                 node.unlink()
 
 def html_for_entry(entry):
-
     ast = commonmark.Parser().parse(entry)
     rewrite_ast(ast)
     renderer = commonmark.HtmlRenderer()
@@ -249,6 +249,74 @@ def html_for_entry(entry):
         renderer.render(ast),
         '</article>\n'
     ])
+
+def html_for_year_nav_bar(start_year, year, end_year):
+    if year > start_year:
+        prv = year - 1
+        nav = f'    <div>\u2190 <a href="../{prv}/">{prv}</a></div>\n'
+    else:
+        nav = '    <div></div>\n'
+
+    nav += f'    <h2>{year}</h2>\n'
+
+    if year < end_year:
+        nxt = year + 1
+        nav += f'    <div><a href="../{nxt}/">{nxt}</a> \u2192</div>\n'
+    else:
+        nav += '    <div></div>\n'
+
+    return f'  <div class="tl-year">\n{nav}  </div>\n'
+
+def html_link_for_day_number(day, date_format):
+    year, month, day_number = split_date(day['date'])
+    uri = f'../{year}/{month}/{day_number}.html';
+    title = escape(day['title'])
+    mday = int(day_number)
+    return f'<a href="{uri}" title="{title}">{mday}</a>'
+
+def html_for_row(week, row, week_active):
+    if week_active:
+        week_html = f'<a href="week/{week:02d}.html">{week}</a>'
+    else:
+        week_html = week
+
+    return ''.join([
+        '      <tr>\n'
+        f'        <th scope="row">{week_html}</th>\n',
+        *[f'        <td>{day}</td>\n' for day in row],
+        '      </tr>\n'
+    ])
+
+def html_for_day_names_row():
+    dt = parse_date('2019-01-07') # Monday
+    names = ''
+    for i in range(7):
+        day_name = dt.strftime('%a')
+        names += f'        <th scope="col">{day_name}</th>\n'
+        dt += timedelta(days=1)
+    return f'      <tr>\n        <td></td>\n{names}      </tr>\n'
+
+def html_for_month_nav_bar(active_months, current_month, names):
+    html = '  <nav>\n    <ul class="tl-month-navigation">\n'
+    for mon in range(1, 13):
+        month = f'{mon:02d}'
+        name = names[mon - 1]
+        if month in active_months:
+            if month == current_month:
+                html += f'      <li class="tl-self">{name}</li>\n'
+            else:
+                html += f'      <li><a href="../{month}/">{name}</a></li>\n'
+        else:
+            html += f'      <li>{name}</li>\n'
+
+    html += '    </ul>\n  </nav>\n'
+    return html
+
+def html_for_day(day, date_format):
+    day_number = split_date(day['date'])[2]
+    uri = f'{day_number}.html'
+    title = escape(day['title'])
+    return f'    <dt>{day_number}</dt><dd><a href="{uri}">{title}</a></dd>\n'
 
 def create_page(path, title, body_html, archive_html, config,
                 label, min_year, max_year):
@@ -304,6 +372,119 @@ def create_index(days, archive, config, min_year, max_year):
         'index.html', 'home', body_html, archive_html, config,
         'home', min_year, max_year
     )
+
+def create_year_pages(days, archive, config, min_year, max_year):
+
+    start_year = int((split_date(days[-1]['date']))[0])
+    end_year   = int((split_date(days[ 0]['date']))[0])
+
+    archive_html = html_for_archive(archive, None, '..', config['label-format'])
+
+    day_names_row = html_for_day_names_row();
+    dt = parse_date(f'{start_year}-01-01')
+    iter = reversed(days)
+    day = next(iter)
+    date = day['date']
+    for year in range(start_year, end_year + 1):
+        body_html = ('<div class="tl-topbar"></div>\n<article>\n'
+            + html_for_year_nav_bar(start_year, year, end_year))
+
+        while True:
+            tbody = ''
+            week_active = False
+            month_active = False
+            current_mon = dt.month
+            month_name = dt.strftime('%B')
+            row = [''] * 7
+            while True:
+                wday = dt.weekday()
+                if date == dt.strftime('%Y-%m-%d'):
+                    month_active = True
+                    week_active = True
+                    row[wday] = html_link_for_day_number(
+                        day, config['date-format']
+                    )
+                    try:
+                        day = next(iter)
+                        date = day['date']
+                    except StopIteration:
+                        pass
+                else:
+                    row[wday] = dt.day
+
+                if wday == 6:
+                    tbody += html_for_row(dt.isocalendar()[1], row, week_active)
+                    week_active = False
+                    row = [''] * 7
+
+                dt += timedelta(days=1)
+                if dt.month != current_mon:
+                    break
+
+            if wday < 6:
+                tbody += html_for_row(dt.isocalendar()[1], row, week_active)
+
+            if month_active:
+                caption = f'<a href="{current_mon:02d}/">{month_name}</a>'
+            else:
+                caption = month_name
+
+            body_html += ''.join([
+                '  <table class="tl-month">\n'
+                f'    <caption>{caption}</caption>\n'
+                '    <thead>\n',
+                day_names_row,
+                '    </thead>\n'
+                '    <tbody>\n',
+                tbody,
+                '    </tbody>\n'
+                '  </table>\n'
+            ])
+
+            if dt.year != year:
+                break
+
+        body_html += '</article>\n'
+        create_page(
+            f'archive/{year}/index.html',
+            str(year), body_html, archive_html, config,
+            str(year), min_year, max_year
+        )
+
+def create_month_pages(days, archive, config, min_year, max_year):
+
+    years = defaultdict(lambda: defaultdict(deque))
+    for day in days:
+        year, month, day_number = split_date(day['date'])
+        years[year][month].appendleft(day)
+
+    month_names = get_month_names()
+    archive_html = html_for_archive(
+        archive, None, '../..', config['label-format'])
+
+    for year in sorted(years.keys()):
+        for month in sorted(years[year].keys()):
+            days_for_month = years[year][month]
+            first_dt = parse_date(days_for_month[0]['date'])
+            month_name = first_dt.strftime('%B')
+            nav_bar = html_for_month_nav_bar(years[year], month, month_names)
+            body_html = ''.join([
+                '<div class="tl-topbar"></div>\n'
+                '<article>\n'
+                f'  <h2 class="tl-month-year">{month_name} '
+                f'<a href="../../{year}/">{year}</a></h2>'
+                '  <dl class="tl-days">\n',
+                *[html_for_day(day, config['date-format'])
+                     for day in days_for_month],
+                '  </dl>\n',
+                nav_bar,
+                '</article>\n'
+            ])
+            create_page(
+                f'archive/{year}/{month}/index.html',
+                f'{month_name}, {year}', body_html, archive_html, config,
+                first_dt.strftime('%b, %Y'), min_year, max_year
+            )
 
 def create_week_page(year_week, body_html, archive, config, min_year, max_year):
 
@@ -401,8 +582,17 @@ def get_url_title_description(day, config):
     year, month, day_number = split_date(day['date'])
     url = urllib.parse.urljoin(
         config['blog-url'], f'archive/{year}/{month}/{day_number}.html')
-    
+
     return url, day['title'], description
+
+def get_month_names():
+
+    names = []
+    for mon in range(1, 13):
+        date = f'2019-{mon:02d}-01'
+        names.append(parse_date(date).strftime('%B'))
+
+    return names
 
 def get_end_of_day(date):
     return datetime.strptime(
@@ -520,7 +710,8 @@ def create_blog(config):
     if days:
         create_index(days, archive, config, min_year, max_year)
         create_day_and_week_pages(days, archive, config, min_year, max_year)
-
+        create_month_pages(days, archive, config, min_year, max_year)
+        create_year_pages(days, archive, config, min_year, max_year)
         create_rss_feed(days, config)
         create_json_feed(days, config)
 

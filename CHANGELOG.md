@@ -1,5 +1,19 @@
 # Change Log
 
+## [4.0.0] - 2019-10-25
+
+Adds support for year overview pages (calendar) and month overview
+pages for active months.
+
+Blog entry and page entry titles are now *mandatory*. This to make
+the month overview pages look better.
+
+Bug fixes:
+
+ - Both: pubDate for RSS feed is now always USA locale (required)
+ - Python: locale is honored
+ - Perl: Time::Piece strftime is properly UTF-8 encoded (bug in Time::Piece)
+
 ## [3.0.2] - 2019-10-12
 
 Provides the argument `--min-year` to specify the minimum year to be
