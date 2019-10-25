@@ -8,6 +8,7 @@
 import re
 import sys
 import json
+import locale
 import argparse
 import commonmark
 import commonmark.node
@@ -625,4 +626,5 @@ def get_config():
 
     return config
 
+locale.setlocale(locale.LC_ALL, '')
 create_blog(get_config())
