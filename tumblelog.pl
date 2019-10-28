@@ -44,7 +44,7 @@ my @DAY_LIST = qw( Sun Mon Tue Wed Thu Fri Sat );
 BEGIN {
     # Older version of CommonMark which hasn't got this
     # constant yet, so we can safely set it to 0
-    unless ( main->can('OPT_UNSAFE') ) {
+    unless ( main->can( 'OPT_UNSAFE' ) ) {
         eval 'sub OPT_UNSAFE { return 0 }';
     }
 }
@@ -302,7 +302,7 @@ sub create_pages {
             )
         );
         my $body_html;
-        if ( $page->{'show-date'} ) {
+        if ( $page->{ 'show-date' } ) {
             $body_html  = qq(<time class="tl-date" datetime="$date">)
                 . "$link_text</time>\n";
         }
@@ -362,7 +362,7 @@ sub create_month_pages {
 
             my $days_for_month = $years{ $year }{ $month };
             my $first_tp = parse_date( $days_for_month->[ 0 ]{ date } );
-            my $month_name = decode_utf8( $first_tp->strftime('%B') );
+            my $month_name = decode_utf8( $first_tp->strftime( '%B' ) );
             my $nav_bar = html_for_month_nav_bar(
                 $years{ $year }, $month, \@month_names
             );
@@ -382,7 +382,7 @@ sub create_month_pages {
             create_page(
                 "archive/$year/$month/index.html",
                 "$month_name, $year", $body_html, $archive_html, $config,
-                decode_utf8( $first_tp->strftime('%b, %Y') ),
+                decode_utf8( $first_tp->strftime( '%b, %Y' ) ),
                 $min_year, $max_year
             );
         }
@@ -552,11 +552,11 @@ sub html_for_month_nav_bar {
 
 sub html_for_day_names_row {
 
-    my $tp = parse_date('2019-01-07'); # Monday
+    my $tp = parse_date( '2019-01-07' ); # Monday
 
     my $names;
     for ( 0..6 ) {
-        my $day_name = decode_utf8( $tp->strftime('%a') );
+        my $day_name = decode_utf8( $tp->strftime( '%a' ) );
         $names .= qq(        <th scope="col">$day_name</th>\n);
         $tp += ONE_DAY;
     }
@@ -936,7 +936,7 @@ sub year_week_title {
 sub get_year_and_week {
 
     my $tp = shift;
-    return ( $tp->strftime('%G'), $tp->week() );
+    return ( $tp->strftime( '%G' ), $tp->week() );
 }
 
 sub get_year_week {
@@ -967,7 +967,7 @@ sub parse_date {
 }
 
 sub decode_utf8 {
-    # UTF8 encoding for the Time::Piece strptime method, see bug #97539
+    # UTF8 encoding for the Time::Piece strftime method, see bug #97539
     # https://rt.cpan.org/Public/Bug/Display.html?id=97539
     return decode( 'UTF-8', shift, Encode::FB_CROAK )
 }
