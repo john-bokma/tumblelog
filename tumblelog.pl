@@ -18,7 +18,7 @@ use Getopt::Long;
 use List::Util 'min';
 use Encode 'decode';
 
-my $VERSION = '4.0.1';
+my $VERSION = '4.0.2';
 
 my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})(.*?)\n(.*)/s;
 my $RE_AT_PAGE_TITLE = qr/^@([a-z0-9_-]+)\[(.+)\]
@@ -1051,7 +1051,8 @@ sub collect_days_and_pages {
 sub read_tumblelog_entries {
 
     my $filename = shift;
-    my $entries = [ split /^%\n/m, path( $filename )->slurp_utf8() ];
+    my $entries = [ grep { length $_ } split /^%\n/m,
+                    path( $filename )->slurp_utf8() ];
 
     @$entries or die 'No blog entries found';
 
