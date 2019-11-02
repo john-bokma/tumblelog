@@ -19,7 +19,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict, deque
 
-VERSION = '4.0.0'
+VERSION = '4.0.1'
 
 RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
 RE_AT_PAGE_TITLE = re.compile(
@@ -67,7 +67,8 @@ def get_year_week(date):
 
 def read_tumblelog_entries(filename):
     with open(filename, encoding='utf8') as f:
-        entries = [item for item in f.read().split('%\n') if item]
+        entries = [item for item in
+                       re.split(r'^%\n', f.read(), flags=re.MULTILINE) if item]
     if not entries:
         raise NoEntriesError('No blog entries found')
 
