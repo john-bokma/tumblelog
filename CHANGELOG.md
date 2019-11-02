@@ -1,5 +1,12 @@
 # Change Log
 
+## [4.0.1] - 2019-11-02
+
+Bug fix:
+
+  - Python: split file into entries if and only if a line starts with
+    a single `%` character.
+
 ## [4.0.0] - 2019-10-25
 
 Adds support for year overview pages (calendar) and month overview
