@@ -51,14 +51,10 @@ python3 -m http.server
 
 ![A screenshot of the four styles that come with tumblelog](https://repository-images.githubusercontent.com/178557390/30c42f00-e7ae-11e9-839d-d6bd6faa6e48)
 
-A screenshot of four of the seven styles that come with `tumblelog`.
+A screenshot of four of the twelve styles that come with `tumblelog`.
 
-The `screenshots` directory has 1:1 examples of themes that come
-with `tumblelog`.
-
-## Roadmap
-
- - Calendar view to make it easy to browse to a specific date.
+The `screenshots` directory has 1:1 examples of themes that come with
+`tumblelog`.
 
 ## Blogs
 
