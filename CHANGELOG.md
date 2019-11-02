@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.0.2] - 2019-11-02
+
+Bug fix:
+
+  - Perl: drop empty entries just like the Python version
+
 ## [4.0.1] - 2019-11-02
 
 Bug fix:
