@@ -37,6 +37,20 @@ http://localhost:8000/ in your browser:
 python3 -m http.server
 ```
 
+## Python Version Quick Start
+
+```
+sudo apt install -y git sass python3-pip
+git clone https://github.com/john-bokma/tumblelog.git
+pip3 install commonmark
+cd tumblelog
+mkdir htdocs
+sass --sourcemap=none -t compressed styles/steel.scss htdocs/steel.css
+python3 tumblelog.py --template-filename tumblelog.html --output-dir htdocs/ \
+        --author 'Test' --name 'Test Blog' --description 'This is a test'    \
+        --blog-url 'http://example.com/' --css steel.css tumblelog.md
+```
+
 ## Documentation
 
 - Installation of the Perl version: to be written, for now see: [Create a static tumblelog with Perl](http://johnbokma.com/blog/2019/03/30/tumblelog-perl.html)
