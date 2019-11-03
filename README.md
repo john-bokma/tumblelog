@@ -1,13 +1,5 @@
 # tumblelog: a static microblog generator
 
-## What's New
-
-This project is in active development. Please check the
-[CHANGELOG.md](CHANGELOG.md) for what has changed after you have done
-a `git pull`.
-
-## About
-
 `tumblelog` is a static microblog generator. There are two versions
 available, one written in Perl and one written in Python. Which
 version you use is up to you; I make an effort to keep the output of
@@ -21,22 +13,6 @@ Parameters to control the blog are given via command line
 arguments. The program creates the blog HTML5 pages and both a JSON
 and RSS feed.
 
-For example:
-
-```
-perl tumblelog.pl --template-filename tumblelog.html --output-dir htdocs/ \
-     --author 'Your Name' --name 'Your Blog' --description 'Your Description' \
-     --blog-url 'http://example.com/' --css soothe.css tumblelog.md
-```
-
-If you have Python 3 installed you can run a simple webserver inside
-`htdocs` and view the generated site by entering
-http://localhost:8000/ in your browser:
-
-```
-python3 -m http.server
-```
-
 ## Python Version Quick Start
 
 ```
@@ -49,6 +25,13 @@ sass --sourcemap=none -t compressed styles/steel.scss htdocs/steel.css
 python3 tumblelog.py --template-filename tumblelog.html --output-dir htdocs/ \
         --author 'Test' --name 'Test Blog' --description 'This is a test'    \
         --blog-url 'http://example.com/' --css steel.css tumblelog.md
+```
+
+To view the generated site at http://localhost:8000/ enter:
+
+```
+cd htdocs
+python3 -m http.server
 ```
 
 ## Documentation
