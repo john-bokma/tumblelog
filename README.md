@@ -15,11 +15,24 @@ and RSS feed.
 
 ## Python Version Quick Start
 
-```
+Install sass and pip3 for Linux:
+```bash
 sudo apt install -y git sass python3-pip
+```
+
+For macOS:
+```bash
+brew install sass
+brew install pip3
+```
+
+Then:
+```bash
 git clone https://github.com/john-bokma/tumblelog.git
-pip3 install commonmark
 cd tumblelog
+python3 -m venv venv
+pip3 install commonmark
+source venv/bin/activate
 mkdir htdocs
 sass --sourcemap=none -t compressed styles/steel.scss htdocs/steel.css
 python3 tumblelog.py --template-filename tumblelog.html --output-dir htdocs/ \
