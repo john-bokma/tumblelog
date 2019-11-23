@@ -1,6 +1,6 @@
 2019-10-06 Congratulations!
 ## Congratulations!
-If you see this post you sucessfully ran `tumblelog.pl` or `tumblelog.py`.
+If you see this post you successfully ran `tumblelog.pl` or `tumblelog.py`.
 
 Unicode test: ☺ (smiley face)
 %
@@ -31,7 +31,8 @@ lobortis magna.
 
 #### heading level 4
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus vel lobortis magna.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus vel
+lobortis magna.
 
 %
 2019-10-05 Succulents in a metal bowl.
