@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.0.3] - 2019-02-22
+
+  - In the year overview show the year centered (use grid instead of
+    flex)
+  - Bump version to 4.0.3
+
 ## [4.0.2] - 2019-11-02
 
 Bug fix:

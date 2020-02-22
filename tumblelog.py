@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# (c) John Bokma, 2019
+# (c) John Bokma, 2019 - 2020
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the same terms as Python itself.
@@ -19,7 +19,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict, deque
 
-VERSION = '4.0.2'
+VERSION = '4.0.3'
 
 RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
 RE_AT_PAGE_TITLE = re.compile(

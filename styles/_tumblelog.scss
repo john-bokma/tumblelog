@@ -257,10 +257,20 @@ nav.tl-next-prev {
 }
 
 .tl-year {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
     h2 {
+        text-align: center;
         margin-bottom: 0;
+    }
+
+    div {
+        padding-top: 6px;
+    }
+
+    div:last-child {
+        text-align: right;
     }
 }
 
