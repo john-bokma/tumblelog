@@ -1,5 +1,10 @@
 # Change Log
 
+## [4.0.4] - 2020-07-22
+
+  - Change license to MIT; add LICENSE file
+  - Bump version to 4.0.4
+
 ## [4.0.3] - 2019-02-22
 
   - In the year overview show the year centered (use grid instead of

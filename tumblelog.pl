@@ -1,9 +1,4 @@
 #!/usr/bin/perl
-#
-# (c) John Bokma, 2019 - 2020
-#
-# This program is free software; you can redistribute it and/or modify it
-# under the same terms as Perl itself.
 
 use strict;
 use warnings;
@@ -18,7 +13,7 @@ use Getopt::Long;
 use List::Util 'min';
 use Encode 'decode';
 
-my $VERSION = '4.0.3';
+my $VERSION = '4.0.4';
 
 my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})(.*?)\n(.*)/s;
 my $RE_AT_PAGE_TITLE = qr/^@([a-z0-9_-]+)\[(.+)\]
