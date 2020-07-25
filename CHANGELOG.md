@@ -1,5 +1,14 @@
 # Change Log
 
+## [4.0.5] - 2020-07-25
+
+  - Fixed spelling of "San Francisco" in SCSS files, thanks *Hacker
+    News* user
+    [JustARandomGuy](https://news.ycombinator.com/user?id=JustARandomGuy)
+    for spotting this
+  - Fixed copyright and license in SCSS files
+  - Bump version to 4.0.5
+
 ## [4.0.4] - 2020-07-22
 
   - Change license to MIT; add LICENSE file
