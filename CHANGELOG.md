@@ -1,5 +1,10 @@
 # Change Log
 
+## [4.0.6] - 2020-08-14
+
+  - Changed padding-left for ordered and unordered lists to be smaller
+  - Bump version to 4.0.6
+
 ## [4.0.5] - 2020-07-25
 
   - Fixed spelling of "San Francisco" in SCSS files, thanks *Hacker

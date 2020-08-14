@@ -1,8 +1,4 @@
-/* (c) John Bokma, 2019
- *
- * This stylesheet is free software; you can redistribute it and/or modify it
- * under the same terms as Perl itself.
- */
+/* (c) John Bokma, 2019-2020 */
 
 html {
     box-sizing: border-box;
@@ -23,6 +19,11 @@ html, body {
 body {
     background-color: $background-color;
     font-family: $font-stack;
+}
+
+ul, ol {
+    margin: 14px 0;
+    padding: 0 0 0 28px;
 }
 
 #tl-page {

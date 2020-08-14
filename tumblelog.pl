@@ -13,7 +13,7 @@ use Getopt::Long;
 use List::Util 'min';
 use Encode 'decode';
 
-my $VERSION = '4.0.5';
+my $VERSION = '4.0.6';
 
 my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})(.*?)\n(.*)/s;
 my $RE_AT_PAGE_TITLE = qr/^@([a-z0-9_-]+)\[(.+)\]
