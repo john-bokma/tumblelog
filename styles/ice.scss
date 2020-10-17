@@ -1,15 +1,5 @@
 /* (c) John Bokma, 2019-2020 */
 
-$font-stack: "San Francisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
-$code-font-stack:
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    "Liberation Mono",
-    "Courier New",
-    monospace;
-
 $background-color: #c9dbdf;
 $page-background-color: #e0e7e7;
 $text-color: #646b76;
@@ -25,15 +15,18 @@ $blockquote-background-color: inherit;
 $border: solid 2px $border-color;
 $border-radius: initial;
 
+@import 'fonts';
 @import 'tumblelog';
 
 #tl-main-header {
     text-transform: uppercase;
+
     h1 {
         text-transform: initial;
         font-style: normal;
         font-weight: normal;
     }
+
     .tl-navigation {
         display: block;
         position: relative;
@@ -47,12 +40,15 @@ $border-radius: initial;
         margin-bottom: 20px;
         background-color: $heading-color;
         text-align: right;
+
         li {
             display: inline-block;
+
             a {
                 color: $page-background-color;
                 font-size: 12px;
                 border-bottom: solid 1px $heading-color;
+
                 &:hover {
                     border-bottom: solid 1px $page-background-color;
                 }
@@ -70,12 +66,13 @@ article {
 figure {
     margin: 0;
     margin: 0;
-    box-shadow: 0 4px 8px  0 rgba(0, 0, 0, 0.2),
-                0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2),
+        0 6px 20px 0 rgba(0, 0, 0, 0.19);
 
     img {
         display: block;
     }
+
     figcaption {
         background-color: $heading-color;
         padding: 4px;
@@ -97,8 +94,9 @@ blockquote {
 footer {
     margin: 0;
     padding: 10px;
-    border-top: none;
+    border-top: 0;
     background-color: $heading-color;
+
     a {
         text-decoration: underline;
     }

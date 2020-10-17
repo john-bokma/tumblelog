@@ -1,15 +1,5 @@
 /* (c) John Bokma, 2019-2020 */
 
-$font-stack: "San Francisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
-$code-font-stack:
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    "Liberation Mono",
-    "Courier New",
-    monospace;
-
 $background-color: white;
 $page-background-color: white;
 $text-color: #333;
@@ -18,13 +8,14 @@ $label-color: black;
 $border-color: #333;
 $date-color: black;
 $self-color: #333;
-$link-color: #0000ee;
+$link-color: #00e;
 $pre-background-color: #eee;
 $blockquote-background-color: white;
 
 $border: solid 1px $border-color;
 $border-radius: 6px;
 
+@import 'fonts';
 @import 'tumblelog';
 
 blockquote {
@@ -39,6 +30,7 @@ figure {
     img {
         display: block;
     }
+
     figcaption {
         color: #666;
         padding: 2px;

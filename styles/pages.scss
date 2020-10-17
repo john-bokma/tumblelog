@@ -1,15 +1,5 @@
 /* (c) John Bokma, 2019-2020 */
 
-$font-stack: "San Francisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
-$code-font-stack:
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    "Liberation Mono",
-    "Courier New",
-    monospace;
-
 $background-color: #575d64;
 $page-background-color: #dfe0da;
 $text-color: #10110c;
@@ -25,18 +15,22 @@ $blockquote-background-color: inherit;
 $border: none;
 $border-radius: initial;
 
+@import 'fonts';
 @import 'tumblelog';
 
 #tl-main-header {
     background-color: $background-color;
+
     h1 {
         color: $label-color;
         font-weight: normal;
-        text-shadow: rgba(10,10,10,0.5) 2px 2px 1px;
+        text-shadow: rgba(10, 10, 10, 0.5) 2px 2px 1px;
     }
+
     div {
         color: #373e42;
     }
+
     .tl-navigation {
         display: block;
         position: relative;
@@ -50,8 +44,10 @@ $border-radius: initial;
         margin-bottom: 0;
         background-color: $background-color;
         text-align: right;
+
         li {
             display: inline-block;
+
             a {
                 color: $date-color;
                 text-transform: lowercase;
@@ -61,7 +57,8 @@ $border-radius: initial;
     }
 }
 
-time, .tl-topbar {
+time,
+.tl-topbar {
     min-height: 42px;
     border-top: solid 20px $background-color;
     position: relative;
@@ -88,11 +85,13 @@ article {
 
 figure {
     margin: 0;
+
     img {
         display: block;
-        box-shadow: 0 4px 8px  0 rgba(0, 0, 0, 0.2),
-                    0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2),
+            0 6px 20px 0 rgba(0, 0, 0, 0.19);
     }
+
     figcaption {
         font-size: 12px;
         padding: 4px;
@@ -108,6 +107,7 @@ figure {
     @media screen and (max-width: 479px) {
         width: 320px;
     }
+
     h2 {
         margin-top: 0;
         padding-right: 10px;
@@ -117,9 +117,11 @@ figure {
         font-size: 14px;
         font-style: oblique;
     }
+
     dl {
         padding: 10px;
     }
+
     a {
         text-decoration: underline;
     }
@@ -128,8 +130,9 @@ figure {
 footer {
     margin: 0;
     padding: 10px;
-    border-top: none;
+    border-top: 0;
     background-color: #9f2531;
+
     a {
         text-decoration: underline;
     }

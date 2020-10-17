@@ -13,7 +13,7 @@ use Getopt::Long;
 use List::Util 'min';
 use Encode 'decode';
 
-my $VERSION = '4.0.6';
+my $VERSION = '4.1.0';
 
 my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})(.*?)\n(.*)/s;
 my $RE_AT_PAGE_TITLE = qr/^@([a-z0-9_-]+)\[(.+)\]
@@ -342,7 +342,7 @@ sub create_month_pages {
 
     my %years;
     for my $day ( @$days ) {
-        my ( $year, $month, $day_number ) = split_date( $day->{ date } );
+        my ( $year, $month, undef ) = split_date( $day->{ date } );
         unshift @{ $years{ $year }{ $month } }, $day;
     }
 
@@ -367,8 +367,7 @@ sub create_month_pages {
                 . qq(<a href="../../$year/">$year</a></h2>)
                 . qq(  <dl class="tl-days">\n)
                 . join( '',
-                        map { html_for_day( $_, $config->{ 'date-format' } ) }
-                            @$days_for_month
+                        map { html_for_day( $_ ) } @$days_for_month
                   )
                 . "  </dl>\n"
                 . $nav_bar
@@ -419,7 +418,7 @@ sub create_year_pages {
                     $month_active = 1;
                     $week_active = 1;
                     $row[ $wday ] = html_link_for_day_number(
-                        $days->[ $date_index ], $config->{ 'date-format' }
+                        $days->[ $date_index ]
                     );
                     if ( $date_index > 0 ) {
                         $date_index--;
@@ -431,7 +430,7 @@ sub create_year_pages {
                 }
 
                 if ( $wday == 6 ) {
-                    $tbody .= html_for_row( $tp->week(), \@row, $week_active );
+                    $tbody .= html_for_row( $year, $tp, \@row, $week_active );
                     $week_active = 0;
                     @row = ( '' ) x 7;
                 }
@@ -440,7 +439,7 @@ sub create_year_pages {
                 last if $tp->mon != $current_mon;
             }
 
-            $tbody .= html_for_row( $tp->week(), \@row, $week_active )
+            $tbody .= html_for_row( $year, $tp, \@row, $week_active )
                 if $wday < 6;
 
             my $caption;
@@ -471,6 +470,7 @@ sub create_year_pages {
             $year, $min_year, $max_year
         );
     }
+    return;
 }
 
 sub create_page {
@@ -513,7 +513,7 @@ sub create_page {
 
 sub html_for_day {
 
-    my ( $day, $date_format ) = @_;
+    my $day = shift;
 
     my $day_number = ( split_date( $day->{ date } ) )[ 2 ];
     my $uri = "$day_number.html";
@@ -560,11 +560,13 @@ sub html_for_day_names_row {
 
 sub html_for_row {
 
-    my ( $week, $row, $week_active ) = @_;
+    my ( $current_year, $tp, $row, $week_active ) = @_;
 
     my $week_html;
+    my ( $year, $week ) = get_year_and_week( $tp );
     if ( $week_active ) {
-        my $week_uri = sprintf 'week/%02d.html', $week;
+        my $week_uri = $year == $current_year ? sprintf 'week/%02d.html', $week
+            : sprintf '../%04d/week/%02d.html', $year, $week;
         $week_html = qq(<a href="$week_uri">$week</a>);
     }
     else {
@@ -579,7 +581,7 @@ sub html_for_row {
 
 sub html_link_for_day_number {
 
-    my ( $day, $date_format ) = @_;
+    my $day = shift;
 
     my ( $year, $month, $day_number ) = split_date( $day->{ date } );
     my $uri = "../$year/$month/$day_number.html";
@@ -695,7 +697,7 @@ sub html_for_archive {
 
     my $html = qq(<dl>\n);
     for my $year ( sort { $b <=> $a } keys %$archive ) {
-        $html .= qq(  <dt><a href="$path/$year">$year</a></dt>\n)
+        $html .= qq(  <dt><a href="$path/$year/">$year</a></dt>\n)
             . "  <dd>\n    <ul>\n";
         for my $week ( @{ $archive->{ $year } } ) {
             my $year_week = join_year_week( $year, $week );

@@ -1,15 +1,5 @@
 /* (c) John Bokma, 2019-2020 */
 
-$font-stack: "San Francisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
-$code-font-stack:
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    "Liberation Mono",
-    "Courier New",
-    monospace;
-
 $background-color: initial;
 $page-background-color: initial;
 $text-color: #c6c6c6;
@@ -25,6 +15,7 @@ $blockquote-background-color: black;
 $border: solid 3px $border-color;
 $border-radius: initial;
 
+@import 'fonts';
 @import 'tumblelog';
 
 body {
@@ -44,17 +35,19 @@ body {
         padding-top: 0;
         padding-bottom: 8px;
     }
+
     span {
         padding-top: 6px;
     }
 }
 
-ul.tl-navigation {
+.tl-navigation {
     float: right;
     margin: 12px 0;
 }
 
-.tl-date, .tl-topbar {
+.tl-date,
+.tl-topbar {
     clear: both;
     position: relative;
     left: -10px;
@@ -64,10 +57,11 @@ ul.tl-navigation {
         width: 320px;
     }
     background-color: #880c1d;
-    border: none;
+    border: 0;
 }
 
-article, nav.tl-next-prev {
+article,
+.tl-next-prev {
     position: relative;
     left: -10px;
     background-color: black;
@@ -99,14 +93,15 @@ article h4 {
     font-size: 24px;
 }
 
-section, .tl-archive {
+section,
+.tl-archive {
     margin: 0;
-    padding: 10px 10px 6px 10px;
+    padding: 10px 10px 6px;
 }
 
 .tl-archive {
     background-color: black;
-    border: none;
+    border: 0;
 }
 
 figure {
@@ -116,6 +111,7 @@ figure {
         display: block;
         border-radius: $border-radius $border-radius 0 0;
     }
+
     figcaption {
         color: #666;
         padding: 4px;
@@ -128,21 +124,24 @@ blockquote {
     border-left: solid 3px #880c1d;
 }
 
-nav.tl-next-prev {
-    border: none;
+.tl-next-prev {
+    border: 0;
 }
 
 .tl-month-navigation {
-    border-top: none;
+    border-top: 0;
 }
 
 footer {
     background-color: black;
-    margin: 20px 0 0 0;
-    padding: 10px 10px;
-    border: none;
+    margin: 20px 0 0;
+    padding: 10px;
+    border: 0;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
     margin-top: 0;
 }

@@ -6,11 +6,14 @@ html {
     line-height: 21px;
 }
 
-*, *:before, *:after {
+*,
+*::before,
+*::after {
     box-sizing: inherit;
 }
 
-html, body {
+html,
+body {
     margin: 0;
     padding: 0;
     border: 0;
@@ -21,7 +24,8 @@ body {
     font-family: $font-stack;
 }
 
-ul, ol {
+ul,
+ol {
     margin: 14px 0;
     padding: 0 0 0 28px;
 }
@@ -38,7 +42,7 @@ ul, ol {
 }
 
 #tl-main-header {
-    padding: 10px 10px 0 10px;
+    padding: 10px 10px 0;
 }
 
 .tl-title {
@@ -64,9 +68,9 @@ ul, ol {
     }
 }
 
-ul.tl-navigation {
+.tl-navigation {
     list-style: none;
-    margin: 0 0 12px 0;
+    margin: 0 0 12px;
     padding: 0;
 
     li {
@@ -85,6 +89,7 @@ main {
     text-align: right;
     border-bottom: $border;
     color: $date-color;
+
     a {
         color: inherit;
     }
@@ -96,11 +101,14 @@ main {
 }
 
 article {
-    h2, h3, h4 {
+    h2,
+    h3,
+    h4 {
         color: $heading-color;
     }
 
-    h2, h3 {
+    h2,
+    h3 {
         font-weight: normal;
         font-style: normal;
     }
@@ -155,7 +163,7 @@ code {
     font-family: $code-font-stack;
 }
 
-pre>code {
+pre > code {
     white-space: pre;
 }
 
@@ -164,14 +172,15 @@ img {
     height: auto;
 }
 
-section, .tl-archive {
-    margin: 10px 10px 6px 10px;
+section,
+.tl-archive {
+    margin: 10px 10px 6px;
     border-top: $border;
 }
 
 $arrow-space: 30px;
-nav.tl-next-prev {
 
+.tl-next-prev {
     border-top: $border;
     padding: 6px 0;
 
@@ -180,6 +189,7 @@ nav.tl-next-prev {
         text-align: right;
         display: inline-block;
     }
+
     .next {
         vertical-align: middle;
         width: 460px - $arrow-space;
@@ -189,6 +199,7 @@ nav.tl-next-prev {
             width: 300px - $arrow-space;
         }
     }
+
     .prev {
         vertical-align: middle;
         width: 460px - $arrow-space;
@@ -197,6 +208,7 @@ nav.tl-next-prev {
             width: 300px - $arrow-space;
         }
     }
+
     .tl-left-arrow {
         width: $arrow-space;
         display: inline-block;
@@ -205,11 +217,11 @@ nav.tl-next-prev {
 
 .tl-month-navigation {
     margin: 10px 0;
-    padding: 10px 0 0 0;
+    padding: 10px 0 0;
     border-top: $border;
     list-style: none;
     display: grid;
-    grid-template-areas: ". . ." ". . ." ". . ." ". . .";
+    grid-template-areas: '. . .' '. . .' '. . .' '. . .';
 }
 
 .tl-month-year {
@@ -226,6 +238,7 @@ nav.tl-next-prev {
         float: left;
         padding-top: 7px;
     }
+
     dd {
         padding-top: 7px;
         margin: 0 0 0 36px;
@@ -236,7 +249,7 @@ nav.tl-next-prev {
     width: 274px;
     margin: 0 auto;
     margin-bottom: 20px;
-    border:none;
+    border: 0;
     border-collapse: collapse;
 
     caption {
@@ -250,7 +263,9 @@ nav.tl-next-prev {
         th {
             border-right: $border;
         }
-        th, td {
+
+        th,
+        td {
             padding: 10px;
             text-align: right;
         }
@@ -276,7 +291,6 @@ nav.tl-next-prev {
 }
 
 .tl-archive {
-
     h2 {
         font-size: 20px;
         color: $heading-color;

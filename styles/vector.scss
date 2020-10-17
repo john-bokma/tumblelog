@@ -1,15 +1,5 @@
 /* (c) John Bokma, 2019-2020 */
 
-$font-stack: "San Francisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
-$code-font-stack:
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    "Liberation Mono",
-    "Courier New",
-    monospace;
-
 $background-color: white;
 $page-background-color: white;
 $text-color: #464646;
@@ -25,6 +15,7 @@ $blockquote-background-color: inherit;
 $border: solid 2px $border-color;
 $border-radius: initial;
 
+@import 'fonts';
 @import 'tumblelog';
 
 #tl-main-header {
@@ -42,9 +33,10 @@ figure {
 
     img {
         display: block;
-        box-shadow: 0 4px 8px  0 rgba(0, 0, 0, 0.2),
-                    0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2),
+            0 6px 20px 0 rgba(0, 0, 0, 0.19);
     }
+
     figcaption {
         font-size: 12px;
         padding: 4px;
@@ -52,7 +44,8 @@ figure {
     }
 }
 
-article, .tl-archive {
+article,
+.tl-archive {
     a {
         border-bottom: solid 2px $label-color;
     }
@@ -67,9 +60,10 @@ footer {
     text-align: center;
     margin: 10px;
     padding: 4px;
-    border-top: none;
+    border-top: 0;
     color: white;
     background-color: black;
+
     a {
         color: $label-color;
     }

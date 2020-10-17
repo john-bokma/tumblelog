@@ -1,5 +1,13 @@
 # Change Log
 
+## [4.1.0] - 2020-10-17
+
+  - Fixed calendar bug
+  - Cleaned up the code after (Perl::Critic for Perl version, pylint
+    for Python version)
+  - Refactored styles and cleaned up (stylelint)
+  - Bump version to 4.1.0
+
 ## [4.0.6] - 2020-08-14
 
   - Changed padding-left for ordered and unordered lists to be smaller

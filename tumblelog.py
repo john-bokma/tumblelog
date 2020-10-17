@@ -5,8 +5,6 @@ import sys
 import json
 import locale
 import argparse
-import commonmark
-import commonmark.node
 import urllib.parse
 from html import escape
 from operator import itemgetter
@@ -14,7 +12,10 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict, deque
 
-VERSION = '4.0.6'
+import commonmark
+import commonmark.node
+
+VERSION = '4.1.0'
 
 RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
 RE_AT_PAGE_TITLE = re.compile(
@@ -174,7 +175,7 @@ def html_for_next_prev(days, index, config):
 def html_for_archive(archive, current_year_week, path, label_format):
     html = '<dl>\n'
     for year in sorted(archive.keys(), reverse=True):
-        html += (f'  <dt><a href="{path}/{year}">{year}</a></dt>\n'
+        html += (f'  <dt><a href="{path}/{year}/">{year}</a></dt>\n'
                  f'  <dd>\n    <ul>\n')
         for week in archive[year]:
             year_week = join_year_week(int(year), int(week))
@@ -207,7 +208,7 @@ def html_for_date(date, date_format, title, path):
 def rewrite_ast(ast):
     """ Rewrite an image at the start of a paragraph followed by some text
         to an image with a figcaption inside a figure element """
-    nodes_to_rewrite = []
+
     for node, entering in ast.walker():
         if node.t == 'paragraph' and not entering:
             child = node.first_child
@@ -263,16 +264,22 @@ def html_for_year_nav_bar(start_year, year, end_year):
 
     return f'  <div class="tl-year">\n{nav}  </div>\n'
 
-def html_link_for_day_number(day, date_format):
+def html_link_for_day_number(day):
     year, month, day_number = split_date(day['date'])
-    uri = f'../{year}/{month}/{day_number}.html';
+    uri = f'../{year}/{month}/{day_number}.html'
     title = escape(day['title'])
     mday = int(day_number)
     return f'<a href="{uri}" title="{title}">{mday}</a>'
 
-def html_for_row(week, row, week_active):
+def html_for_row(current_year, dt, row, week_active):
+
+    year, week = dt.isocalendar()[0:2]
     if week_active:
-        week_html = f'<a href="week/{week:02d}.html">{week}</a>'
+        if year == current_year:
+            week_html = f'<a href="week/{week:02d}.html">{week}</a>'
+        else:
+            week_html = (f'<a href="../{year:04d}/'
+                         f'week/{week:02d}.html">{week}</a>')
     else:
         week_html = week
 
@@ -286,7 +293,7 @@ def html_for_row(week, row, week_active):
 def html_for_day_names_row():
     dt = parse_date('2019-01-07') # Monday
     names = ''
-    for i in range(7):
+    for _ in range(7):
         day_name = dt.strftime('%a')
         names += f'        <th scope="col">{day_name}</th>\n'
         dt += timedelta(days=1)
@@ -308,7 +315,7 @@ def html_for_month_nav_bar(active_months, current_month, names):
     html += '    </ul>\n  </nav>\n'
     return html
 
-def html_for_day(day, date_format):
+def html_for_day(day):
     day_number = split_date(day['date'])[2]
     uri = f'{day_number}.html'
     title = escape(day['title'])
@@ -376,10 +383,10 @@ def create_year_pages(days, archive, config, min_year, max_year):
 
     archive_html = html_for_archive(archive, None, '..', config['label-format'])
 
-    day_names_row = html_for_day_names_row();
+    day_names_row = html_for_day_names_row()
     dt = parse_date(f'{start_year}-01-01')
-    iter = reversed(days)
-    day = next(iter)
+    it = reversed(days)
+    day = next(it)
     date = day['date']
     for year in range(start_year, end_year + 1):
         body_html = ('<div class="tl-topbar"></div>\n<article>\n'
@@ -397,11 +404,9 @@ def create_year_pages(days, archive, config, min_year, max_year):
                 if date == dt.strftime('%Y-%m-%d'):
                     month_active = True
                     week_active = True
-                    row[wday] = html_link_for_day_number(
-                        day, config['date-format']
-                    )
+                    row[wday] = html_link_for_day_number(day)
                     try:
-                        day = next(iter)
+                        day = next(it)
                         date = day['date']
                     except StopIteration:
                         pass
@@ -409,7 +414,7 @@ def create_year_pages(days, archive, config, min_year, max_year):
                     row[wday] = dt.day
 
                 if wday == 6:
-                    tbody += html_for_row(dt.isocalendar()[1], row, week_active)
+                    tbody += html_for_row(year, dt, row, week_active)
                     week_active = False
                     row = [''] * 7
 
@@ -418,7 +423,7 @@ def create_year_pages(days, archive, config, min_year, max_year):
                     break
 
             if wday < 6:
-                tbody += html_for_row(dt.isocalendar()[1], row, week_active)
+                tbody += html_for_row(year, dt, row, week_active)
 
             if month_active:
                 caption = f'<a href="{current_mon:02d}/">{month_name}</a>'
@@ -451,7 +456,7 @@ def create_month_pages(days, archive, config, min_year, max_year):
 
     years = defaultdict(lambda: defaultdict(deque))
     for day in days:
-        year, month, day_number = split_date(day['date'])
+        year, month, _ = split_date(day['date'])
         years[year][month].appendleft(day)
 
     month_names = get_month_names()
@@ -470,8 +475,7 @@ def create_month_pages(days, archive, config, min_year, max_year):
                 f'  <h2 class="tl-month-year">{month_name} '
                 f'<a href="../../{year}/">{year}</a></h2>'
                 '  <dl class="tl-days">\n',
-                *[html_for_day(day, config['date-format'])
-                     for day in days_for_month],
+                *[html_for_day(day) for day in days_for_month],
                 '  </dl>\n',
                 nav_bar,
                 '</article>\n'

@@ -1,15 +1,5 @@
 /* (c) John Bokma, 2019-2020 */
 
-$font-stack: "San Francisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
-$code-font-stack:
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    "Liberation Mono",
-    "Courier New",
-    monospace;
-
 $background-color: white;
 $page-background-color: white;
 $text-color: #333;
@@ -25,6 +15,7 @@ $blockquote-background-color: white;
 $border: solid 3px $border-color;
 $border-radius: initial;
 
+@import 'fonts';
 @import 'tumblelog';
 
 #tl-main-header {
@@ -38,12 +29,16 @@ $border-radius: initial;
         line-height: 52px;
         padding-top: 0;
     }
+
     span {
         padding-top: 6px;
     }
 }
 
-time, .tl-topbar, nav.tl-next-prev, .tl-month-navigation {
+time,
+.tl-topbar,
+.tl-next-prev,
+.tl-month-navigation {
     position: relative;
     left: -10px;
     width: 480px;
@@ -59,10 +54,12 @@ article {
         line-height: 30px;
         font-weight: bold;
     }
+
     h3 {
         font-size: 18px;
         line-height: 27px;
     }
+
     h4 {
         font-size: 16px;
         line-height: 24px;
@@ -77,20 +74,21 @@ figcaption {
     padding-top: 10px;
 }
 
-section, .tl-archive {
+section,
+.tl-archive {
     margin: 0;
-    padding: 10px 10px 6px 10px;
+    padding: 10px 10px 6px;
 }
-
 
 figure {
     margin: 0;
 
     img {
-        box-shadow: 0 4px 8px  0 rgba(0, 0, 0, 0.2),
-                    0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2),
+            0 6px 20px 0 rgba(0, 0, 0, 0.19);
         display: block;
     }
+
     figcaption {
         font-size: 12px;
         color: #666;
@@ -105,12 +103,12 @@ blockquote {
 }
 
 .tl-month-navigation {
-    padding: 10px 10px 0 10px;
+    padding: 10px 10px 0;
 }
 
 footer {
     margin: 0;
-    padding: 10px 10px;
-    border: none;
+    padding: 10px;
+    border: 0;
     background-color: #dfecee;
 }

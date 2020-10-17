@@ -4,16 +4,6 @@
  * https://www.colourlovers.com/palette/580974/Adrift_in_Dreams
  */
 
-$font-stack: "San Francisco", "Trebuchet MS", Verdana, Helvetica, sans-serif;
-$code-font-stack:
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    "Liberation Mono",
-    "Courier New",
-    monospace;
-
 $background-color: #a8dba8;
 $page-background-color: #cff09e;
 $main-header-background-color: #3b8686;
@@ -36,6 +26,7 @@ $footer-color: white;
 $border: solid 1px $border-color;
 $border-radius: initial;
 
+@import 'fonts';
 @import 'tumblelog';
 
 #tl-page {
@@ -44,12 +35,15 @@ $border-radius: initial;
 
 #tl-main-header {
     background-color: $main-header-background-color;
+
     h1 {
         color: $main-header-color;
     }
+
     div {
         color: $slogan-color;
     }
+
     a {
         color: $main-nav-color;
     }
@@ -59,8 +53,9 @@ footer {
     background-color: $footer-background-color;
     color: $footer-color;
     margin: 0;
-    padding: 10px 10px;
+    padding: 10px;
     text-align: center;
+
     a {
         color: inherit;
     }
@@ -78,6 +73,7 @@ figure {
         display: block;
         border-radius: 6px 6px 0 0;
     }
+
     figcaption {
         color: $background-color;
         background-color: $text-color;
