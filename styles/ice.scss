@@ -1,4 +1,4 @@
-/* (c) John Bokma, 2019-2020 */
+/* (c) John Bokma, 2019-2021 */
 
 $background-color: #c9dbdf;
 $page-background-color: #e0e7e7;
@@ -18,7 +18,7 @@ $border-radius: initial;
 @import 'fonts';
 @import 'tumblelog';
 
-#tl-main-header {
+.tl-main-header {
     text-transform: uppercase;
 
     h1 {
@@ -27,31 +27,32 @@ $border-radius: initial;
         font-weight: normal;
     }
 
-    .tl-navigation {
-        display: block;
-        position: relative;
-        left: -10px;
-        width: 480px;
-        padding-right: 10px;
-        @media screen and (max-width: 479px) {
-            width: 320px;
-        }
-        margin-top: 10px;
-        margin-bottom: 20px;
-        background-color: $heading-color;
-        text-align: right;
+}
 
-        li {
-            display: inline-block;
+.tl-navigation {
+    display: block;
+    position: relative;
+    left: -10px;
+    width: 480px;
+    padding-right: 10px;
+    @media screen and (max-width: 479px) {
+        width: 320px;
+    }
+    margin-top: 10px;
+    margin-bottom: 20px;
+    background-color: $heading-color;
+    text-align: right;
 
-            a {
-                color: $page-background-color;
-                font-size: 12px;
-                border-bottom: solid 1px $heading-color;
+    li {
+        display: inline-block;
 
-                &:hover {
-                    border-bottom: solid 1px $page-background-color;
-                }
+        a {
+            color: $page-background-color;
+            font-size: 12px;
+            border-bottom: solid 1px $heading-color;
+
+            &:hover {
+                border-bottom: solid 1px $page-background-color;
             }
         }
     }
@@ -85,7 +86,8 @@ blockquote {
     border-left: solid 3px $border-color;
 }
 
-.tl-archive {
+.tl-archive,
+.tl-month {
     a {
         text-decoration: underline;
     }

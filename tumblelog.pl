@@ -2,9 +2,11 @@
 
 use strict;
 use warnings;
+use open ':std', ':encoding(UTF-8)';
 
 use URI;
 use JSON::XS;
+use YAML::XS;
 use Path::Tiny;
 use CommonMark qw(:opt :node :event);
 use Time::Piece;
@@ -12,12 +14,15 @@ use Time::Seconds;
 use Getopt::Long;
 use List::Util 'min';
 use Encode 'decode';
+use Try::Tiny;
 
-my $VERSION = '4.1.0';
+my $VERSION = '5.0.0';
 
 my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})(.*?)\n(.*)/s;
-my $RE_AT_PAGE_TITLE = qr/^@([a-z0-9_-]+)\[(.+)\]
-                          \s+(\d{4}-\d{2}-\d{2})(!?)(.*?)\n(.*)/xs;
+my $RE_AT_PAGE_TITLE =
+    qr/^@([a-z0-9_-]+)\[(.+)\]\s+(\d{4}-\d{2}-\d{2})(!?)(.*?)\n(.*)/s;
+my $RE_YAML_MARKDOWN = qr/\s*(---\n.*?\.\.\.\n)?(.*)/sm;
+my $RE_TAG           = qr/^[\p{Ll}\d]+(?: [\p{Ll}\d]+)*$/;
 
 my $RE_TITLE         = qr/\[% \s* title         \s* %\]/x;
 my $RE_YEAR_RANGE    = qr/\[% \s* year-range    \s* %\]/x;
@@ -37,8 +42,8 @@ my @MON_LIST = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
 my @DAY_LIST = qw( Sun Mon Tue Wed Thu Fri Sat );
 
 BEGIN {
-    # Older version of CommonMark which hasn't got this
-    # constant yet, so we can safely set it to 0
+    # An older version of CommonMark hasn't got this constant yet, so
+    # we can safely set it to 0
     unless ( main->can( 'OPT_UNSAFE' ) ) {
         eval 'sub OPT_UNSAFE { return 0 }';
     }
@@ -60,9 +65,12 @@ sub get_config {
         'date-format'       => '%d %b %Y',
         'label-format'      => 'week %V, %Y',
         'min-year'          => undef,
-        'quiet'             => undef,
-        'version'           => undef,
-        'help'              => undef,
+        'tags'              => 0,
+        'tags-label'        => 'tags',
+        'tags-title'        => 'Tags',
+        'quiet'             => 0,
+        'version'           => 0,
+        'help'              => 0,
     );
 
     GetOptions(
@@ -78,21 +86,22 @@ sub get_config {
         'date-format=s',
         'label-format=s',
         'min-year=i',
+        'tags',
+        'tags-label=s',
+        'tags-title=s',
         'quiet',
         'version',
         'help',
     );
 
-    if ( $arguments{ help } ) {
-        show_help();
-        exit;
-    }
+    show_usage_and_exit() if $arguments{ help };
 
     if ( $arguments{ version } ) {
         print "$VERSION\n";
         exit;
     }
 
+    my $missing = 0;
     my %required = (
         'template-filename' =>
             'Use --template-filename to specify a template',
@@ -108,20 +117,18 @@ sub get_config {
         'blog-url' =>
             'Use --blog-url to specify the URL of the blog itself',
     );
-
     for my $name ( sort keys %required ) {
         if ( !defined $arguments{ $name } ) {
-            warn "$required{ $name }\n\n";
-            show_help();
-            exit( 1 );
+            warn "$required{ $name }\n";
+            $missing++;
         }
     }
+    show_usage_and_exit( 2 ) if $missing;
 
     my $filename = shift @ARGV;
     if ( !defined $filename ) {
-        warn "Specify a filename that contains the blog entries\n\n";
-        show_help();
-        exit( 1 );
+        warn "Specify a filename that contains the entries\n";
+        show_usage_and_exit(1);
     }
     warn "Additional arguments have been skipped\n" if @ARGV;
 
@@ -146,8 +153,16 @@ sub create_blog {
     my $config = shift;
 
     my ( $days, $pages ) = collect_days_and_pages(
-        read_tumblelog_entries( $config->{ filename } )
+        read_entries( $config->{ filename } )
     );
+
+    if ( $config->{ tags } ) {
+        convert_articles_with_metablock_to_html( $days, $config );
+    }
+    else {
+        convert_articles_to_html( $days );
+    }
+    convert_articles_to_html( $pages );
 
     my $max_year = ( localtime() )[ 5 ] + 1900; # current year
     my $min_year;
@@ -183,6 +198,10 @@ sub create_blog {
             $days, $archive, $config, $min_year, $max_year
         );
 
+        create_tag_pages(
+            $days, $archive, $config, $min_year, $max_year
+        ) if $config->{tags};
+
         create_rss_feed( $days, $config );
         create_json_feed( $days, $config );
     }
@@ -204,9 +223,7 @@ sub create_index {
         $body_html .= html_for_date(
             $day->{ date }, $config->{ 'date-format' }, $day->{ title },
             'archive'
-        );
-
-        $body_html .= html_for_entry( $_ ) for @{ $day->{ entries } };
+        ) . join( '', map { $_->{ html } } @{ $day->{ articles } } );
 
         --$todo or last;
     }
@@ -239,9 +256,7 @@ sub create_day_and_week_pages {
         my $day_body_html = html_for_date(
             $day->{ date }, $config->{ 'date-format' }, $day->{ title },
             '../..'
-        );
-
-        $day_body_html .= html_for_entry( $_ ) for @{ $day->{ entries } };
+        ) . join( '', map { $_->{ html } } @{ $day->{ articles } } );
 
         my $label = decode_utf8( parse_date( $day->{ date } )
             ->strftime( $config->{ 'date-format' } ) );
@@ -305,7 +320,7 @@ sub create_pages {
             $body_html = qq(<div class="tl-topbar"></div>\n);
         }
 
-        $body_html .= html_for_entry( $_ ) for @{ $page->{ entries } };
+        $body_html .= join( '', map { $_->{ html } } @{ $page->{ articles } } );
 
         create_page(
             "$page->{ name }.html",
@@ -362,7 +377,6 @@ sub create_month_pages {
                 $years{ $year }, $month, \@month_names
             );
             my $body_html = qq(<div class="tl-topbar"></div>\n)
-                . "<article>\n"
                 . qq(  <h2 class="tl-month-year">$month_name )
                 . qq(<a href="../../$year/">$year</a></h2>)
                 . qq(  <dl class="tl-days">\n)
@@ -370,8 +384,7 @@ sub create_month_pages {
                         map { html_for_day( $_ ) } @$days_for_month
                   )
                 . "  </dl>\n"
-                . $nav_bar
-                . "</article>\n";
+                . $nav_bar;
 
             create_page(
                 "archive/$year/$month/index.html",
@@ -399,10 +412,13 @@ sub create_year_pages {
     my $tp = parse_date( "$start_year-01-01" );
     my $date_index = $#$days;
     my $date = $days->[ $date_index ]{ date };
+    my $year_index = 0;
     for my $year ( $start_year .. $end_year ) {
 
-        my $body_html = qq(<div class="tl-topbar"></div>\n<article>\n)
-            . html_for_year_nav_bar( $start_year, $year, $end_year );
+        my $body_html = qq(<div class="tl-topbar"></div>\n)
+            . html_for_year_nav_bar(
+                [ $start_year .. $end_year ], $year_index );
+        $year_index++;
 
         while ( 1 ) {
             my $tbody;
@@ -463,7 +479,7 @@ sub create_year_pages {
 
             last if $tp->year != $year;
         }
-        $body_html .= "</article>\n";
+
         create_page(
             "archive/$year/index.html",
             $year, $body_html, $archive_html, $config,
@@ -500,8 +516,8 @@ sub create_page {
         s/ $RE_PAGE_URL      / escape( $page_url ) /gxe;
         s/ $RE_RSS_FEED_URL  / escape( $config->{ 'rss-feed-url' } ) /gxe;
         s/ $RE_JSON_FEED_URL / escape( $config->{ 'json-feed-url' } ) /gxe;
-        s/ $RE_BODY          /$body_html/x;
         s/ $RE_ARCHIVE       /$archive_html/gx;
+        s/ $RE_BODY          /$body_html/x;
     }
 
     path( "$config->{ 'output-dir' }/$path" )
@@ -592,22 +608,24 @@ sub html_link_for_day_number {
 
 sub html_for_year_nav_bar {
 
-    my ( $start_year, $year, $end_year ) = @_;
+    my ( $years, $year_index, $path ) = @_;
+
+    $path //= '';
 
     my $nav;
-    if ( $year > $start_year ) {
-        my $prev = $year - 1;
-        $nav = qq(    <div>\x{2190} <a href="../$prev/">$prev</a></div>\n)
+    if ( $year_index > 0 ) {
+        my $prev = $years->[ $year_index - 1 ];
+        $nav = qq(    <div>\x{2190} <a href="../$prev/$path">$prev</a></div>\n)
     }
     else {
         $nav .= "    <div></div>\n";
     }
 
-    $nav .= "    <h2>$year</h2>\n";
+    $nav .= "    <h2>$years->[ $year_index ]</h2>\n";
 
-    if ( $year < $end_year ) {
-        my $next = $year + 1;
-        $nav .= qq(    <div><a href="../$next/">$next</a> \x{2192}</div>\n)
+    if ( $year_index < $#$years ) {
+        my $next = $years->[ $year_index + 1 ];
+        $nav .= qq(    <div><a href="../$next/$path">$next</a> \x{2192}</div>\n)
     }
     else {
         $nav .= "    <div></div>\n";
@@ -633,62 +651,6 @@ sub html_for_date {
     return qq(<time class="tl-date" datetime="$date">)
         . qq(<a href="$uri" title="$title_text">$link_text</a>)
         . "</time>\n";
-}
-
-sub rewrite_ast {
-
-    # Rewrite an image at the start of a paragraph followed by some text
-    # to an image with a figcaption inside a figure element
-
-    my $ast = shift;
-
-    my @nodes;
-    my $iter = $ast->iterator;
-    while ( my ( $ev_type, $node ) = $iter->next() ) {
-        if ( $node->get_type() == NODE_PARAGRAPH && $ev_type == EVENT_EXIT ) {
-            my $child = $node->first_child();
-            next unless defined $child && $child->get_type() == NODE_IMAGE;
-            next if $node->last_child() == $child;
-
-            my $sibling = $child->next();
-            if ( $sibling->get_type() == NODE_SOFTBREAK ) {
-                # remove this sibling
-                $sibling->unlink();
-            }
-
-            my $figcaption = CommonMark->create_custom_block(
-                on_enter => '<figcaption>',
-                on_exit  => '</figcaption>',
-            );
-
-            $sibling = $child->next();
-            while ( $sibling ) {
-                my $next = $sibling->next();
-                $figcaption->append_child($sibling);
-                $sibling = $next;
-            }
-            my $figure = CommonMark->create_custom_block(
-                on_enter => '<figure>',
-                on_exit  => '</figure>',
-                children => [$child, $figcaption], # append_child unlinks for us
-            );
-
-            $node->replace( $figure );
-            push @nodes, $node;
-        }
-    }
-
-    return \@nodes;
-}
-
-sub html_for_entry {
-
-    my $ast = CommonMark->parse_document( shift );
-    my $nodes = rewrite_ast($ast);
-
-    return qq(<article>\n)
-        . $ast->render_html( OPT_UNSAFE )  # we want (inline) HTML to work
-        . "</article>\n";
 }
 
 sub html_for_archive {
@@ -789,10 +751,7 @@ sub get_url_title_description {
 
     my ( $day, $config ) = @_;
 
-    my $description;
-    $description .= html_for_entry( $_ )
-        for @{ $day->{ entries } };
-
+    my $description = join( '', map { $_->{ html } } @{ $day->{ articles } } );
     my ( $year, $month, $day_number ) = split_date( $day->{ date } );
     my $url = URI->new_abs(
         "archive/$year/$month/$day_number.html",
@@ -817,6 +776,115 @@ sub get_end_of_day {
     return Time::Piece->localtime(
         Time::Piece->strptime( shift . ' 23:59:59', '%Y-%m-%d %H:%M:%S' )
     );
+}
+
+sub get_tag_path {
+
+    ( my $name = shift ) =~ s/ /-/g;
+    return "$name.html";
+}
+
+sub get_cloud_size {
+    my ( $count, $min_count, $max_count ) = @_;
+
+    return 1 if $min_count == $max_count;
+
+    return 1 + int(
+        4 * ( log( $count ) - log( $min_count ) )
+        / ( log( $max_count ) - log( $min_count ) )
+    );
+}
+
+sub create_tag_pages {
+
+    my ( $days, $archive, $config, $min_year, $max_year ) = @_;
+
+    my $tags = {};
+    for my $day ( @$days ) {
+        my $year = ( split_date( $day->{ date } ) )[ 0 ];
+        for my $article ( reverse @{ $day->{ articles } } ) {
+            for my $tag ( @{ $article->{ tags } } ) {
+                $tags->{ $tag }{ count }++;
+                unshift @{ $tags->{ $tag }{ years }{ $year } }, {
+                    title => $article->{ title },
+                    date  => $day->{ date },
+                };
+            }
+        }
+    }
+
+    my $archive_html = html_for_archive(
+        $archive, undef, '../../archive', $config->{ 'label-format' }
+    );
+
+    my %tag_info;
+    for my $tag ( sort keys %$tags ) {
+        my @years = sort keys %{ $tags->{ $tag }{ years } };
+        $tag_info{ $tag }{ end_year } = $years[ -1 ];
+        my $tag_path = get_tag_path( $tag );
+        my $year_index = 0;
+        for my $year ( @years ) {
+            my $body_html = qq(<div class="tl-topbar"></div>\n)
+                . html_for_year_nav_bar( \@years, $year_index, $tag_path )
+                . "<h2>$tag</h2>\n";
+            $year_index++;
+
+            my $current_month = '';
+            my $rows = $tags->{ $tag }{ years }{ $year };
+            for my $row ( @$rows ) {
+                my $tp = parse_date( $row->{ date } );
+                my $month_name = decode_utf8( $tp->strftime( '%B' ) );
+                if ( $month_name ne $current_month ) {
+                    $body_html .= "</dl>\n" if $current_month ne '';
+                    $body_html .= "<h3>$month_name</h3>\n"
+                        . qq(<dl class="tl-days">\n);
+                    $current_month = $month_name;
+                }
+
+                my $nr = ( split_date( $row->{ date } ) )[ 2 ];
+                $body_html .= "    <dt>$nr</dt><dd>$row->{ title }</dd>\n";
+                $tag_info{ $tag }{ count }++;
+            }
+            $body_html .= "</dl>\n";
+
+            path( "$config->{ 'output-dir' }/tags/$year/")->mkpath();
+            create_page(
+                "tags/$year/$tag_path",
+                $tag, $body_html, $archive_html, $config,
+                $tag, $min_year, $max_year
+            );
+        }
+    }
+
+    # Create a page with a tag cloud
+    my ( $min_count, $max_count );
+    for my $tag ( keys %tag_info ) {
+        $min_count = $tag_info{ $tag }{ count }
+            if !defined $min_count || $tag_info{ $tag }{ count } < $min_count;
+        $max_count = $tag_info{ $tag }{ count }
+            if !defined $max_count || $tag_info{ $tag }{ count } > $max_count;
+    }
+
+    my $body_html = qq(<div class="tl-topbar"></div>\n)
+        . "<h2>$config->{ 'tags-title' }</h2>\n"
+        . qq(<ul class="tl-tag-cloud">\n);
+    for my $tag ( sort keys %tag_info ) {
+        my $tag_path = get_tag_path( $tag );
+        my $size = get_cloud_size(
+            $tag_info{ $tag }{ count }, $min_count, $max_count
+        );
+        $body_html .= qq(    <li class="tl-size-$size">)
+            . qq(<a href="$tag_info{ $tag }{ end_year }/$tag_path">)
+            . "$tag\x{202f}($tag_info{ $tag }{ count })</a></li>\n";
+    }
+    $body_html .= "</ul>\n";
+
+    create_page(
+        "tags/index.html",
+        $config->{ 'tags-title' }, $body_html, $archive_html, $config,
+        $config->{ 'tags-label' }, $min_year, $max_year
+    );
+    return;
 }
 
 sub create_rss_feed {
@@ -887,7 +955,7 @@ sub create_json_feed {
 
         my $end_of_day = get_end_of_day( $day->{ date } );
         ( my $date_published = $end_of_day->strftime( '%Y-%m-%dT%H:%M:%S%z' ) )
-            =~ s/(\d\d)$/:$1/;
+            =~ s/(\d\d)$/:$1/a;
 
         push @items, {
             id    => $url,
@@ -983,6 +1051,240 @@ sub escape {
     return $str;
 }
 
+sub rewrite_ast {
+
+    # Rewrite an image at the start of a paragraph followed by some text
+    # to an image with a figcaption inside a figure element
+
+    my $ast = shift;
+
+    my @nodes;
+    my $it = $ast->iterator;
+    while ( my ( $ev_type, $node ) = $it->next() ) {
+        if ( $node->get_type() == NODE_PARAGRAPH && $ev_type == EVENT_EXIT ) {
+            my $child = $node->first_child();
+            next unless defined $child && $child->get_type() == NODE_IMAGE;
+            next if $node->last_child() == $child;
+
+            my $sibling = $child->next();
+            if ( $sibling->get_type() == NODE_SOFTBREAK ) {
+                # remove this sibling
+                $sibling->unlink();
+            }
+
+            my $figcaption = CommonMark->create_custom_block(
+                on_enter => '<figcaption>',
+                on_exit  => '</figcaption>',
+            );
+
+            $sibling = $child->next();
+            while ( $sibling ) {
+                my $next = $sibling->next();
+                $figcaption->append_child($sibling);
+                $sibling = $next;
+            }
+            my $figure = CommonMark->create_custom_block(
+                on_enter => '<figure>',
+                on_exit  => '</figure>',
+                children => [$child, $figcaption], # append_child unlinks for us
+            );
+
+            $node->replace( $figure );
+            push @nodes, $node;
+        }
+    }
+
+    return \@nodes;
+}
+
+sub convert_articles_to_html {
+
+    my $items = shift;
+    for my $item ( @$items ) {
+        my @articles;
+        for my $article ( @{ $item->{ articles } } ) {
+            my $ast = CommonMark->parse_document( $article );
+            my $nodes = rewrite_ast( $ast );
+            my $html = qq(<article>\n)
+                . $ast->render_html( OPT_UNSAFE )  # support (inline) HTML
+                . "</article>\n";
+            push @articles, { html => $html };
+        }
+        $item->{ articles } = \@articles;
+    }
+    return;
+}
+
+sub extract_identifier_and_heading {
+
+    my $ast = shift;
+    my $it = $ast->iterator;
+
+    my ( $ev_type, $node ) = $it->next();
+    ( $ev_type == EVENT_ENTER && $node->get_type() == NODE_DOCUMENT)
+        or die 'Unexpected state encountered'; # should never happen
+
+    ( $ev_type, $node ) = $it->next();
+    ( $ev_type == EVENT_ENTER && $node->get_type() == NODE_HEADING)
+        or die 'An article must start with a level 2 heading (none found)';
+
+    my $level = $node->get_header_level();
+    $level == 2
+        or die "An article must start with a level 2 heading, not $level";
+
+    my $heading = $node->render_html( OPT_UNSAFE );  # support (inline) HTML
+    my $heading_node = $node;
+
+    my $text = '';
+    while ( my ( $ev_type, $node ) = $it->next() ) {
+        last if $node->get_type() == NODE_HEADING && $ev_type == EVENT_EXIT;
+        $text .= $node->get_literal() // '';
+    }
+    length( $text ) or die 'An article must have text after a heading';
+    ( my $identifier = lc $text ) =~ s/\s+/-/g;
+
+    $heading_node->unlink; # Output the title after modification later on
+
+    return ( $identifier, $heading );
+}
+
+sub wrap_in_permalink {
+
+    my ( $string, $config, $date, $identifier ) = @_;
+
+    my ( $year, $month, $day_number ) = split_date( $date );
+    my $uri = URI->new_abs(
+        "archive/$year/$month/$day_number.html",
+        $config->{ 'blog-url' }
+    );
+    $uri->fragment( $identifier );
+    return qq(<a href="$uri">$string</a>);
+}
+
+sub insert_identifier_and_add_permalink {
+
+    my ( $heading, $date, $identifier, $config ) = @_;
+
+    return substr( $heading, 0, 3 )
+        . ' id="' . escape( $identifier ) . '">'
+        . wrap_in_permalink(
+            substr( $heading, 4, -6 ), $config, $date, $identifier
+        )
+        . substr( $heading, -6 );
+}
+
+sub validate_identifier {
+    my $identifier = shift;
+
+    ref $identifier eq '' or die 'identifier is not a string';
+    length $identifier or die 'identifier can not be empty';
+    die 'identifier can not contain whitespace' if $identifier =~ /\s/;
+    return;
+}
+
+sub validate_tags {
+
+    my $tags = shift;
+
+    ref $tags eq 'ARRAY' or die 'Tags must be specified as a list';
+
+    my %seen;
+    for my $tag ( @$tags ) {
+        length $tag or die 'A tag must have a length';
+        $tag =~ $RE_TAG or die "Invalid tag '$tag' found";
+        ++$seen{ $tag } == 1 or die "Duplicate tag '$tag' found";
+    }
+    return;
+}
+
+sub html_for_tag {
+    my ( $tag, $year, $config ) = @_;
+
+    my $tag_path = get_tag_path( $tag );
+    my $uri = URI->new_abs(
+        "tags/$year/$tag_path",
+        $config->{ 'blog-url' }
+    );
+    return qq(<a href="$uri">$tag</a>);
+}
+
+sub html_for_tags {
+
+    my ( $tags, $date, $config ) = @_;
+
+    my $year = ( split_date( $date ) )[ 0 ];
+    return  join( '',
+                  '<ul class="tl-tags">',
+                  map(
+                      '<li>' . html_for_tag( $_, $year, $config ) . '</li>',
+                      @$tags
+                  ),
+                  "</ul>\n"
+              );
+}
+
+sub convert_articles_with_metablock_to_html {
+
+    my ( $items, $config ) = @_;
+
+    my %ids;
+    for my $item ( @$items ) {
+        my @articles;
+        my $article_no = 1;
+        for my $article ( @{ $item->{ articles } } ) {
+            try {
+                my ( $yaml, $md ) = $article =~ $RE_YAML_MARKDOWN;
+                $yaml or die 'No mandatory YAML block found';
+
+                my $meta = Load $yaml;
+                ref $meta eq 'HASH' or die 'YAML block must be a mapping';
+
+                my $ast = CommonMark->parse_document( $md );
+                my ( $identifier, $heading )
+                    = extract_identifier_and_heading( $ast );
+                if ( exists $meta->{ id } ) {
+                    validate_identifier( $meta->{ id } );
+                    $identifier = $meta->{ id };
+                }
+
+                # identifier must be globally unique
+                die "Duplicate id '$identifier'"
+                    ." (used later in $ids{ $identifier })"
+                    if exists $ids{ $identifier };
+                $ids{ $identifier } = $item->{ date };
+
+                exists $meta->{tags} or die 'No tags are specified';
+                validate_tags( $meta->{ tags } );
+
+                my $nodes = rewrite_ast( $ast );
+                my $html = qq(<article>\n)
+                    . insert_identifier_and_add_permalink(
+                        $heading, $item->{ date }, $identifier, $config
+                    )
+                    . $ast->render_html( OPT_UNSAFE )  # support (inline) HTML
+                    . html_for_tags( $meta->{ tags }, $item->{ date }, $config )
+                    . "</article>\n";
+
+                push @articles, {
+                    title => wrap_in_permalink(
+                        substr($heading, 4, -6), $config, $item->{ date },
+                        $identifier
+                    ),
+                    html => $html,
+                    tags => $meta->{ tags },
+                };
+            }
+            catch {
+                my ( $error ) = $_ =~ /(.*) at /s;
+                die "$error in article $article_no of $item->{ date }\n";
+            };
+            $article_no++;
+        }
+        $item->{ articles } = \@articles;
+    }
+    return;
+}
+
 sub strip {
 
     my $str = shift;
@@ -1004,9 +1306,9 @@ sub collect_days_and_pages {
             my $title = strip( $2 );
             $title ne '' or die "A day must have a title ($1)\n";
             push @days, {
-                date    => $1,
-                title   => $title,
-                entries => [ $3 ],
+                date     => $1,
+                title    => $title,
+                articles => [ $3 ],
             };
             $state = 'date-title';
             next ENTRY;
@@ -1020,19 +1322,19 @@ sub collect_days_and_pages {
                 date        => $3,
                 'show-date' => $4 eq '!',
                 title       => $title,
-                entries     => [ $6 ],
+                articles    => [ $6 ],
             };
             $state = 'at-page-title';
             next ENTRY;
         }
 
         if ( $state eq 'date-title' ) {
-            push @{ $days[ -1 ]{ entries } }, $entry;
+            push @{ $days[ -1 ]{ articles } }, $entry;
             next ENTRY;
         }
 
         if ( $state eq 'at-page-title' ) {
-            push @{ $pages[ -1]{ entries } }, $entry;
+            push @{ $pages[ -1]{ articles } }, $entry;
             next ENTRY;
         };
 
@@ -1045,20 +1347,22 @@ sub collect_days_and_pages {
     return ( \@days, \@pages );
 }
 
-sub read_tumblelog_entries {
+sub read_entries {
 
     my $filename = shift;
     my $entries = [ grep { length $_ } split /^%\n/m,
                     path( $filename )->slurp_utf8() ];
 
-    @$entries or die 'No blog entries found';
+    @$entries or die 'No entries found';
 
     return $entries;
 }
 
-sub show_help {
+sub show_usage_and_exit {
 
-    print <<'END_HELP';
+    my $exit_code //= 0;
+
+    print { $exit_code ? *STDERR : *STDOUT } <<'END_USAGE';
 NAME
         tumblelog.pl - Creates a static tumblelog
 
@@ -1067,6 +1371,7 @@ SYNOPSIS
             --author AUTHOR --name BLOGNAME --description DESCRIPTION
             --blog-url URL
             [--days DAYS ] [--css CSS] [--date-format FORMAT] [--min-year YEAR]
+            [--tags [--tags-label LABEL] [--tags-title TITLE]]
             [--quiet] FILE
         tumblelog.pl --version
         tumblelog.pl --help
@@ -1091,13 +1396,21 @@ DESCRIPTION
         The --min-year argument specificies the minimum year to use for the
         copyright message.
 
+        The --tags option enables tags. Default off.
+
+        The --tags-label argument specifies the label to use on the tags
+        overview page. It defaults to 'tags'. Only used when tags are enabled.
+
+        The --tags-title argument specifies the title to use on the tags
+        overview page. It defaults to 'Tags'. Only used when tags are enabled.
+
         The --quiet option prevents the program from printing information
         regarding the progress.
 
         The --version option shows the version number and exits.
 
         The --help option shows this information.
-END_HELP
+END_USAGE
 
-    return;
+    exit $exit_code;
 }

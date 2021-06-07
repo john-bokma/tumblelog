@@ -1,4 +1,4 @@
-/* (c) John Bokma, 2019-2020
+/* (c) John Bokma, 2019-2021
  *
  * Palette taken in part from 'Thought Provoking' by Miss_Anthropy
  * https://www.colourlovers.com/palette/694737/Thought_Provoking
@@ -9,7 +9,6 @@ $page-background-color: white;
 $main-header-background-color: #53777a;
 $main-header-color: white;
 $main-nav-color: white;
-$slogan-color: white;
 $text-color: black;
 $heading-color: #c02942;
 $label-color: #01535f;
@@ -29,19 +28,15 @@ $border-radius: initial;
 @import 'fonts';
 @import 'tumblelog';
 
-#tl-page {
+.tl-page {
     margin: 0 auto;
 }
 
-#tl-main-header {
+.tl-main-header {
     background-color: $main-header-background-color;
 
     h1 {
         color: $main-header-color;
-    }
-
-    div {
-        color: $slogan-color;
     }
 
     a {

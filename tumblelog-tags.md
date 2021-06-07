@@ -1,16 +1,29 @@
 2019-10-06 Congratulations!
 
+---
+tags: [congratulations, unicode]
+...
+
 ## Congratulations!
 
 If you see this post you successfully ran `tumblelog.pl` or `tumblelog.py`.
 
 Unicode test: ☺ (smiley face)
 %
+
+---
+tags: [example, tumblelog, plurrrr, blogging]
+...
+
 ## Example tumblelog
 
 See [Plurrrr](http://plurrrr.com/) for an example tumblelog created
 with `tumblelog`.
 %
+
+---
+tags: [blogging]
+...
 
 ## Next Steps
 
@@ -19,11 +32,20 @@ with `tumblelog`.
 - Start blogging.
 
 %
+
+---
+tags: [help, tumblelog]
+...
+
 ## Help
 
 - [`tumblelog`](http://johnbokma.com/articles/tumblelog/) - Official documentation.
 - [Markdown Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
 %
+
+---
+tags: [example]
+...
 
 ## heading level 2
 
@@ -43,12 +65,20 @@ lobortis magna.
 %
 2019-10-05 More examples: succulents in a metal bowl, and Tolkien
 
+---
+tags: [succulent, decoration, photo]
+...
+
 ## More Examples: succulents in a metal bowl
 
 ![Succulents planted in a metal bowl](
 http://plurrrr.com/images/succulents.jpg)
 Succulents planted in a metal bowl. See [original here](http://plurrrr.com/archive/2019/05/18.html).
 %
+
+---
+tags: [tolkien]
+...
 
 ## Tolkien Quote
 

@@ -32,17 +32,43 @@ git clone https://github.com/john-bokma/tumblelog.git
 cd tumblelog
 python3 -m venv venv
 pip3 install commonmark
+pip3 install regex
 source venv/bin/activate
 mkdir htdocs
+```
+
+Generate a stylesheet. I use *steel* for example. See the directory
+`styles` for others you can use (except the ones that start with an
+underscore).
+
+```bash
 sass --sourcemap=none -t compressed styles/steel.scss htdocs/steel.css
-python3 tumblelog.py --template-filename tumblelog.html --output-dir htdocs/ \
-        --author 'Test' --name 'Test Blog' --description 'This is a test'    \
-        --blog-url 'http://example.com/' --css steel.css tumblelog.md
+```
+
+To generate a version of the example site that *does not use tags* use:
+
+```bash
+python3 tumblelog.py --template-filename tumblelog.html \
+        --output-dir htdocs/ \
+        --author 'Test' --name 'Test Blog' --description 'This is a test' \
+        --blog-url 'http://localhost:8000/' --css steel.css \
+        tumblelog.md
+```
+
+To generate a version of the example site that *uses tags*
+(recommended) use:
+
+```bash
+python3 tumblelog.py --template-filename tumblelog-tags.html \
+        --output-dir htdocs/ \
+        --author 'Test' --name 'Test Blog' --description 'This is a test' \
+        --blog-url 'http://localhost:8000/' --css steel.css --tags \
+        tumblelog-tags.md
 ```
 
 To view the generated site at http://localhost:8000/ enter:
 
-```
+```bash
 cd htdocs
 python3 -m http.server
 ```
@@ -70,4 +96,4 @@ The `screenshots` directory has 1:1 examples of themes that come with
 
 - [Plurrrr: a tumblelog](http://plurrrr.com/) - by John Bokma
 
-If you want your tumblelog generated site listed, please let me know.
+If you want your tumblelog generated site listed here, please let me know.

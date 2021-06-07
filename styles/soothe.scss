@@ -14,6 +14,7 @@ $self-color: #828282;                   // GRAY-2
 $link-color: #b13120;                   // RED-1
 $pre-background-color: #1e252f;         // BLUE-1BG
 $blockquote-background-color: #073e46;  // TURQUOISE-2
+$tag-color: #364e7a;                    // BLUE-4
 
 $border: solid 1px $border-color;
 $border-radius: 6px;
@@ -36,5 +37,11 @@ figure {
         text-align: center;
         border-radius: 0 0 $border-radius $border-radius;
         margin-bottom: 1em;
+    }
+}
+
+.tl-tags {
+    a {
+        color: $tag-color;
     }
 }

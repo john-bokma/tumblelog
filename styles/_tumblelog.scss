@@ -1,4 +1,4 @@
-/* (c) John Bokma, 2019-2020 */
+/* (c) John Bokma, 2019-2021 */
 
 html {
     box-sizing: border-box;
@@ -30,7 +30,7 @@ ol {
     padding: 0 0 0 28px;
 }
 
-#tl-page {
+.tl-page {
     margin: 14px auto;
     width: 480px;
     background-color: $page-background-color;
@@ -41,7 +41,7 @@ ol {
     }
 }
 
-#tl-main-header {
+.tl-main-header {
     padding: 10px 10px 0;
 }
 
@@ -100,33 +100,43 @@ main {
     border-bottom: $border;
 }
 
+h2,
+h3,
+h4 {
+    color: $heading-color;
+}
+
+h2,
+h3 {
+    font-weight: normal;
+    font-style: normal;
+}
+
+h2 {
+    font-size: 18px;
+    line-height: 27px;
+}
+
+h3 {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+h4 {
+    font-size: 14px;
+    font-weight: bold;
+    font-style: oblique;
+}
+
 article {
-    h2,
-    h3,
-    h4 {
+    > [id] > a {
         color: $heading-color;
     }
 
-    h2,
-    h3 {
-        font-weight: normal;
-        font-style: normal;
-    }
-
-    h2 {
-        font-size: 18px;
-        line-height: 27px;
-    }
-
-    h3 {
-        font-size: 16px;
-        line-height: 24px;
-    }
-
-    h4 {
-        font-size: 14px;
-        font-weight: bold;
-        font-style: oblique;
+    > [id] > a:hover::after {
+        content: '#';
+        padding-left: 4px;
+        color: $link-color;
     }
 }
 
@@ -259,16 +269,14 @@ $arrow-space: 30px;
         color: $heading-color;
     }
 
-    tbody {
-        th {
-            border-right: $border;
-        }
+    th {
+        border-right: $border;
+    }
 
-        th,
-        td {
-            padding: 10px;
-            text-align: right;
-        }
+    th,
+    td {
+        padding: 10px;
+        text-align: right;
     }
 }
 
@@ -291,33 +299,63 @@ $arrow-space: 30px;
 }
 
 .tl-archive {
-    h2 {
+    > h2 {
         font-size: 20px;
         color: $heading-color;
     }
 
-    dl {
+    > dl {
         margin: 0;
         padding: 0;
-
-        dt {
-            float: left;
-        }
-
-        dd {
-            margin: 0 0 0 36px;
-
-            ul {
-                display: inline;
-                margin: 0;
-                padding: 0;
-
-                li {
-                    display: inline;
-                }
-            }
-        }
     }
+
+    dt {
+        float: left;
+    }
+
+    dd {
+        margin: 0 0 0 36px;
+    }
+
+    ul {
+        display: inline;
+        margin: 0;
+        padding: 0;
+    }
+
+    li {
+        display: inline;
+    }
+}
+
+.tl-tags {
+    margin: 0 0 16px;
+    padding: 0;
+    text-align: right;
+
+    > li {
+        display: inline;
+        font-size: 12px;
+        padding-left: 12px;
+
+    }
+}
+
+.tl-tag-cloud {
+    margin: 0;
+    padding: 0;
+
+    > li {
+        display: inline;
+        padding-right: 8px;
+        white-space: nowrap;
+        line-height: 1.5;
+    }
+    > .tl-size-1 { font-size: 12px; }
+    > .tl-size-2 { font-size: 16px; }
+    > .tl-size-3 { font-size: 20px; }
+    > .tl-size-4 { font-size: 24px; }
+    > .tl-size-5 { font-size: 28px; }
 }
 
 footer {

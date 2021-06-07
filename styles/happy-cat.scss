@@ -1,4 +1,4 @@
-/* (c) John Bokma, 2019-2020 */
+/* (c) John Bokma, 2019-2021 */
 
 $background-color: white;
 $page-background-color: white;
@@ -18,7 +18,7 @@ $border-radius: initial;
 @import 'fonts';
 @import 'tumblelog';
 
-#tl-main-header {
+.tl-main-header {
     text-transform: uppercase;
     background-color: black;
 
@@ -32,24 +32,24 @@ $border-radius: initial;
     div {
         color: #777;
     }
+}
 
-    .tl-navigation {
-        display: block;
-        padding-top: 10px;
-        padding-bottom: 6px;
-        background-color: black;
-        text-align: right;
+.tl-navigation {
+    display: block;
+    padding-top: 10px;
+    padding-bottom: 6px;
+    background-color: black;
+    text-align: right;
 
-        li {
-            display: inline-block;
+    li {
+        display: inline-block;
 
-            a {
-                padding: 4px 4px 8px;
-                color: white;
+        a {
+            padding: 4px 4px 8px;
+            color: white;
 
-                &:hover {
-                    background-color: #c30;
-                }
+            &:hover {
+                background-color: #c30;
             }
         }
     }

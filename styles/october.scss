@@ -1,4 +1,4 @@
-/* (c) John Bokma, 2019-2020 */
+/* (c) John Bokma, 2019-2021 */
 
 $background-color: white;
 $page-background-color: white;
@@ -18,7 +18,7 @@ $border-radius: initial;
 @import 'fonts';
 @import 'tumblelog';
 
-#tl-main-header {
+.tl-main-header {
     background-color: #f5f8fa;
     border-bottom: solid 1px #7c98b6;
     margin-bottom: 30px;

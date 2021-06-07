@@ -1,5 +1,67 @@
 # Change Log
 
+## [5.0.0] - 2021-06-07
+
+This is a major update which adds tag support to `tumblelog`. Tags are
+optional and turned on using the `--tag` option. When on you can
+specify the label and title of the tags overview page with the
+`--tag-label` argument respectively `--tag-title` argument.
+
+I removed the slogan ("a tumbelog") from the template due to space
+restrictions when viewing a generated tumblelog on a small screen; a
+tag (which is shown in the label) might push away the slogan resulting
+in an odd looking design.
+
+The `description` now includes the `title` of the site.
+
+The CSS style no longer uses `id`s. So `#tl-page` and
+`#tl-main-header` are now classes. The reason for this is that ids are
+used in link fragments when the `--tags` option is given.
+
+### Migrating to a non-tags version
+
+Migrating to a non-tags version is the easiest:
+
+- Replace 'id="tl-page"' with 'class="tl-page"' and replace
+  'id="tl-main-header"' with 'class="tl-main-header"' in your
+  template. I recommend to add the title to the description as well,
+  see `tumblelog.html`. A diff between your template and the default
+  one might help in guiding the required changes.
+- If you use your own stylesheet change `#tl-page` and
+  `#tl-main-header` into `.tl-page` and `.tl-main-header`.
+
+### Migrating to a tags version (recommended)
+
+See the above steps under *Migrating to a non-tags
+version*. Additionally:
+
+  - From now on each blog entry must start with a level 2 heading, for
+    example: `## A big update to my blog`.
+  - Preceding this level 2 header you must specify tags in a YAML
+    block. See `tumblelog-tags.md` for examples.
+  - If two posts have the same level 2 heading they will have the same
+    id. Because ids must be globally unique you can specify an alternative id
+    inside the YAML block, for example:
+
+```
+---
+tags: [example]
+id: not-unique-2
+...
+
+## Not Unique
+```
+
+  - Tags must be lowercase and space may separate words in a
+    tag. Currently a tag is a valid lowercase unicode letter or
+    unicode digit. However, Python and Perl seem to disagree on the
+    set of codepoints this entails. So if you ever switch from the
+    Perl to the Python version or vice versa you might get a warning
+    about an invalid tag.
+
+If you have any questions or encounter any issues feel free to contact
+me at contact@johnbokma.com.
+
 ## [4.1.0] - 2020-10-17
 
   - Fixed calendar bug
