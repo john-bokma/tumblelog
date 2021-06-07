@@ -35,7 +35,7 @@ Migrating to a non-tags version is the easiest:
 See the above steps under *Migrating to a non-tags
 version*. Additionally:
 
-  - From now on each blog entry must start with a level 2 heading, for
+  - Each existing and new blog entry must start with a level 2 heading, for
     example: `## A big update to my blog`.
   - Preceding this level 2 header you must specify tags in a YAML
     block. See `tumblelog-tags.md` for examples.
@@ -53,11 +53,11 @@ id: not-unique-2
 ```
 
   - Tags must be lowercase and space may separate words in a
-    tag. Currently a tag is a valid lowercase unicode letter or
-    unicode digit. However, Python and Perl seem to disagree on the
-    set of codepoints this entails. So if you ever switch from the
-    Perl to the Python version or vice versa you might get a warning
-    about an invalid tag.
+    tag. Currently a tag is valid lowercase unicode letters or unicode
+    digits and a single space is allowed as separator. However, Python
+    and Perl seem to disagree on the set of codepoints this
+    entails. So if you ever switch from the Perl to the Python version
+    or vice versa you might get a warning about an invalid tag.
 
 If you have any questions or encounter any issues feel free to contact
 me at contact@johnbokma.com.
