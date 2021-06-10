@@ -18,7 +18,7 @@ import yaml
 import commonmark
 import commonmark.node
 
-VERSION = '5.0.0'
+VERSION = '5.0.1'
 
 RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
 RE_AT_PAGE_TITLE = re.compile(
