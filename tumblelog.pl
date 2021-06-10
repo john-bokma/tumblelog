@@ -16,7 +16,7 @@ use List::Util 'min';
 use Encode 'decode';
 use Try::Tiny;
 
-my $VERSION = '5.0.0';
+my $VERSION = '5.0.1';
 
 my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})(.*?)\n(.*)/s;
 my $RE_AT_PAGE_TITLE =
@@ -1360,7 +1360,7 @@ sub read_entries {
 
 sub show_usage_and_exit {
 
-    my $exit_code //= 0;
+    my $exit_code = shift // 0;
 
     print { $exit_code ? *STDERR : *STDOUT } <<'END_USAGE';
 NAME
