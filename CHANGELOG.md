@@ -45,7 +45,7 @@ version*. Additionally:
 
 ```
 ---
-tags: [example]
+tags: [example, 'functional programming']
 id: not-unique-2
 ...
 
@@ -57,7 +57,11 @@ id: not-unique-2
     digits and a single space is allowed as separator. However, Python
     and Perl seem to disagree on the set of codepoints this
     entails. So if you ever switch from the Perl to the Python version
-    or vice versa you might get a warning about an invalid tag.
+    or vice versa you might get an error about an invalid tag.
+
+    Note that in the above example the tag *functional programming* is
+    between single quotes. This is just cosmetic; you can leave them
+    out.
 
 If you have any questions or encounter any issues feel free to contact
 me at contact@johnbokma.com.
