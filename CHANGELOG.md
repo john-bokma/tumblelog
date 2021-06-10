@@ -1,5 +1,13 @@
 # Change Log
 
+## [5.0.2] - 2021-06-10
+
+ - Fixed an issue in the Python version of `tumblelog`: using
+   `yaml.load(string)` is unsafe, see https://msg.pyyaml.org/load
+   for full details.
+ - Added experimental Docker files for both the Perl and Python
+   version.
+
 ## [5.0.1] - 2021-06-10
 
  - Fixed a minor issue in the Perl version of `tumblelog`.

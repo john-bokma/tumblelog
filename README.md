@@ -97,3 +97,42 @@ The `screenshots` directory has 1:1 examples of themes that come with
 - [Plurrrr: a tumblelog](http://plurrrr.com/) - by John Bokma
 
 If you want your tumblelog generated site listed here, please let me know.
+
+## Docker (Experimental)
+
+This assumes you have already used Sass to create a CSS file and
+copied it into a directory for your website.
+
+To create a Perl image use:
+
+```
+docker build --tag tumblelog/perl -f perl.Dockerfile .
+```
+
+To run the container use (version with tags):
+
+```
+docker run --rm --volume "`pwd`:/data" --user `id -u`:`id -g` \
+       tumblelog/perl --template-filename tumblelog-tags.html \
+       --output-dir htdocs/ \
+       --author 'Test' --name 'Test Blog' --description 'This is a test' \
+       --blog-url 'http://localhost:8000/' --css steel.css --tags \
+       tumblelog-tags.md
+```
+
+To create a Python image use:
+
+```
+docker build --tag tumblelog/python -f python.Dockerfile .
+```
+
+To run the container use (version with tags):
+
+```
+docker run --rm --volume "`pwd`:/data" --user `id -u`:`id -g` \
+       tumblelog/python --template-filename tumblelog-tags.html \
+       --output-dir htdocs/ \
+       --author 'Test' --name 'Test Blog' --description 'This is a test' \
+       --blog-url 'http://localhost:8000/' --css steel.css --tags \
+       tumblelog-tags.md
+```
