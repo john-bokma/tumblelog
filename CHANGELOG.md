@@ -1,5 +1,9 @@
 # Change Log
 
+## [5.0.1] - 2021-06-10
+
+ - Fixed a minor issue in the Perl version of `tumblelog`.
+
 ## [5.0.0] - 2021-06-07
 
 This is a major update which adds tag support to `tumblelog`. Tags are
