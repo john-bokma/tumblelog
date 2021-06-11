@@ -2,6 +2,7 @@
 FROM python:3-alpine
 
 WORKDIR /app
+
 COPY requirements.txt .
 RUN apk add --no-cache --virtual .build-deps gcc musl-dev \
     && pip install --no-cache-dir -r requirements.txt \
@@ -9,4 +10,4 @@ RUN apk add --no-cache --virtual .build-deps gcc musl-dev \
 
 COPY tumblelog.py .
 WORKDIR /data
-ENTRYPOINT ["python", "/app/tumblelog.py"] 
+ENTRYPOINT ["python", "/app/tumblelog.py"]
