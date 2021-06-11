@@ -13,10 +13,10 @@ RUN apk add --no-cache --virtual .build-deps \
     && apk del .build-deps
 
 FROM base AS run
-COPY --from=builder /usr/local /usr/local
 COPY --from=builder /usr/bin/perl /usr/bin
 COPY --from=builder /usr/lib/ /usr/lib/
 COPY --from=builder /usr/share /usr/share
+COPY --from=builder /usr/local /usr/local
 
 COPY tumblelog.pl .
 WORKDIR /data
