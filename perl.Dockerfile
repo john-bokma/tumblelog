@@ -8,7 +8,7 @@ FROM base AS builder
 RUN apk add --no-cache --virtual .build-deps \
         make wget gcc musl-dev perl-dev \
         perl-app-cpanminus \
-    && apk add perl cmark-dev \
+    && apk add perl cmark-dev tzdata \
     && cpanm URI JSON::XS YAML::XS Path::Tiny CommonMark Try::Tiny \
     && apk del .build-deps
 
