@@ -136,3 +136,6 @@ docker run --rm --volume "`pwd`:/data" --user `id -u`:`id -g` \
        --blog-url 'http://localhost:8000/' --css steel.css --tags \
        tumblelog-tags.md
 ```
+
+Both containers run in a GMT timezone. To change this set the `TZ`
+variable, e.g. `TZ="Europe/Amsterdam"`. See [Timezones in Alpine Docker Containers](http://johnbokma.com/blog/2021/06/14/timezones-in-alpine-docker-containers.html).
