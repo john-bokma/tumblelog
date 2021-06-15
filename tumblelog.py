@@ -14,11 +14,15 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict, deque
 import yaml
+try:
+    from yaml import CBaseLoader as BaseLoader
+except ImportError:
+    from yaml import BaseLoader
 
 import commonmark
 import commonmark.node
 
-VERSION = '5.0.2'
+VERSION = '5.0.3'
 
 RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
 RE_AT_PAGE_TITLE = re.compile(
@@ -880,7 +884,7 @@ def convert_articles_with_metablock_to_html(items, config):
                 if not match.group(1):
                     raise ParseException('No mandatory YAML block found')
 
-                meta = yaml.load(match.group(1), Loader=yaml.CBaseLoader)
+                meta = yaml.load(match.group(1), Loader=yaml.BaseLoader)
                 if not isinstance(meta, dict):
                     raise ParseException('YAML block must be a mapping')
 
