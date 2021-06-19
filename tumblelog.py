@@ -686,7 +686,7 @@ def create_tag_pages(days, archive, config, min_year, max_year):
 def create_rss_feed(days, config):
 
     items = []
-    todo = config['days']
+    todo = config['feed-size']
 
     for day in days:
         (url, title, description) = get_url_title_description(day, config)
@@ -735,7 +735,7 @@ def create_rss_feed(days, config):
 
 def create_json_feed(days, config):
     items = []
-    todo = config['days']
+    todo = config['feed-size']
 
     for day in days:
         (url, title, description) = get_url_title_description(day, config)
@@ -1040,6 +1040,9 @@ def create_argument_parser():
                         help='title shown on tags overview page;'
                         " default: '%(default)s'",
                         metavar='TITLE', default='Tags')
+    parser.add_argument('--feed-size', dest='feed-size',
+                        help='number of entries in a feed',
+                        metavar='SIZE', type=int, default=25)
     parser.add_argument('-q', '--quiet', action='store_true', dest='quiet',
                         help="don't show progress", default=False)
     parser.add_argument('-v', '--version', action='version', version=VERSION,

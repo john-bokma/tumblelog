@@ -68,6 +68,7 @@ sub get_config {
         'tags'              => 0,
         'tags-label'        => 'tags',
         'tags-title'        => 'Tags',
+        'feed-size'         => 25,
         'quiet'             => 0,
         'version'           => 0,
         'help'              => 0,
@@ -89,6 +90,7 @@ sub get_config {
         'tags',
         'tags-label=s',
         'tags-title=s',
+        'feed-size=i',
         'quiet',
         'version',
         'help',
@@ -898,7 +900,7 @@ sub create_rss_feed {
     my ( $days, $config ) = @_;
 
     my @items;
-    my $todo = $config->{ days };
+    my $todo = $config->{ 'feed-size' };
 
     for my $day ( @$days ) {
 
@@ -952,7 +954,7 @@ sub create_json_feed {
     my ( $days, $config ) = @_;
 
     my @items;
-    my $todo = $config->{ days };
+    my $todo = $config->{ 'feed-size' };
 
     for my $day ( @$days ) {
 
@@ -1378,7 +1380,7 @@ SYNOPSIS
             --blog-url URL
             [--days DAYS ] [--css CSS] [--date-format FORMAT] [--min-year YEAR]
             [--tags [--tags-label LABEL] [--tags-title TITLE]]
-            [--quiet] FILE
+            [--feed-size SIZE] [--quiet] FILE
         tumblelog.pl --version
         tumblelog.pl --help
 DESCRIPTION
@@ -1409,6 +1411,9 @@ DESCRIPTION
 
         The --tags-title argument specifies the title to use on the tags
         overview page. It defaults to 'Tags'. Only used when tags are enabled.
+
+        The --feed-size argument specifies the number of entries a feed
+        has. It defaults to 25.
 
         The --quiet option prevents the program from printing information
         regarding the progress.
