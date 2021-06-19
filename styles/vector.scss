@@ -45,7 +45,10 @@ figure {
 }
 
 article,
-.tl-month,
+.tl-month-overview,
+.tl-calendar,
+.tl-tag-overview,
+.tl-tags-overview,
 .tl-archive {
     a {
         border-bottom: solid 2px $label-color;
