@@ -1,5 +1,12 @@
 # Change Log
 
+## [5.1.2] - 2021-06-19
+
+  - Improved HTML output to improve CSS styling abilities.
+  - Added an optional argument `--feed-size` which controls the number
+    of items in each feed. Defaults to 25. Note that the old feed size
+    was 14, the same as number of days (`--days` argument).
+
 ## [5.0.2] - 2021-06-10
 
  - Fixed an issue in the Python version of `tumblelog`: using
