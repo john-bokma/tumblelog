@@ -384,6 +384,7 @@ def create_year_pages(days, archive, config, min_year, max_year):
     year_index = 0
     for year in range(start_year, end_year + 1):
         body_html = ('<div class="tl-topbar"></div>\n'
+            '<div class="tl-calendar">\n'
             + html_for_year_nav_bar(
                 list(range(start_year, end_year + 1)), year_index))
         year_index += 1
@@ -436,6 +437,7 @@ def create_year_pages(days, archive, config, min_year, max_year):
                 tbody,
                 '    </tbody>\n'
                 '  </table>\n'
+                '</div>\n'
             ])
 
             if dt.year != year:
@@ -466,12 +468,14 @@ def create_month_pages(days, archive, config, min_year, max_year):
             nav_bar = html_for_month_nav_bar(years[year], month, month_names)
             body_html = ''.join([
                 '<div class="tl-topbar"></div>\n'
+                '<div class="tl-month-overview">\n'
                 f'  <h2 class="tl-month-year">{month_name} '
                 f'<a href="../../{year}/">{year}</a></h2>'
                 '  <dl class="tl-days">\n',
                 *[html_for_day(day) for day in days_for_month],
                 '  </dl>\n',
-                nav_bar
+                nav_bar,
+                '</div>\n'
             ])
             create_page(
                 f'archive/{year}/{month}/index.html',
@@ -617,9 +621,10 @@ def create_tag_pages(days, archive, config, min_year, max_year):
         year_index = 0
         for year in years:
             body_html = ''.join([
-                '<div class="tl-topbar"></div>\n',
+                '<div class="tl-topbar"></div>\n'
+                '<div class="tl-tag-overview">\n',
                 html_for_year_nav_bar(years, year_index, tag_path),
-                f'<h2>{tag}</h2>\n'
+                f'  <h2>{tag}</h2>\n'
             ])
             year_index += 1
 
@@ -629,16 +634,16 @@ def create_tag_pages(days, archive, config, min_year, max_year):
                 month_name = dt.strftime('%B')
                 if month_name != current_month:
                     if current_month:
-                        body_html += '</dl>\n'
-                    body_html += (f'<h3>{month_name}</h3>\n'
-                        + '<dl class="tl-days">\n')
+                        body_html += '  </dl>\n'
+                    body_html += (f'  <h3>{month_name}</h3>\n'
+                        + '  <dl class="tl-days">\n')
                     current_month = month_name
 
                 nr = split_date(row['date'])[2]
                 body_html += f"    <dt>{nr}</dt><dd>{row['title']}</dd>\n"
                 tag_info[tag]['count'] += 1 #tag_info[tag].get('count', 0) + 1
 
-            body_html += '</dl>\n'
+            body_html += '  </dl>\n</div>\n'
 
             Path(config['output-dir']).joinpath(f'tags/{year}/').mkdir(
                 parents=True, exist_ok=True)
@@ -658,8 +663,9 @@ def create_tag_pages(days, archive, config, min_year, max_year):
             max_count = tag_info[tag]['count']
 
     body_html = ('<div class="tl-topbar"></div>\n'
-        + f"<h2>{config['tags-title']}</h2>\n"
-        + '<ul class="tl-tag-cloud">\n')
+        '<div class="tl-tags-overview">\n'
+        + f"  <h2>{config['tags-title']}</h2>\n"
+        + '  <ul class="tl-tag-cloud">\n')
 
     for tag in sorted(tag_info.keys()):
         tag_path = get_tag_path(tag)
@@ -668,7 +674,7 @@ def create_tag_pages(days, archive, config, min_year, max_year):
             + f'<a href="{tag_info[tag]["end_year"]}/{tag_path}">'
             + f"{tag}\u202f({tag_info[tag]['count']})</a></li>\n")
 
-    body_html += '</ul>\n'
+    body_html += '  </ul>\n</div>\n'
 
     create_page(
         'tags/index.html',

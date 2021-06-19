@@ -377,6 +377,7 @@ sub create_month_pages {
                 $years{ $year }, $month, \@month_names
             );
             my $body_html = qq(<div class="tl-topbar"></div>\n)
+                . qq(<div class="tl-month-overview">\n)
                 . qq(  <h2 class="tl-month-year">$month_name )
                 . qq(<a href="../../$year/">$year</a></h2>)
                 . qq(  <dl class="tl-days">\n)
@@ -384,7 +385,8 @@ sub create_month_pages {
                         map { html_for_day( $_ ) } @$days_for_month
                   )
                 . "  </dl>\n"
-                . $nav_bar;
+                . $nav_bar
+                . "</div>\n";
 
             create_page(
                 "archive/$year/$month/index.html",
@@ -416,6 +418,7 @@ sub create_year_pages {
     for my $year ( $start_year .. $end_year ) {
 
         my $body_html = qq(<div class="tl-topbar"></div>\n)
+            . qq(<div class="tl-calendar">\n)
             . html_for_year_nav_bar(
                 [ $start_year .. $end_year ], $year_index );
         $year_index++;
@@ -475,7 +478,8 @@ sub create_year_pages {
                 . "    <tbody>\n"
                 . $tbody
                 . "    </tbody>\n"
-                . "  </table>\n";
+                . "  </table>\n"
+                . "</div>\n";
 
             last if $tp->year != $year;
         }
@@ -825,8 +829,9 @@ sub create_tag_pages {
         my $year_index = 0;
         for my $year ( @years ) {
             my $body_html = qq(<div class="tl-topbar"></div>\n)
+                . qq(<div class="tl-tag-overview">\n)
                 . html_for_year_nav_bar( \@years, $year_index, $tag_path )
-                . "<h2>$tag</h2>\n";
+                . "  <h2>$tag</h2>\n";
             $year_index++;
 
             my $current_month = '';
@@ -835,9 +840,9 @@ sub create_tag_pages {
                 my $tp = parse_date( $row->{ date } );
                 my $month_name = decode_utf8( $tp->strftime( '%B' ) );
                 if ( $month_name ne $current_month ) {
-                    $body_html .= "</dl>\n" if $current_month ne '';
-                    $body_html .= "<h3>$month_name</h3>\n"
-                        . qq(<dl class="tl-days">\n);
+                    $body_html .= "  </dl>\n" if $current_month ne '';
+                    $body_html .= "  <h3>$month_name</h3>\n"
+                        . qq(  <dl class="tl-days">\n);
                     $current_month = $month_name;
                 }
 
@@ -845,7 +850,7 @@ sub create_tag_pages {
                 $body_html .= "    <dt>$nr</dt><dd>$row->{ title }</dd>\n";
                 $tag_info{ $tag }{ count }++;
             }
-            $body_html .= "</dl>\n";
+            $body_html .= "  </dl>\n</div>\n";
 
             path( "$config->{ 'output-dir' }/tags/$year/")->mkpath();
             create_page(
@@ -866,8 +871,9 @@ sub create_tag_pages {
     }
 
     my $body_html = qq(<div class="tl-topbar"></div>\n)
-        . "<h2>$config->{ 'tags-title' }</h2>\n"
-        . qq(<ul class="tl-tag-cloud">\n);
+        . qq(<div class="tl-tags-overview">\n)
+        . "  <h2>$config->{ 'tags-title' }</h2>\n"
+        . qq(  <ul class="tl-tag-cloud">\n);
     for my $tag ( sort keys %tag_info ) {
         my $tag_path = get_tag_path( $tag );
         my $size = get_cloud_size(
@@ -877,7 +883,7 @@ sub create_tag_pages {
             . qq(<a href="$tag_info{ $tag }{ end_year }/$tag_path">)
             . "$tag\x{202f}($tag_info{ $tag }{ count })</a></li>\n";
     }
-    $body_html .= "</ul>\n";
+    $body_html .= "  </ul>\n</div>\n";
 
     create_page(
         "tags/index.html",
