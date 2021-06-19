@@ -480,11 +480,12 @@ sub create_year_pages {
                 . "    <tbody>\n"
                 . $tbody
                 . "    </tbody>\n"
-                . "  </table>\n"
-                . "</div>\n";
+                . "  </table>\n";
 
             last if $tp->year != $year;
         }
+
+        $body_html .= "</div>\n";
 
         create_page(
             "archive/$year/index.html",

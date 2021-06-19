@@ -437,11 +437,12 @@ def create_year_pages(days, archive, config, min_year, max_year):
                 tbody,
                 '    </tbody>\n'
                 '  </table>\n'
-                '</div>\n'
             ])
 
             if dt.year != year:
                 break
+
+        body_html += '</div>\n'
 
         create_page(
             f'archive/{year}/index.html',
