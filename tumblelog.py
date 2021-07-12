@@ -22,7 +22,7 @@ except ImportError:
 import commonmark
 import commonmark.node
 
-VERSION = '5.1.2'
+VERSION = '5.1.3'
 
 RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
 RE_AT_PAGE_TITLE = re.compile(
@@ -444,6 +444,8 @@ def create_year_pages(days, archive, config, min_year, max_year):
 
         body_html += '</div>\n'
 
+        Path(config['output-dir']).joinpath(f'archive/{year}').mkdir(
+            parents=True, exist_ok=True)
         create_page(
             f'archive/{year}/index.html',
             str(year), body_html, archive_html, config,

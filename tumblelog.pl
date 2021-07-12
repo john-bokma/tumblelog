@@ -16,7 +16,7 @@ use List::Util 'min';
 use Encode 'decode';
 use Try::Tiny;
 
-my $VERSION = '5.1.2';
+my $VERSION = '5.1.3';
 
 my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})(.*?)\n(.*)/s;
 my $RE_AT_PAGE_TITLE =
@@ -487,6 +487,7 @@ sub create_year_pages {
 
         $body_html .= "</div>\n";
 
+        path( "$config->{ 'output-dir' }/archive/$year")->mkpath();
         create_page(
             "archive/$year/index.html",
             $year, $body_html, $archive_html, $config,

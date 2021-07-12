@@ -1,5 +1,10 @@
 # Change Log
 
+## [5.1.3] - 2021-07-12
+
+  - Fixed an issue with a non-existing directory when a year is
+    skipped while blogging.
+
 ## [5.1.2] - 2021-06-19
 
   - Improved HTML output to improve CSS styling abilities.
