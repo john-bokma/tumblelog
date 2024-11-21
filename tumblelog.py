@@ -644,7 +644,7 @@ def create_tag_pages(days, archive, config, min_year, max_year):
 
                 nr = split_date(row['date'])[2]
                 body_html += f"    <dt>{nr}</dt><dd>{row['title']}</dd>\n"
-                tag_info[tag]['count'] += 1 #tag_info[tag].get('count', 0) + 1
+                tag_info[tag]['count'] += 1
 
             body_html += '  </dl>\n</div>\n'
 
