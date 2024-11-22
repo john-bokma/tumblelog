@@ -130,7 +130,7 @@ sub get_config {
     my $filename = shift @ARGV;
     if ( !defined $filename ) {
         warn "Specify a filename that contains the entries\n";
-        show_usage_and_exit(1);
+        show_usage_and_exit( 1 );
     }
     warn "Additional arguments have been skipped\n" if @ARGV;
 
