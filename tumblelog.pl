@@ -44,8 +44,8 @@ my @DAY_LIST = qw( Sun Mon Tue Wed Thu Fri Sat );
 BEGIN {
     # An older version of CommonMark hasn't got this constant yet, so
     # we can safely set it to 0
-    unless ( main->can( 'OPT_UNSAFE' ) ) {
-        eval 'sub OPT_UNSAFE { return 0 }';
+    unless ( defined &OPT_UNSAFE ) {
+        eval 'use constant OPT_UNSAFE => 0';
     }
 }
 
