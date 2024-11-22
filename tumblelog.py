@@ -340,7 +340,7 @@ def create_page(path, title, body_html, archive_html, config,
     html = RE_PAGE_URL.sub(escape(page_url), html)
     html = RE_RSS_FEED_URL.sub(escape(config['rss-feed-url']), html)
     html = RE_JSON_FEED_URL.sub(escape(config['json-feed-url']), html)
-    html = RE_BODY.sub(lambda x: body_html, html, count=1)
+    html = RE_BODY.sub(lambda _: body_html, html, count=1)
     html = RE_ARCHIVE.sub(archive_html, html)
 
     Path(config['output-dir']).joinpath(path).write_text(
