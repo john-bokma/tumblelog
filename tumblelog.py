@@ -849,6 +849,9 @@ def validate_tags(tags):
     if not isinstance(tags, list):
         raise ParseException('Tags must be specified as a list')
 
+    if not tags:
+        raise ParseException('At least one tag must be given')
+
     seen = set()
     for tag in tags:
         if not tag:

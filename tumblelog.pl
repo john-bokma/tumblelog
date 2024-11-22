@@ -1198,6 +1198,8 @@ sub validate_tags {
 
     ref $tags eq 'ARRAY' or die 'Tags must be specified as a list';
 
+    @$tags or die 'At least one tag must be given';
+
     my %seen;
     for my $tag ( @$tags ) {
         length $tag or die 'A tag must have a length';
