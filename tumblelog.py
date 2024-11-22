@@ -896,7 +896,8 @@ def convert_articles_with_metablock_to_html(items, config):
                 if not match.group(1):
                     raise ParseException('No mandatory YAML block found')
 
-                meta = yaml.safe_load(match.group(1), Loader=yaml.BaseLoader)
+                # Only load the most basic YAML
+                meta = yaml.load(match.group(1), Loader=yaml.BaseLoader)
                 if not isinstance(meta, dict):
                     raise ParseException('YAML block must be a mapping')
 
