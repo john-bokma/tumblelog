@@ -74,6 +74,12 @@ tags: [succulent, decoration, photo]
 ![Succulents planted in a metal bowl](
 http://plurrrr.com/images/succulents.jpg)
 Succulents planted in a metal bowl. See [original here](http://plurrrr.com/archive/2019/05/18.html).
+
+### Notes on Images
+
+ * Make your images 460 pixels wide.
+ * Use an absolute URL to support images in both the JSON feed and the RSS feed.
+
 %
 
 ---
