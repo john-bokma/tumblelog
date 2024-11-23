@@ -10,8 +10,11 @@ The input is a single Markdown file with additional directives to
 define pages and, optionally, tags.
 
 Parameters to control the blog are given via command line
-arguments. The `tumblelog` creates the blog HTML5 pages and both a JSON
-feed and an RSS feed.
+arguments. Use the `--help` argument to get an overview of all
+possible arguments. The `tumblelog` program creates the blog HTML5
+pages and both a [JSON
+feed](http://johnbokma.com/blog/2019/04/03/a-json-feed-for-tumblelog.html)
+and an RSS feed.
 
 See for an example my personal microblog
 [Plurrrr](https://plurrrr.com/). For an example with images, see blog
@@ -62,7 +65,8 @@ python -m SimpleHTTPServer 8000
 ```
 
 Next, open http://localhost:8000/ to view your pages. Note that not
-all links work if you generated the site for your own domain.
+all links work if you generated the site for your own domain and view
+it via a local webserver.
 
 ![A screenshot of the four styles that come with tumblelog](https://repository-images.githubusercontent.com/178557390/30c42f00-e7ae-11e9-839d-d6bd6faa6e48)
 
