@@ -1,5 +1,17 @@
 # Change Log
 
+## [5.2.0] - 2024-11-23
+
+  - Added a Dockerfile for Sass.
+  - Added meta name="generator" set to tumblelog plus version number
+    to example HTML files.
+  - Removed commented out code from tumblelog.py.
+  - I now test differently if the OPT_UNSAFE constant is missing.
+  - The program now verifies that at least one tag is given if tags are enabled.
+  - I now use enumerate() in tumblelog.py (4x)
+  - Added notes on images to tumblelog.md and tumblelog-tags.md.
+  - Rewrote the README.md almost completely 
+
 ## [5.1.3] - 2021-07-12
 
   - Fixed an issue with a non-existing directory when a year is
