@@ -3,15 +3,207 @@
 `tumblelog` is a static microblog generator. There are two versions
 available, one written in Perl and one written in Python. Which
 version you use is up to you; I make an effort to keep the output of
-both versions identical.
+both versions identical except for minor differences between the
+render libraries used.
 
-The input is a single "Markdown" file divided into pages by starting a
-line with a date followed by a title. Each date page can further be
-split up into multiple articles using a single % on a line by itself.
+The input is a single Markdown file with additional directives to
+define pages and, optionally, tags.
 
 Parameters to control the blog are given via command line
-arguments. The program creates the blog HTML5 pages and both a JSON
-and RSS feed.
+arguments. The `tumblelog` creates the blog HTML5 pages and both a JSON
+feed and an RSS feed.
+
+See for an example my personal microblog
+[Plurrrr](https://plurrrr.com/). For an example with images, see blog
+article [The International Mineral
+Fair](https://plurrrr.com/archive/2023/03/26.html#the-international-mineral-fair).
+
+Generation of HTML is fast. On my outdated Mac Mini Late 2014 it takes
+a little over 30 seconds to generate 2600+ HTML files out of 1600+ day
+entries using the Python version in Docker.
+
+The instructions in this README assume the following directory layout:
+
+```
+   `--- projects
+   |       :
+   |       `--- tumblelog
+   |       :       :
+   |       :       `--- screenshots
+   |               `--- styles
+   |               :
+   |
+   `--- sites
+           :
+           `--- example.com
+           :       :
+           :       `--- htdocs
+```
+
+Check out the `tumblelog` project in the `projects` directory as follows:
+
+```bash
+cd projects
+sudo apt install -y git
+git clone https://github.com/john-bokma/tumblelog.git
+```
+
+You can view the generated HTML pages if you have Python installed on
+your system by entering inside the `htdocs` directory either:
+
+```bash
+python3 -m http.server
+```
+
+for Python 3 or for Python 2:
+
+```bash
+python -m SimpleHTTPServer 8000
+```
+
+Next, open http://localhost:8000/ to view your pages. Note that not
+all links work if you generated the site for your own domain.
+
+![A screenshot of the four styles that come with tumblelog](https://repository-images.githubusercontent.com/178557390/30c42f00-e7ae-11e9-839d-d6bd6faa6e48)
+
+A screenshot of four of the thirteen styles that come with `tumblelog`.
+
+The `screenshots` directory has 1:1 examples of themes that come with
+`tumblelog`.
+
+**Note**: `tumblelog` uses quite some arguments in order to work. I
+recommend [using a Makefile](http://johnbokma.com/articles/tumblelog/using-a-makefile.html) to make life easier.
+
+## Getting started using Docker
+
+If you're already using Docker it's probably the easiest way to start
+with `tumblelog`.
+
+### Creating the style sheet
+
+The `tumblelog` project comes with several styles written in
+[Sass](https://sass-lang.com/). You can convert such a style to CSS
+using the Sass container.
+
+First, create the container image as follows. You must be inside the
+`tumblelog` directory.
+
+```bash
+docker build --tag node/sass -f sass.Dockerfile .
+```
+
+Next, change to the directory that contains your `htdocs`
+directory. In the example layout given earlier this is `example.com`
+inside the `sites` directory.
+
+Next, select a style, except the ones starting with an underscore, you
+want to convert to CSS from the `styles` directory. You can see
+examples of each style in the `screenshots` directory. For example
+use `steel.scss`:
+
+```bash
+docker run --rm \
+       --volume "`pwd`/../../projects/tumblelog/styles:/data/styles:ro" \
+       --volume "`pwd`/htdocs:/data/htdocs" \
+       --user `id -u`:`id -g` node/sass --no-source-map --style compressed \
+       --silence-deprecation import \
+       styles/steel.scss htdocs/steel.css
+```
+
+This should create a file named `steel.css` inside your `htdocs`
+directory.
+
+**Note**: I silence the deprecation regarding the use of `@import`. I
+will modify the Sass files soon in order to fix this issue.
+
+For more information regarding the Sass container see: [A Docker Image
+for Sass](http://johnbokma.com/blog/2021/06/17/a-docker-image-for-sass.html).
+
+### Running the Python version
+
+First, create the container image as follows. You must be inside the
+`tumblelog` directory.
+
+```bash
+docker build --tag tumblelog/python -f python.Dockerfile .
+```
+
+Next, you need an input file. In this example we create a tumblelog
+with tags so copy from inside the `tumblelog` directory the file
+`tumblelog-tags.html` to your site, in this case `example.com` as
+follows:
+
+```bash
+cp tumblelog-tags.md ../../sites/example.com/example.md
+```
+
+Next, also copy the template file as follows:
+
+```bash
+cp tumblelog-tags.html ../../sites/example.com/example.html
+
+```
+
+Next, to run the container (version with tags) you must be located
+inside your site's directory. In this case `example.com`:
+
+```bash
+cd ../../sites/example.com
+docker run --rm --volume "`pwd`:/data" --user `id -u`:`id -g` \
+       -e TZ="Europe/Amsterdam" \
+       tumblelog/python --template-filename example.html \
+       --output-dir htdocs/ \
+       --author 'Test' --name 'Test Blog' --description 'This is a test' \
+       --blog-url 'http://example.com/' --css steel.css --tags \
+       example.md
+```
+
+*Note*: make sure you use your own time zone, see for more
+information: [Timezones in Alpine Docker
+Containers](http://johnbokma.com/blog/2021/06/14/timezones-in-alpine-docker-containers.html).
+
+### Running the Perl version
+
+First, create the container image as follows. You must be inside the
+`tumblelog` directory.
+
+```bash
+docker build --tag tumblelog/perl -f perl.Dockerfile .
+```
+
+Next, you need an input file. In this example we create a tumblelog
+with tags so copy from inside the `tumblelog` directory the file
+`tumblelog-tags.html` to your site, in this case `example.com` as
+follows:
+
+```bash
+cp tumblelog-tags.md ../../sites/example.com/example.md
+```
+
+Next, also copy the template file as follows:
+
+```bash
+cp tumblelog-tags.html ../../sites/example.com/example.html
+
+```
+
+Next, to run the container (version with tags) you must be located
+inside your site's directory. In this case `example.com`:
+
+```bash
+cd ../../sites/example.com
+docker run --rm --volume "`pwd`:/data" --user `id -u`:`id -g` \
+       -e TZ="Europe/Amsterdam" \
+       tumblelog/perl --template-filename example.html \
+       --output-dir htdocs/ \
+       --author 'Test' --name 'Test Blog' --description 'This is a test' \
+       --blog-url 'http://example.com/' --css steel.css --tags \
+       example.md
+```
+
+*Note*: make sure you use your own time zone, see for more
+information: [Timezones in Alpine Docker
+Containers](http://johnbokma.com/blog/2021/06/14/timezones-in-alpine-docker-containers.html).
 
 ## Python Version Quick Start
 
@@ -20,62 +212,69 @@ Install sass and pip3 for Linux:
 sudo apt install -y git sass python3-pip
 ```
 
-For macOS:
+Or for macOS:
 ```bash
 brew install sass
 brew install pip3
 ```
 
-Then:
+Then inside the `tumblelog` directory:
 ```bash
-git clone https://github.com/john-bokma/tumblelog.git
-cd tumblelog
 python3 -m venv venv
-pip3 install commonmark
-pip3 install regex
 source venv/bin/activate
-mkdir htdocs
+pip3 install -r requirements.txt
 ```
 
-Generate a stylesheet. I use *steel* for example. See the directory
-`styles` for others you can use (except the ones that start with an
-underscore).
+**Note**: You can leave the virtual environment later on using `deactivate`.
+
+Next, change to the directory that contains your `htdocs`
+directory. In the example layout given earlier this is `example.com`
+inside the `sites` directory.
+
+Next, select a style, except the ones starting with an underscore, you
+want to convert to CSS from the `styles` directory. You can see
+examples of each style in the `screenshots` directory. For example
+use `steel.scss`:
 
 ```bash
-sass --sourcemap=none -t compressed styles/steel.scss htdocs/steel.css
+sass --sourcemap=none -t compressed \
+     ../../projects/tumblelog/styles/steel.scss htdocs/steel.css
 ```
 
-To generate a version of the example site that *does not use tags* use:
+This should create a file named `steel.css` inside your `htdocs`
+directory.
+
+Next, you need an input file. In this example we create a tumblelog
+with tags so copy from inside the `tumblelog` directory the file
+`tumblelog-tags.html` to your site, in this case `example.com` as
+follows:
 
 ```bash
-python3 tumblelog.py --template-filename tumblelog.html \
+cp ../../projects/tumblelog/tumblelog-tags.md example.md
+```
+
+Next, also copy the template file as follows:
+
+```bash
+cp ../../projects/tumblelog/tumblelog-tags.html example.html
+
+```
+
+Next run the Python program (version with tags) inside the
+`example.com` directory as follows:
+
+```
+python3 ../../projects/tumblelog/tumblelog.py
+        --template-filename example.html \
         --output-dir htdocs/ \
         --author 'Test' --name 'Test Blog' --description 'This is a test' \
-        --blog-url 'http://localhost:8000/' --css steel.css \
-        tumblelog.md
-```
-
-To generate a version of the example site that *uses tags*
-(recommended) use:
-
-```bash
-python3 tumblelog.py --template-filename tumblelog-tags.html \
-        --output-dir htdocs/ \
-        --author 'Test' --name 'Test Blog' --description 'This is a test' \
-        --blog-url 'http://localhost:8000/' --css steel.css --tags \
-        tumblelog-tags.md
-```
-
-To view the generated site at http://localhost:8000/ enter:
-
-```bash
-cd htdocs
-python3 -m http.server
+        --blog-url 'http://example.com/' --css steel.css --tags \
+        example.md
 ```
 
 ## Documentation
 
-- Installation of the Perl version: to be written, for now see: [Create a static tumblelog with Perl](http://johnbokma.com/blog/2019/03/30/tumblelog-perl.html)
+- Installation of the Perl version: to be written, for now see: [Getting started with the Perl version of tumblelog on Ubuntu 18.04 LTS](http://johnbokma.com/blog/2020/03/28/perl-version-tumblelog-ubuntu-bionic-beaver-howto.html)
 
 - [Installation of the Python version](http://johnbokma.com/articles/tumblelog/installation-of-the-python-version-of-tumblelog.html)
 - [Testing tumblelog](http://johnbokma.com/articles/tumblelog/testing-tumblelog.html)
@@ -83,59 +282,9 @@ python3 -m http.server
 - [Using a Makefile](http://johnbokma.com/articles/tumblelog/using-a-makefile.html)
 - [Keeping your tumblelog under version control](http://johnbokma.com/articles/tumblelog/keeping-your-blog-under-version-control-with-git.html)
 
-## Style Examples
-
-![A screenshot of the four styles that come with tumblelog](https://repository-images.githubusercontent.com/178557390/30c42f00-e7ae-11e9-839d-d6bd6faa6e48)
-
-A screenshot of four of the twelve styles that come with `tumblelog`.
-
-The `screenshots` directory has 1:1 examples of themes that come with
-`tumblelog`.
 
 ## Blogs
 
 - [Plurrrr: a tumblelog](http://plurrrr.com/) - by John Bokma
 
 If you want your tumblelog generated site listed here, please let me know.
-
-## Docker (Experimental)
-
-This assumes you have already used Sass to create a CSS file and
-copied it into a directory for your website.
-
-To create a Perl image use:
-
-```
-docker build --tag tumblelog/perl -f perl.Dockerfile .
-```
-
-To run the container use (version with tags):
-
-```
-docker run --rm --volume "`pwd`:/data" --user `id -u`:`id -g` \
-       tumblelog/perl --template-filename tumblelog-tags.html \
-       --output-dir htdocs/ \
-       --author 'Test' --name 'Test Blog' --description 'This is a test' \
-       --blog-url 'http://localhost:8000/' --css steel.css --tags \
-       tumblelog-tags.md
-```
-
-To create a Python image use:
-
-```
-docker build --tag tumblelog/python -f python.Dockerfile .
-```
-
-To run the container use (version with tags):
-
-```
-docker run --rm --volume "`pwd`:/data" --user `id -u`:`id -g` \
-       tumblelog/python --template-filename tumblelog-tags.html \
-       --output-dir htdocs/ \
-       --author 'Test' --name 'Test Blog' --description 'This is a test' \
-       --blog-url 'http://localhost:8000/' --css steel.css --tags \
-       tumblelog-tags.md
-```
-
-Both containers run in a GMT timezone. To change this set the `TZ`
-variable, e.g. `TZ="Europe/Amsterdam"`. See [Timezones in Alpine Docker Containers](http://johnbokma.com/blog/2021/06/14/timezones-in-alpine-docker-containers.html).
