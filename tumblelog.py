@@ -381,13 +381,11 @@ def create_year_pages(days, archive, config, min_year, max_year):
     it = reversed(days)
     day = next(it)
     date = day['date']
-    year_index = 0
-    for year in range(start_year, end_year + 1):
+    for year_index, year in enumerate(range(start_year, end_year + 1)):
         body_html = ('<div class="tl-topbar"></div>\n'
             '<div class="tl-calendar">\n'
             + html_for_year_nav_bar(
                 list(range(start_year, end_year + 1)), year_index))
-        year_index += 1
 
         while True:
             tbody = ''
@@ -508,8 +506,8 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
     current_year_week = get_year_week(days[0]['date'])
     day_archive_html = html_for_archive(
         archive, None, '../..', config['label-format'])
-    index = 0
-    for day in days:
+
+    for day_index, day in enumerate(days):
         day_body_html = html_for_date(
             day['date'], config['date-format'], day['title'], '../..'
         ) + ''.join([article['html'] for article in day['articles']])
@@ -517,7 +515,7 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
         label = parse_date(day['date']).strftime(config['date-format'])
 
         year, month, day_number = split_date(day['date'])
-        next_prev_html = html_for_next_prev(days, index, config)
+        next_prev_html = html_for_next_prev(days, day_index, config)
 
         Path(config['output-dir']).joinpath(f'archive/{year}/{month}').mkdir(
             parents=True, exist_ok=True)
@@ -538,8 +536,6 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
             )
             current_year_week = year_week
             week_body_html = day_body_html
-
-        index += 1
 
     create_week_page(
         year_week, week_body_html, archive, config,
@@ -621,15 +617,13 @@ def create_tag_pages(days, archive, config, min_year, max_year):
         years = sorted(tags[tag]['years'].keys())
         tag_info[tag]['end_year'] = years[-1]
         tag_path = get_tag_path(tag)
-        year_index = 0
-        for year in years:
+        for year_index, year in enumerate(years):
             body_html = ''.join([
                 '<div class="tl-topbar"></div>\n'
                 '<div class="tl-tag-overview">\n',
                 html_for_year_nav_bar(years, year_index, tag_path),
                 f'  <h2>{tag}</h2>\n'
             ])
-            year_index += 1
 
             current_month = ''
             for row in tags[tag]['years'][year]:
@@ -889,8 +883,7 @@ def convert_articles_with_metablock_to_html(items, config):
     ids = {}
     for item in items:
         articles = []
-        article_no = 1
-        for article in item['articles']:
+        for article_no, article in enumerate(item['articles'], start=1):
             try:
                 match = RE_YAML_MARKDOWN.match(article)
                 if not match.group(1):
@@ -935,8 +928,6 @@ def convert_articles_with_metablock_to_html(items, config):
                 })
             except (ParseException, yaml.parser.ParserError) as e:
                 error(f"{e} in article {article_no} of {item['date']}")
-
-            article_no += 1
 
         item['articles'] = articles
 
