@@ -22,7 +22,7 @@ except ImportError:
 import commonmark
 import commonmark.node
 
-VERSION = '5.1.3'
+VERSION = '5.2.0'
 
 RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
 RE_AT_PAGE_TITLE = re.compile(

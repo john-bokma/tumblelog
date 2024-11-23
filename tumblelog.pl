@@ -16,7 +16,7 @@ use List::Util 'min';
 use Encode 'decode';
 use Try::Tiny;
 
-my $VERSION = '5.1.3';
+my $VERSION = '5.2.0';
 
 my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})(.*?)\n(.*)/s;
 my $RE_AT_PAGE_TITLE =
