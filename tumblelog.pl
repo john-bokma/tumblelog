@@ -1146,7 +1146,7 @@ sub extract_identifier_and_heading {
     my $heading_node = $node;
 
     my $text = '';
-    while ( my ( $ev_type, $node ) = $it->next() ) {
+    while ( ( $ev_type, $node ) = $it->next() ) {
         last if $node->get_type() == NODE_HEADING && $ev_type == EVENT_EXIT;
         $text .= $node->get_literal() // '';
     }
