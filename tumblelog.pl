@@ -890,7 +890,7 @@ sub create_tag_pages {
     $body_html .= "  </ul>\n</div>\n";
 
     create_page(
-        "tags/index.html",
+        'tags/index.html',
         $config->{ 'tags-title' }, $body_html, $archive_html, $config,
         $config->{ 'tags-label' }, $min_year, $max_year
     );
