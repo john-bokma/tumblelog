@@ -24,10 +24,29 @@ import commonmark.node
 
 VERSION = '5.2.0'
 
-RE_DATE_TITLE = re.compile(r'(\d{4}-\d{2}-\d{2})(.*?)\n(.*)', flags=re.DOTALL)
-RE_AT_PAGE_TITLE = re.compile(
-    r'@([a-z0-9_-]+)\[(.+)\]\s+(\d{4}-\d{2}-\d{2})(!?)(.*?)\n(.*)',
-    flags=re.DOTALL)
+RE_DATE_TITLE_ARTICLE = re.compile(r"""
+    ^(\d{4}-\d{2}-\d{2})    # A date in yyyy-mm-dd format at the start
+    [ \t]+                  # One or more spaces or tabs
+    (.*?)                   # A title. If empty, an exception will be thrown
+    [ \t]*                  # Optional trailing spaces or tabs
+    \n                      # A new line
+    ((?:.|\n)*)             # An article
+""", flags=re.VERBOSE)
+
+RE_NAME_LABEL_DATE_TITLE_ARTICLE = re.compile(r"""
+    ^@([a-z0-9_-]+)         # AT sign followed by a page name at the start
+    \[[ \t]*                # Start label followed by optional spaces or tabs
+        (.*?)               # A label. If empty, an exception will be thrown
+    [ \t]*\]                # Optional spaces or tabs followed by end label
+    [ \t]+                  # One or more spaces or tabs
+    (\d{4}-\d{2}-\d{2})(!?) # A date in yyyy-mm-dd format with an optional !
+    [ \t]+                  # One or more spaces or tabs
+    (.*?)                   # A title. If empty, an exception will be thrown
+    [ \t]*                  # Optional trailing spaces or tabs
+    \n                      # A new line
+    ((?:.|\n)*)             # An article
+""", flags=re.VERBOSE)
+
 RE_YAML_MARKDOWN = re.compile(
     r'\s*(---\n.*?\.\.\.\n)?(.*)', flags=re.DOTALL | re.MULTILINE)
 RE_TAG = regex.compile(r'^[\p{Ll}\d]+(?: [\p{Ll}\d]+)*$')
@@ -82,30 +101,30 @@ def collect_days_and_pages(entries):
     state = 'unknown'
 
     for entry in entries:
-        match = RE_DATE_TITLE.match(entry)
+        match = RE_DATE_TITLE_ARTICLE.match(entry)
         if match:
-            title = match.group(2).strip()
-            if not title:
+            if not match.group(2):
                 error(f'A day must have a title ({match.group(1)})')
             days.append({
                 'date': match.group(1),
-                'title': title,
+                'title': match.group(2),
                 'articles': [match.group(3)]
             })
             state = 'date-title'
             continue
 
-        match = RE_AT_PAGE_TITLE.match(entry)
+        match = RE_NAME_LABEL_DATE_TITLE_ARTICLE.match(entry)
         if match:
-            title = match.group(5).strip()
-            if not title:
+            if not match.group(2):
+                error(f'A page must have a label (@{match.group(1)})')
+            if not match.group(5):
                 error(f'A page must have a title (@{match.group(1)})')
             pages.append({
                 'name': match.group(1),
-                'label': match.group(2).strip(),
+                'label': match.group(2),
                 'date': match.group(3),
                 'show-date': match.group(4) == '!',
-                'title': title,
+                'title': match.group(5),
                 'articles': [match.group(6)]
             })
             state = 'at-page-title'

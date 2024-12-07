@@ -18,9 +18,29 @@ use Try::Tiny;
 
 my $VERSION = '5.2.0';
 
-my $RE_DATE_TITLE    = qr/^(\d{4}-\d{2}-\d{2})(.*?)\n(.*)/s;
-my $RE_AT_PAGE_TITLE =
-    qr/^@([a-z0-9_-]+)\[(.+)\]\s+(\d{4}-\d{2}-\d{2})(!?)(.*?)\n(.*)/s;
+my $RE_DATE_TITLE_ARTICLE = qr/
+    ^(\d{4}-\d{2}-\d{2})    # A date in yyyy-mm-dd format at the start
+    [ \t]+                  # One or more spaces or tabs
+    (.*?)                   # A title. If empty, an exception will be thrown
+    [ \t]*                  # Optional trailing spaces or tabs
+    \n                      # A new line
+    ((?:.|\n)*)             # An article
+                              /x;
+
+my $RE_NAME_LABEL_DATE_TITLE_ARTICLE =qr/
+    ^@([a-z0-9_-]+)         # AT sign followed by a page name at the start
+    \[[ \t]*                # Start label followed by optional spaces or tabs
+        (.*?)               # A label. If empty, an exception will be thrown
+    [ \t]*\]                # Optional spaces or tabs followed by end label
+    [ \t]+                  # One or more spaces or tabs
+    (\d{4}-\d{2}-\d{2})(!?) # A date in yyyy-mm-dd format with an optional !
+    [ \t]+                  # One or more spaces or tabs
+    (.*?)                   # A title. If empty, an exception will be thrown
+    [ \t]*                  # Optional trailing spaces or tabs
+    \n                      # A new line
+    ((?:.|\n)*)             # An article
+                                        /x;
+
 my $RE_YAML_MARKDOWN = qr/\s*(---\n.*?\.\.\.\n)?(.*)/sm;
 my $RE_TAG           = qr/^[\p{Ll}\d]+(?: [\p{Ll}\d]+)*$/;
 
@@ -1297,14 +1317,6 @@ sub convert_articles_with_metablock_to_html {
     return;
 }
 
-sub strip {
-
-    my $str = shift;
-    $str =~ s/^\s+//;
-    $str =~ s/\s+$//;
-    return $str;
-}
-
 sub collect_days_and_pages {
 
     my $entries = shift;
@@ -1314,26 +1326,25 @@ sub collect_days_and_pages {
     my $state = 'unknown';
  ENTRY:
     for my $entry ( @$entries ) {
-        if ($entry =~ $RE_DATE_TITLE ) {
-            my $title = strip( $2 );
-            $title ne '' or die "A day must have a title ($1)\n";
+        if ($entry =~ $RE_DATE_TITLE_ARTICLE ) {
+            $2 ne '' or die "A day must have a title ($1)\n";
             push @days, {
                 date     => $1,
-                title    => $title,
+                title    => $2,
                 articles => [ $3 ],
             };
             $state = 'date-title';
             next ENTRY;
         }
-        if ( $entry =~ $RE_AT_PAGE_TITLE ) {
-            my $title = strip( $5 );
-            $title ne '' or die "A page must have a title (\@$1)\n";
+        if ( $entry =~ $RE_NAME_LABEL_DATE_TITLE_ARTICLE ) {
+            $2 ne '' or die "A page must have a label (\@$1)\n";
+            $5 ne '' or die "A page must have a title (\@$1)\n";
             push @pages, {
                 name        => $1,
-                label       => strip($2),
+                label       => $2,
                 date        => $3,
                 'show-date' => $4 eq '!',
-                title       => $title,
+                title       => $5,
                 articles    => [ $6 ],
             };
             $state = 'at-page-title';
