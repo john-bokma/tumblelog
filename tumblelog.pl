@@ -999,14 +999,14 @@ sub create_json_feed {
     }
 
     my $feed = {
-        version       => 'https://jsonfeed.org/version/1',
+        version       => 'https://jsonfeed.org/version/1.1',
         title         => $config->{ name },
         home_page_url => $config->{ 'blog-url' },
         feed_url      => $config->{ 'json-feed-url' },
         description   => $config->{ description },
-        author        => {
+        authors       => [{
             name => $config->{ author },
-        },
+        }],
         items => \@items,
     };
     my $path = $config->{ 'json-path' };
