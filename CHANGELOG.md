@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.3.0] - 2024-12-07
+
+  - Improve regular expressions for heading plus article parsing
+  - Bump JSON feed to version 1.1
+  - Use application/feed+json MIME type for JSON feed
+
 ## [5.2.0] - 2024-11-23
 
   - Added a Dockerfile for Sass.
