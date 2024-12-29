@@ -705,7 +705,7 @@ def create_rss_feed(days, config):
     todo = config['feed-size']
 
     for day in days:
-        (url, title, description) = get_url_title_description(day, config)
+        url, title, description = get_url_title_description(day, config)
 
         end_of_day = get_end_of_day(day['date'])
         # RFC #822 in USA locale
@@ -754,7 +754,7 @@ def create_json_feed(days, config):
     todo = config['feed-size']
 
     for day in days:
-        (url, title, description) = get_url_title_description(day, config)
+        url, title, description = get_url_title_description(day, config)
 
         end_of_day = get_end_of_day(day['date'])
         date_published = str(end_of_day).replace(' ', 'T')
