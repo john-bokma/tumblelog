@@ -99,7 +99,7 @@ def collect_days_and_pages(entries):
 
     days = []
     pages = []
-    state = 'unknown'
+    state = 'UNKNOWN'
 
     for entry in entries:
         match = RE_DATE_TITLE_ARTICLE.match(entry)
@@ -111,7 +111,7 @@ def collect_days_and_pages(entries):
                 'title': match.group(2),
                 'articles': [match.group(3)]
             })
-            state = 'date-title'
+            state = 'DAY'
             continue
 
         match = RE_NAME_LABEL_DATE_TITLE_ARTICLE.match(entry)
@@ -128,14 +128,14 @@ def collect_days_and_pages(entries):
                 'title': match.group(5),
                 'articles': [match.group(6)]
             })
-            state = 'at-page-title'
+            state = 'PAGE'
             continue
 
-        if state == 'date-title':
+        if state == 'DAY':
             days[-1]['articles'].append(entry)
             continue
 
-        if state == 'at-page-title':
+        if state == 'PAGE':
             pages[-1]['articles'].append(entry)
             continue
 

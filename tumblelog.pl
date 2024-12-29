@@ -1326,7 +1326,7 @@ sub collect_days_and_pages {
 
     my @days;
     my @pages;
-    my $state = 'unknown';
+    my $state = 'UNKNOWN';
  ENTRY:
     for my $entry ( @$entries ) {
         if ($entry =~ $RE_DATE_TITLE_ARTICLE ) {
@@ -1336,7 +1336,7 @@ sub collect_days_and_pages {
                 title    => $2,
                 articles => [ $3 ],
             };
-            $state = 'date-title';
+            $state = 'DAY';
             next ENTRY;
         }
         if ( $entry =~ $RE_NAME_LABEL_DATE_TITLE_ARTICLE ) {
@@ -1350,16 +1350,16 @@ sub collect_days_and_pages {
                 title       => $5,
                 articles    => [ $6 ],
             };
-            $state = 'at-page-title';
+            $state = 'PAGE';
             next ENTRY;
         }
 
-        if ( $state eq 'date-title' ) {
+        if ( $state eq 'DAY' ) {
             push @{ $days[ -1 ]{ articles } }, $entry;
             next ENTRY;
         }
 
-        if ( $state eq 'at-page-title' ) {
+        if ( $state eq 'PAGE' ) {
             push @{ $pages[ -1]{ articles } }, $entry;
             next ENTRY;
         };
