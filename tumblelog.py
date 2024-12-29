@@ -671,13 +671,8 @@ def create_tag_pages(days, archive, config, min_year, max_year):
             )
 
     # Create a page with a tag cloud
-    min_count = None
-    max_count = None
-    for tag in tag_info.keys():
-        if min_count is None or tag_info[tag]['count'] < min_count:
-            min_count = tag_info[tag]['count']
-        if max_count is None or tag_info[tag]['count'] > max_count:
-            max_count = tag_info[tag]['count']
+    min_count = min(tag_info.values(), key=itemgetter('count'))['count']
+    max_count = max(tag_info.values(), key=itemgetter('count'))['count']
 
     body_html = ('<div class="tl-topbar"></div>\n'
         '<div class="tl-tags-overview">\n'
