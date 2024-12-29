@@ -1062,7 +1062,7 @@ def create_argument_parser():
     parser.add_argument('-q', '--quiet', action='store_true', dest='quiet',
                         help="don't show progress", default=False)
     parser.add_argument('-v', '--version', action='version', version=VERSION,
-                        help="show version and exit")
+                        help='show version and exit')
     return parser
 
 def error(message):
