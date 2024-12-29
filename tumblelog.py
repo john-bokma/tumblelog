@@ -182,12 +182,12 @@ def html_for_next_prev(days, index, config):
             '  <div class="next">',
             html_link_for_day(days[index - 1], config),
             '</div>'
-            '<div class="tl-right-arrow">\u2192</div>\n'
+            '<div class="tl-right-arrow">\N{RIGHTWARDS ARROW}</div>\n'
         ])
 
     if index < length - 1:
         html += ''.join([
-            '  <div class="tl-left-arrow">\u2190</div>'
+            '  <div class="tl-left-arrow">\N{LEFTWARDS ARROW}</div>'
             '<div class="prev">',
             html_link_for_day(days[index + 1], config),
             '</div>\n'
@@ -265,7 +265,8 @@ def html_for_year_nav_bar(years, year_index, path=''):
 
     if year_index > 0:
         prv = years[year_index - 1]
-        nav = f'    <div>\u2190 <a href="../{prv}/{path}">{prv}</a></div>\n'
+        nav = ('    <div>\N{LEFTWARDS ARROW} '
+               f'<a href="../{prv}/{path}">{prv}</a></div>\n')
     else:
         nav = '    <div></div>\n'
 
@@ -273,7 +274,8 @@ def html_for_year_nav_bar(years, year_index, path=''):
 
     if year_index < len(years) - 1:
         nxt = years[year_index + 1]
-        nav += f'    <div><a href="../{nxt}/{path}">{nxt}</a> \u2192</div>\n'
+        nav += (f'    <div><a href="../{nxt}/{path}">{nxt}</a> '
+                '\N{RIGHTWARDS ARROW}</div>\n')
     else:
         nav += '    <div></div>\n'
 
@@ -341,7 +343,7 @@ def create_page(path, title, body_html, archive_html, config,
     if min_year == max_year:
         year_range = str(min_year)
     else:
-        year_range = f'{min_year}\u2013{max_year}'
+        year_range = f'{min_year}\N{EN DASH}{max_year}'
 
     slashes = path.count('/')
     css = ''.join(['../' * slashes, config['css']])
@@ -684,7 +686,8 @@ def create_tag_pages(days, archive, config, min_year, max_year):
         size = get_cloud_size(tag_info[tag]['count'], min_count, max_count)
         body_html += (f'    <li class="tl-size-{size}">'
             + f'<a href="{tag_info[tag]["end_year"]}/{tag_path}">'
-            + f"{tag}\u202f({tag_info[tag]['count']})</a></li>\n")
+            + f"{tag}\N{NARROW NO-BREAK SPACE}({tag_info[tag]['count']})"
+            + '</a></li>\n')
 
     body_html += '  </ul>\n</div>\n'
 

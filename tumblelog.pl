@@ -523,7 +523,7 @@ sub create_page {
          $label, $min_year, $max_year ) = @_;
 
     my $year_range = $min_year eq $max_year ?
-        $min_year : "$min_year\x{2013}$max_year";
+        $min_year : "$min_year\N{EN DASH}$max_year";
 
     my $slashes = $path =~ tr{/}{};
     my $css = join( '', '../' x $slashes, $config->{ css } );
@@ -643,7 +643,8 @@ sub html_for_year_nav_bar {
     my $nav;
     if ( $year_index > 0 ) {
         my $prev = $years->[ $year_index - 1 ];
-        $nav = qq(    <div>\x{2190} <a href="../$prev/$path">$prev</a></div>\n)
+        $nav = "    <div>\N{LEFTWARDS ARROW} "
+            . qq(<a href="../$prev/$path">$prev</a></div>\n)
     }
     else {
         $nav .= "    <div></div>\n";
@@ -653,7 +654,8 @@ sub html_for_year_nav_bar {
 
     if ( $year_index < $#$years ) {
         my $next = $years->[ $year_index + 1 ];
-        $nav .= qq(    <div><a href="../$next/$path">$next</a> \x{2192}</div>\n)
+        $nav .= qq(    <div><a href="../$next/$path">$next</a> )
+            . "\N{RIGHTWARDS ARROW}</div>\n"
     }
     else {
         $nav .= "    <div></div>\n";
@@ -741,11 +743,11 @@ sub html_for_next_prev {
         $html .= '  <div class="next">'
             . html_link_for_day( $days->[ $index - 1 ], $config )
             . '</div>'
-            . qq(<div class="tl-right-arrow">\x{2192}</div>\n);
+            . qq(<div class="tl-right-arrow">\N{RIGHTWARDS ARROW}</div>\n);
     }
 
     if ( $index < $#$days ) {
-        $html .= qq(  <div class="tl-left-arrow">\x{2190}</div>)
+        $html .= qq(  <div class="tl-left-arrow">\N{LEFTWARDS ARROW}</div>)
             . '<div class="prev">'
             . html_link_for_day( $days->[ $index + 1 ], $config )
             . "</div>\n";
@@ -905,7 +907,8 @@ sub create_tag_pages {
         );
         $body_html .= qq(    <li class="tl-size-$size">)
             . qq(<a href="$tag_info{ $tag }{ end_year }/$tag_path">)
-            . "$tag\x{202f}($tag_info{ $tag }{ count })</a></li>\n";
+            . "$tag\N{NARROW NO-BREAK SPACE}($tag_info{ $tag }{ count })"
+            . "</a></li>\n";
     }
     $body_html .= "  </ul>\n</div>\n";
 
