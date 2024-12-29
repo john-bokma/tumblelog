@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.3.5] - 2024-12-29
+
+  - Some small improvements in the Python version
+  - Use Unicode names instead of codes in both the Perl and Python version
+  - Use better state names in both the Perl and Python version
+
 ## [5.3.0] - 2024-12-07
 
   - Improve regular expressions for heading plus article parsing
