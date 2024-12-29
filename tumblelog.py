@@ -84,7 +84,8 @@ def year_week_title(fmt, year, week):
     return fmt.replace('%Y', year).replace('%V', week)
 
 def get_year_week(date):
-    return join_year_week(*parse_date(date).isocalendar()[0:2])
+    year, week, _ = parse_date(date).isocalendar()
+    return join_year_week(year, week)
 
 def read_entries(filename):
     with open(filename, encoding='utf8') as f:
@@ -150,7 +151,7 @@ def create_archive(days):
     seen = set()
     archive = defaultdict(deque)
     for day in days:
-        year, week = parse_date(day['date']).isocalendar()[0:2]
+        year, week, _ = parse_date(day['date']).isocalendar()
         year_week = join_year_week(year, week)
         if year_week not in seen:
             archive[f'{year:04d}'].appendleft(f'{week:02d}')
@@ -287,7 +288,7 @@ def html_link_for_day_number(day):
 
 def html_for_row(current_year, dt, row, week_active):
 
-    year, week = dt.isocalendar()[0:2]
+    year, week, _ = dt.isocalendar()
     if week_active:
         if year == current_year:
             week_html = f'<a href="week/{week:02d}.html">{week}</a>'
@@ -330,7 +331,7 @@ def html_for_month_nav_bar(active_months, current_month, names):
     return html
 
 def html_for_day(day):
-    day_number = split_date(day['date'])[2]
+    _, _, day_number = split_date(day['date'])
     uri = f'{day_number}.html'
     title = escape(day['title'])
     return f'    <dt>{day_number}</dt><dd><a href="{uri}">{title}</a></dd>\n'
@@ -614,7 +615,7 @@ def get_cloud_size(count, min_count, max_count):
 def create_tag_pages(days, archive, config, min_year, max_year):
     tags = {}
     for day in days:
-        year = split_date(day['date'])[0]
+        year, _, _ = split_date(day['date'])
         for article in reversed(day['articles']):
             for tag in article['tags']:
                 if tag not in tags:
@@ -655,7 +656,7 @@ def create_tag_pages(days, archive, config, min_year, max_year):
                         + '  <dl class="tl-days">\n')
                     current_month = month_name
 
-                nr = split_date(row['date'])[2]
+                _, _, nr = split_date(row['date'])
                 body_html += f"    <dt>{nr}</dt><dd>{row['title']}</dd>\n"
                 tag_info[tag]['count'] += 1
 
@@ -887,7 +888,7 @@ def html_for_tag(tag, year, config):
 
 
 def html_for_tags(tags, date, config):
-    year = split_date(date)[0]
+    year, _, _ = split_date(date)
     return ''.join([
         '<ul class="tl-tags">',
         ''.join([
