@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.3.6] - 2025-03-28
+
+  - Make Dockerfiles more robust
+  - In Python version: sort inplace (2x) in collect_days_and_pages
+  - Use slices instead of a todo counter
+
 ## [5.3.5] - 2024-12-29
 
   - Some small improvements in the Python version
