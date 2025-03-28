@@ -783,7 +783,7 @@ def extract_identifier_and_heading(ast):
 
     it = ast.walker()
     node, entering = it.next()
-    if node.t != 'document' and not entering:
+    if node.t != 'document' or not entering:
         raise ParseException(
             'Unexpected state encountered') # should never happen
 
