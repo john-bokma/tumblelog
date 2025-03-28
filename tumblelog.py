@@ -141,8 +141,8 @@ def collect_days_and_pages(entries):
 
         error('No date or page specified for first tumblelog entry')
 
-    days  = sorted(days,  key=itemgetter('date'), reverse=True)
-    pages = sorted(pages, key=itemgetter('date'), reverse=True)
+    days.sort(key=itemgetter('date'), reverse=True)
+    pages.sort(key=itemgetter('date'), reverse=True)
 
     return days, pages
 
