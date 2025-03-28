@@ -373,15 +373,11 @@ def create_page(path, title, body_html, archive_html, config,
 
 def create_index(days, archive, config, min_year, max_year):
     body_html = ''
-    todo = config['days']
 
-    for day in days:
+    for day in days[:config['days']]:
         body_html += html_for_date(
             day['date'], config['date-format'], day['title'], 'archive'
         ) + ''.join([article['html'] for article in day['articles']])
-        todo -= 1
-        if not todo:
-            break
 
     archive_html = html_for_archive(
         archive, None, 'archive', config['label-format'])
@@ -699,11 +695,8 @@ def create_tag_pages(days, archive, config, min_year, max_year):
 
 
 def create_rss_feed(days, config):
-
     items = []
-    todo = config['feed-size']
-
-    for day in days:
+    for day in days[:config['feed-size']]:
         url, title, description = get_url_title_description(day, config)
 
         end_of_day = get_end_of_day(day['date'])
@@ -722,10 +715,6 @@ def create_rss_feed(days, config):
                 '</item>'
             ])
         )
-        todo -= 1
-        if not todo:
-            break
-
 
     xml = ''.join([
         '<?xml version="1.0" encoding="UTF-8"?>'
@@ -750,9 +739,7 @@ def create_rss_feed(days, config):
 
 def create_json_feed(days, config):
     items = []
-    todo = config['feed-size']
-
-    for day in days:
+    for day in days[:config['feed-size']]:
         url, title, description = get_url_title_description(day, config)
 
         end_of_day = get_end_of_day(day['date'])
@@ -765,9 +752,6 @@ def create_json_feed(days, config):
             'content_html':   description,
             'date_published': date_published,
         })
-        todo -= 1
-        if not todo:
-            break
 
     feed = {
         'version':       'https://jsonfeed.org/version/1.1',

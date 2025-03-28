@@ -238,16 +238,12 @@ sub create_index {
     my ( $days, $archive, $config, $min_year, $max_year ) = @_;
 
     my $body_html;
-    my $todo = $config->{ days };
-
-    for my $day ( @$days ) {
+    for my $day ( @$days[ 0 .. $config->{ days } - 1 ] ) {
 
         $body_html .= html_for_date(
             $day->{ date }, $config->{ 'date-format' }, $day->{ title },
             'archive'
         ) . join( '', map { $_->{ html } } @{ $day->{ articles } } );
-
-        --$todo or last;
     }
 
     my $archive_html = html_for_archive(
@@ -925,9 +921,7 @@ sub create_rss_feed {
     my ( $days, $config ) = @_;
 
     my @items;
-    my $todo = $config->{ 'feed-size' };
-
-    for my $day ( @$days ) {
+    for my $day ( @$days[ 0 .. $config->{ 'feed-size' } - 1 ] ) {
 
         my ( $url, $title, $description )
             = get_url_title_description( $day, $config );
@@ -948,7 +942,6 @@ sub create_rss_feed {
             '<description>', escape( $description ), '</description>',
             '</item>'
         );
-        --$todo or last;
     }
 
     my $xml = join( '',
@@ -979,9 +972,7 @@ sub create_json_feed {
     my ( $days, $config ) = @_;
 
     my @items;
-    my $todo = $config->{ 'feed-size' };
-
-    for my $day ( @$days ) {
+    for my $day ( @$days[ 0 .. $config->{ 'feed-size' } - 1 ] ) {
 
         my ( $url, $title, $description )
             = get_url_title_description( $day, $config );
@@ -997,8 +988,6 @@ sub create_json_feed {
             content_html   => $description,
             date_published => $date_published,
         };
-
-        --$todo or last;
     }
 
     my $feed = {
