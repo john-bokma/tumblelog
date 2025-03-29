@@ -16,7 +16,7 @@ use List::Util 'min';
 use Encode 'decode';
 use Try::Tiny;
 
-my $VERSION = '5.3.6';
+my $VERSION = '5.3.7';
 
 my $RE_DATE_TITLE_ARTICLE = qr/
     ^(\d{4}-\d{2}-\d{2})    # A date in yyyy-mm-dd format at the start
