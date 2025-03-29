@@ -807,6 +807,9 @@ def extract_identifier_and_heading(ast):
         if node.literal:
             text += node.literal
 
+    if not text:
+        raise ParseException('An article must have text after a heading')
+
     identifier = re.sub(r'\s+', '-', text.lower())
 
     heading_node.unlink() # Output the title after modification later on
