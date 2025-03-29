@@ -804,7 +804,8 @@ def extract_identifier_and_heading(ast):
         node, entering = it.next()
         if node.t == 'heading' and not entering:
             break
-        text += node.literal if node.literal else ''
+        if node.literal:
+            text += node.literal
 
     identifier = re.sub(r'\s+', '-', text.lower())
 
