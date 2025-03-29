@@ -1,10 +1,17 @@
 # Change Log
 
+## [5.3.7] - 2025-03-29
+
+  - Remove Sass related file (not needed)
+  - Python version: don't append empty string if a literal equals None
+  - Python version: check if an article heading contains any text
+
 ## [5.3.6] - 2025-03-28
 
   - Make Dockerfiles more robust
   - In Python version: sort inplace (2x) in collect_days_and_pages
   - Use slices instead of a todo counter
+  - In Python version: Use or instead of and in conditional
 
 ## [5.3.5] - 2024-12-29
 
@@ -25,7 +32,8 @@
     to example HTML files.
   - Removed commented out code from tumblelog.py.
   - I now test differently if the OPT_UNSAFE constant is missing.
-  - The program now verifies that at least one tag is given if tags are enabled.
+  - The program now verifies that at least one tag is given if tags are
+    enabled.
   - I now use enumerate() in tumblelog.py (4x)
   - Added notes on images to tumblelog.md and tumblelog-tags.md.
   - Rewrote the README.md almost completely 
