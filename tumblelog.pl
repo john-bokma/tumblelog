@@ -816,8 +816,8 @@ sub get_cloud_size {
     return 1 if $min_count == $max_count;
 
     return 1 + int(
-        4 * ( log( $count ) - log( $min_count ) )
-        / ( log( $max_count ) - log( $min_count ) )
+        4 * log( $count / $min_count )
+        / log( $max_count / $min_count )
     );
 }
 

@@ -607,8 +607,8 @@ def get_cloud_size(count, min_count, max_count):
     if min_count == max_count:
         return 1
 
-    return 1 + int(4 * (log(count) - log(min_count))
-                     / (log(max_count) - log(min_count)))
+    return 1 + int(4 * log(count / min_count)
+                     / log(max_count / min_count))
 
 def create_tag_pages(days, archive, config, min_year, max_year):
     tags = {}
