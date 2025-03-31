@@ -222,7 +222,7 @@ sub create_blog {
 
         create_tag_pages(
             $days, $archive, $config, $min_year, $max_year
-        ) if $config->{tags};
+        ) if $config->{ tags };
 
         create_rss_feed( $days, $config );
         create_json_feed( $days, $config );
