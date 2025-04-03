@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.3.8] - 2025-04-03
+
+  - Reduce calls to log() by using the quotient rule:
+    log(a) - log(b) = log(a/b)
+  - Make get_month_names more efficient
+
 ## [5.3.7] - 2025-03-29
 
   - Remove Sass related file (not needed)
