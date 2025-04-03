@@ -1,5 +1,9 @@
 # Change Log
 
+## [5.3.9] - 2025-04-03
+
+  - Use constants (Perl) or Enum (Python) for states in collect_days_and_pages
+
 ## [5.3.8] - 2025-04-03
 
   - Reduce calls to log() by using the quotient rule:
@@ -42,7 +46,7 @@
     enabled.
   - I now use enumerate() in tumblelog.py (4x)
   - Added notes on images to tumblelog.md and tumblelog-tags.md.
-  - Rewrote the README.md almost completely 
+  - Rewrote the README.md almost completely
 
 ## [5.1.3] - 2021-07-12
 
