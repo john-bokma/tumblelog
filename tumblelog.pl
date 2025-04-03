@@ -16,6 +16,12 @@ use List::Util 'min';
 use Encode 'decode';
 use Try::Tiny;
 
+use constant {
+    UNKNOWN => 0,
+    DAY     => 1,
+    PAGE    => 2
+};
+
 my $VERSION = '5.3.8';
 
 my $RE_DATE_TITLE_ARTICLE = qr/
@@ -1316,7 +1322,7 @@ sub collect_days_and_pages {
 
     my @days;
     my @pages;
-    my $state = 'UNKNOWN';
+    my $state = UNKNOWN;
  ENTRY:
     for my $entry ( @$entries ) {
         if ($entry =~ $RE_DATE_TITLE_ARTICLE ) {
@@ -1326,7 +1332,7 @@ sub collect_days_and_pages {
                 title    => $2,
                 articles => [ $3 ],
             };
-            $state = 'DAY';
+            $state = DAY;
             next ENTRY;
         }
         if ( $entry =~ $RE_NAME_LABEL_DATE_TITLE_ARTICLE ) {
@@ -1340,16 +1346,16 @@ sub collect_days_and_pages {
                 title       => $5,
                 articles    => [ $6 ],
             };
-            $state = 'PAGE';
+            $state = PAGE;
             next ENTRY;
         }
 
-        if ( $state eq 'DAY' ) {
+        if ( $state == DAY ) {
             push @{ $days[ -1 ]{ articles } }, $entry;
             next ENTRY;
         }
 
-        if ( $state eq 'PAGE' ) {
+        if ( $state == PAGE ) {
             push @{ $pages[ -1]{ articles } }, $entry;
             next ENTRY;
         };
