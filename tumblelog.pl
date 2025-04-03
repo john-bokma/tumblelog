@@ -789,10 +789,11 @@ sub get_url_title_description {
 
 sub get_month_names {
 
+    my $date = parse_date( '2019-01-01' );
     my @names;
-    for my $mon ( 1..12 ) {
-        my $date = sprintf '2019-%02d-01', $mon;
-        push @names, decode_utf8( parse_date( $date )->strftime( '%B' ) );
+    for ( 1..12 ) {
+        push @names, decode_utf8( $date->strftime( '%B' ) );
+        $date = $date->add_months( 1 );
     }
     return @names;
 }

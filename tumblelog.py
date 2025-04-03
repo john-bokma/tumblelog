@@ -591,13 +591,7 @@ def get_url_title_description(day, config):
     return url, day['title'], description
 
 def get_month_names():
-
-    names = []
-    for mon in range(1, 13):
-        date = f'2019-{mon:02d}-01'
-        names.append(parse_date(date).strftime('%B'))
-
-    return names
+    return [datetime(2019, mon, 1).strftime('%B') for mon in range(1, 13)]
 
 def get_end_of_day(date):
     return datetime.strptime(
