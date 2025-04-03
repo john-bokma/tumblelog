@@ -9,6 +9,7 @@ import argparse
 import urllib.parse
 from math import log
 from html import escape
+from enum import Enum, auto
 from operator import itemgetter
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -65,6 +66,11 @@ RE_JSON_FEED_URL   = re.compile(r'(?x) \[% \s* json-feed-url \s* %\]')
 RE_BODY            = re.compile(r'(?x) \[% \s* body          \s* %\] \n')
 RE_ARCHIVE         = re.compile(r'(?x) \[% \s* archive       \s* %\] \n')
 
+class State(Enum):
+    UNKNOWN = auto()
+    DAY = auto()
+    PAGE = auto()
+
 class ParseException(Exception):
     pass
 
@@ -99,7 +105,7 @@ def collect_days_and_pages(entries):
 
     days = []
     pages = []
-    state = 'UNKNOWN'
+    state = State.UNKNOWN
 
     for entry in entries:
         match = RE_DATE_TITLE_ARTICLE.match(entry)
@@ -111,7 +117,7 @@ def collect_days_and_pages(entries):
                 'title': match.group(2),
                 'articles': [match.group(3)]
             })
-            state = 'DAY'
+            state = State.DAY
             continue
 
         match = RE_NAME_LABEL_DATE_TITLE_ARTICLE.match(entry)
@@ -128,14 +134,14 @@ def collect_days_and_pages(entries):
                 'title': match.group(5),
                 'articles': [match.group(6)]
             })
-            state = 'PAGE'
+            state = State.PAGE
             continue
 
-        if state == 'DAY':
+        if state == State.DAY:
             days[-1]['articles'].append(entry)
             continue
 
-        if state == 'PAGE':
+        if state == State.PAGE:
             pages[-1]['articles'].append(entry)
             continue
 
