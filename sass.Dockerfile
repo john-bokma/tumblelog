@@ -8,7 +8,7 @@ LABEL maintainer="John Bokma" \
 WORKDIR /app
 
 RUN apk add --no-cache npm \
-    && npm install --global sass
+    && npm install --global sass \
     && adduser -D -g '' tumblelog \
     && mkdir /data \
     && chown tumblelog:tumblelog /data
