@@ -70,7 +70,7 @@ it via a local webserver.
 
 ![A screenshot of the four styles that come with tumblelog](https://repository-images.githubusercontent.com/178557390/30c42f00-e7ae-11e9-839d-d6bd6faa6e48)
 
-A screenshot of four of the thirteen styles that come with `tumblelog`.
+A screenshot of four of the fourteen styles that come with `tumblelog`.
 
 The `screenshots` directory has 1:1 examples of themes that come with
 `tumblelog`.
