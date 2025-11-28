@@ -23,7 +23,7 @@ except ImportError:
 import commonmark
 import commonmark.node
 
-VERSION = '5.3.9'
+VERSION = '5.4.0'
 
 RE_DATE_TITLE_ARTICLE = re.compile(r"""
     ^(\d{4}-\d{2}-\d{2})    # A date in yyyy-mm-dd format at the start

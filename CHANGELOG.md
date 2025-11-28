@@ -1,5 +1,10 @@
 # Change Log
 
+## [5.4.0] - 2025-11-28
+
+  - Fix a major bug in the Perl version which made `tumblelog.pl` fail for
+    the example included.
+
 ## [5.3.9] - 2025-04-03
 
   - Use constants (Perl) or Enum (Python) for states in collect_days_and_pages

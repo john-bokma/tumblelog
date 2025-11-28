@@ -22,7 +22,7 @@ use constant {
     PAGE    => 2
 };
 
-my $VERSION = '5.3.9';
+my $VERSION = '5.4.0';
 
 my $RE_DATE_TITLE_ARTICLE = qr/
     ^(\d{4}-\d{2}-\d{2})    # A date in yyyy-mm-dd format at the start
@@ -244,7 +244,8 @@ sub create_index {
     my ( $days, $archive, $config, $min_year, $max_year ) = @_;
 
     my $body_html;
-    for my $day ( @$days[ 0 .. $config->{ days } - 1 ] ) {
+    my $size = min( scalar( @$days ), $config->{ days } );
+    for my $day ( @$days[ 0 .. $size - 1 ] ) {
 
         $body_html .= html_for_date(
             $day->{ date }, $config->{ 'date-format' }, $day->{ title },
@@ -572,7 +573,7 @@ sub html_for_month_nav_bar {
     my ( $active_months, $current_month, $names ) = @_;
 
     my $html = qq(  <nav>\n    <ul class="tl-month-navigation">\n);
-    for my $mon ( 1..12 ) {
+    for my $mon ( 1 .. 12 ) {
         my $month = sprintf '%02d', $mon;
         my $name = $names->[ $mon - 1 ];
         if ( exists $active_months->{ $month } ) {
@@ -596,7 +597,7 @@ sub html_for_day_names_row {
     my $tp = parse_date( '2019-01-07' ); # Monday
 
     my $names;
-    for ( 0..6 ) {
+    for ( 0 .. 6 ) {
         my $day_name = decode_utf8( $tp->strftime( '%a' ) );
         $names .= qq(        <th scope="col">$day_name</th>\n);
         $tp += ONE_DAY;
@@ -797,7 +798,7 @@ sub get_month_names {
 
     my $date = parse_date( '2019-01-01' );
     my @names;
-    for ( 1..12 ) {
+    for ( 1 .. 12 ) {
         push @names, decode_utf8( $date->strftime( '%B' ) );
         $date = $date->add_months( 1 );
     }
@@ -928,7 +929,8 @@ sub create_rss_feed {
     my ( $days, $config ) = @_;
 
     my @items;
-    for my $day ( @$days[ 0 .. $config->{ 'feed-size' } - 1 ] ) {
+    my $size = min( scalar( @$days ), $config->{ 'feed-size' } );
+    for my $day ( @$days[ 0 .. $size - 1 ] ) {
 
         my ( $url, $title, $description )
             = get_url_title_description( $day, $config );
@@ -979,7 +981,8 @@ sub create_json_feed {
     my ( $days, $config ) = @_;
 
     my @items;
-    for my $day ( @$days[ 0 .. $config->{ 'feed-size' } - 1 ] ) {
+    my $size = min( scalar( @$days ), $config->{ 'feed-size' } );
+    for my $day ( @$days[ 0 .. $size - 1 ] ) {
 
         my ( $url, $title, $description )
             = get_url_title_description( $day, $config );
