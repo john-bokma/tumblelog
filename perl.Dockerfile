@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM alpine:latest AS base
+FROM alpine:3.22.2 AS base
 
 WORKDIR /app
 
