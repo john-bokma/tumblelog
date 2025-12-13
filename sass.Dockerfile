@@ -2,20 +2,20 @@
 
 FROM alpine:3.22.2 AS build
 
-RUN apk add --no-cache nodejs npm \
-    && npm install -g sass@1.96.0 \
-    && npm cache clean --force
+RUN apk add --no-cache curl tar
 
-FROM alpine:3.22.2
+WORKDIR /tmp
 
-RUN apk add --no-cache nodejs \
-    && adduser -D -g '' tumblelog \
-    && mkdir /data \
-    && chown tumblelog:tumblelog /data
+RUN curl -fsSL \
+	https://github.com/sass/dart-sass/releases/download/1.96.0/dart-sass-1.96.0-linux-x64.tar.gz \
+    | tar -xz
 
-COPY --from=build /usr/local /usr/local
+FROM gcr.io/distroless/cc-debian13:nonroot
 
-USER tumblelog
 WORKDIR /data
 
-ENTRYPOINT ["sass"]
+COPY --from=build /tmp/dart-sass /usr/local/dart-sass
+
+ENV PATH="/usr/local/dart-sass:${PATH}"
+
+ENTRYPOINT [ "/usr/local/dart-sass/src/dart", "/usr/local/dart-sass/src/sass.snapshot" ]
