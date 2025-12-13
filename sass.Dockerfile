@@ -1,21 +1,21 @@
-# Syntax=docker/dockerfile:1
-FROM alpine:latest
+# syntax=docker/dockerfile:1
 
-LABEL maintainer="John Bokma" \
-      version="1.0" \
-      description="A pure JavaScript implementation of Sass"
+FROM alpine:3.22.2 AS build
 
-WORKDIR /app
+RUN apk add --no-cache nodejs npm \
+    && npm install -g sass@1.96.0 \
+    && npm cache clean --force
 
-RUN apk add --no-cache npm \
-    && npm install --global sass \
+FROM alpine:3.22.2
+
+RUN apk add --no-cache nodejs \
     && adduser -D -g '' tumblelog \
     && mkdir /data \
     && chown tumblelog:tumblelog /data
 
+COPY --from=build /usr/local /usr/local
+
 USER tumblelog
 WORKDIR /data
-VOLUME ["/data"]
 
-ENTRYPOINT ["npx", "sass"]
-
+ENTRYPOINT ["sass"]
