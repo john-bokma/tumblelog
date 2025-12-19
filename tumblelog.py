@@ -900,9 +900,10 @@ def convert_articles_with_metablock_to_html(items, config):
 
                 ast = commonmark.Parser().parse(match.group(2))
                 identifier, heading = extract_identifier_and_heading(ast)
-                if 'id' in meta:
-                    validate_identifier(meta['id'])
-                    identifier = meta['id']
+                custom_id = meta.get('id')
+                if custom_id:
+                    validate_identifier(custom_id)
+                    identifier = custom_id
 
                 # identifier must be globally unique
                 if identifier in ids:
