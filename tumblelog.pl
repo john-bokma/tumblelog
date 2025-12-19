@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use feature 'say';
 use open ':std', ':encoding(UTF-8)';
 
 use URI;
@@ -125,7 +126,7 @@ sub get_config {
     show_usage_and_exit() if $arguments{ help };
 
     if ( $arguments{ version } ) {
-        print "$VERSION\n";
+        say $VERSION;
         exit;
     }
 
@@ -553,7 +554,7 @@ sub create_page {
 
     path( "$config->{ 'output-dir' }/$path" )
         ->append_utf8( { truncate => 1 }, $html );
-    $config->{ quiet } or print "Created '$path'\n";
+    $config->{ quiet } or say "Created '$path'";
 
     return;
 }
@@ -971,7 +972,7 @@ sub create_rss_feed {
     my $path = $config->{ 'rss-path' };
     path( "$config->{ 'output-dir' }/$path" )
         ->append_utf8( { truncate => 1 }, $xml );
-    $config->{ quiet } or print "Created '$path'\n";
+    $config->{ quiet } or say "Created '$path'";
 
     return;
 }
@@ -1016,7 +1017,7 @@ sub create_json_feed {
         ->encode( $feed );
     path( "$config->{ 'output-dir' }/$path" )
         ->append_raw( { truncate => 1 }, $json );
-    $config->{ quiet } or print "Created '$path'\n";
+    $config->{ quiet } or say "Created '$path'";
 
     return;
 }
