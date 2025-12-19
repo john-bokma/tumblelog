@@ -1,5 +1,18 @@
 # Change Log
 
+## [5.5.0] - 2025-12-19
+
+  - Pin Alpine version to avoid gcc 15 issue in perl.Dockerfile
+  - Pin versions and optimize sass.Dockerfile
+  - Make sass.Dockerfile distroless resulting in a smaller image
+  - Use say instead of print "...\n"; in tumblelog.pl
+  - Obtain current year using year method in tumblelog.pl
+  - Optimize create_tag_pages by using a defaultdict in tumblelog.py
+  - Use meta.get('id'); more Pythonic, in tumblelog.py
+  - Use f-string in get_tag_path in tumblelog.py
+  - Use generator expression instead of list comprehension tumblelog.py
+  - Use groupby from itertools in create_tag_pages in tumblelog.py
+
 ## [5.4.0] - 2025-11-28
 
   - Fix a major bug in the Perl version which made `tumblelog.pl` fail for
