@@ -383,7 +383,7 @@ def create_index(days, archive, config, min_year, max_year):
     for day in days[:config['days']]:
         body_html += html_for_date(
             day['date'], config['date-format'], day['title'], 'archive'
-        ) + ''.join([article['html'] for article in day['articles']])
+        ) + ''.join(article['html'] for article in day['articles'])
 
     archive_html = html_for_archive(
         archive, None, 'archive', config['label-format'])
@@ -534,7 +534,7 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
     for day_index, day in enumerate(days):
         day_body_html = html_for_date(
             day['date'], config['date-format'], day['title'], '../..'
-        ) + ''.join([article['html'] for article in day['articles']])
+        ) + ''.join(article['html'] for article in day['articles'])
 
         label = parse_date(day['date']).strftime(config['date-format'])
 
@@ -580,7 +580,7 @@ def create_pages(pages, archive, config, min_year, max_year):
         else:
             body_html = '<div class="tl-topbar"></div>\n'
 
-        body_html += ''.join([article['html'] for article in page['articles']])
+        body_html += ''.join(article['html'] for article in page['articles'])
         create_page(
             f"{page['name']}.html",
             page['title'], body_html, archive_html, config,
@@ -589,7 +589,7 @@ def create_pages(pages, archive, config, min_year, max_year):
 
 def get_url_title_description(day, config):
 
-    description = ''.join([article['html'] for article in day['articles']])
+    description = ''.join(article['html'] for article in day['articles'])
     year, month, day_number = split_date(day['date'])
     url = urllib.parse.urljoin(
         config['blog-url'], f'archive/{year}/{month}/{day_number}.html')
