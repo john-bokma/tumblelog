@@ -611,18 +611,16 @@ def get_cloud_size(count, min_count, max_count):
                      / log(max_count / min_count))
 
 def create_tag_pages(days, archive, config, min_year, max_year):
-    tags = {}
+    tags = defaultdict(lambda: {
+        'count': 0,
+        'years': defaultdict(deque),
+    })
     for day in days:
         year, _, _ = split_date(day['date'])
         for article in reversed(day['articles']):
             for tag in article['tags']:
-                if tag not in tags:
-                    tags[tag] = {
-                        'count': 0,
-                        'years': defaultdict(deque)
-                    }
                 tags[tag]['count'] += 1
-                tags[tag]['years'][ year ].appendleft({
+                tags[tag]['years'][year].appendleft({
                     'title': article['title'],
                     'date': day['date']
                 })
