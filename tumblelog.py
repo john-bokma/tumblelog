@@ -11,6 +11,7 @@ from math import log
 from html import escape
 from enum import Enum, auto
 from operator import itemgetter
+from itertools import groupby
 from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict, deque
@@ -641,22 +642,23 @@ def create_tag_pages(days, archive, config, min_year, max_year):
                 f'  <h2>{tag}</h2>\n'
             ])
 
-            current_month = ''
-            for row in tags[tag]['years'][year]:
-                dt = parse_date(row['date'])
-                month_name = dt.strftime('%B')
-                if month_name != current_month:
-                    if current_month:
-                        body_html += '  </dl>\n'
-                    body_html += (f'  <h3>{month_name}</h3>\n'
-                        + '  <dl class="tl-days">\n')
-                    current_month = month_name
+            for month_name, rows in groupby(
+                tags[tag]['years'][year],
+                key=lambda r: parse_date(r['date']).strftime('%B'),
+            ):
+                body_html += (
+                    f'  <h3>{month_name}</h3>\n'
+                    '  <dl class="tl-days">\n'
+                )
 
-                _, _, nr = split_date(row['date'])
-                body_html += f"    <dt>{nr}</dt><dd>{row['title']}</dd>\n"
-                tag_info[tag]['count'] += 1
+                for row in rows:
+                    _, _, nr = split_date(row['date'])
+                    body_html += f"    <dt>{nr}</dt><dd>{row['title']}</dd>\n"
+                    tag_info[tag]['count'] += 1
 
-            body_html += '  </dl>\n</div>\n'
+                body_html += '  </dl>\n'
+
+            body_html += '</div>\n'
 
             Path(config['output-dir']).joinpath(f'tags/{year}/').mkdir(
                 parents=True, exist_ok=True)
