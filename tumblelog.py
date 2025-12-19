@@ -774,7 +774,7 @@ def create_json_feed(days, config):
 
 
 def get_tag_path(tag):
-    return re.sub(' ', '-', tag) + '.html'
+    return f"{tag.replace(' ', '-')}.html"
 
 
 def extract_identifier_and_heading(ast):
