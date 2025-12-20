@@ -1,33 +1,32 @@
-/* (c) John Bokma, 2019-2021
+/* (c) John Bokma, 2019-2025
  *
  * Palette taken in part from 'Adrift in Dreams' by Skyblue2u
  * https://www.colourlovers.com/palette/580974/Adrift_in_Dreams
  */
 
-$background-color: #a8dba8;
-$page-background-color: #cff09e;
+@use 'tumblelog' with (
+    $background-color: #a8dba8,
+    $page-background-color: #cff09e,
+    $text-color: black,
+    $heading-color: #c02942,
+    $label-color: #0b486b,
+    $border-color: #0b486b,
+    $date-color: #0b486b,
+    $self-color: #999,
+    $link-color: #d95b43,
+    $pre-background-color: #eee,
+    $blockquote-background-color: #cff09e,
+    $tag-color: #0b486b,
+
+    $border-radius: initial
+);
+
 $main-header-background-color: #3b8686;
 $main-header-color: #eee;
 $main-nav-color: #eee;
-$text-color: black;
-$heading-color: #c02942;
-$label-color: #0b486b;
-$border-color: #0b486b;
-$date-color: #0b486b;
-$self-color: #999;
-$link-color: #d95b43;
-$pre-background-color: #eee;
-$blockquote-background-color: #cff09e;
 $blockquote-border-color: #0b486b;
 $footer-background-color: #0b486b;
 $footer-color: white;
-$tag-color: #0b486b;
-
-$border: solid 1px $border-color;
-$border-radius: initial;
-
-@import 'fonts';
-@import 'tumblelog';
 
 .tl-page {
     margin: 0 auto;
@@ -58,7 +57,7 @@ footer {
 }
 
 blockquote {
-    border-radius: $border-radius;
+    border-radius: tumblelog.$border-radius;
     border-left: solid 3px $blockquote-border-color;
 }
 
@@ -71,8 +70,8 @@ figure {
     }
 
     figcaption {
-        color: $background-color;
-        background-color: $text-color;
+        color: tumblelog.$background-color;
+        background-color: tumblelog.$text-color;
         padding: 2px;
         text-align: center;
         border-radius: 0 0 6px 6px;
@@ -82,6 +81,6 @@ figure {
 
 .tl-tags {
     a {
-        color: $tag-color;
+        color: tumblelog.$tag-color;
     }
 }

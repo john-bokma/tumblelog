@@ -1,22 +1,22 @@
-/* (c) John Bokma, 2019-2021 */
+/* (c) John Bokma, 2019-2025 */
 
-$background-color: #1b384a;
-$page-background-color: #102e3f;
-$text-color: #9cb1b3;
-$heading-color: #faeb91;
-$label-color: $heading-color;
-$border-color: none;
-$date-color: $label-color;
-$self-color: $text-color;
-$link-color: $text-color;
-$pre-background-color: $background-color;
-$blockquote-background-color: inherit;
+@use 'tumblelog' with (
+    $background-color: #1b384a,
+    $page-background-color: #102e3f,
+    $text-color: #9cb1b3,
+    $heading-color: #faeb91,
+    $label-color: #faeb91,
+    $border-color: none,
+    $date-color: #faeb91,
+    $self-color: #9cb1b3,
+    $link-color: #9cb1b3,
+    $pre-background-color: #1b384a,
+    $blockquote-background-color: inherit,
 
-$border: none;
-$border-radius: none;
+    $border: none,
+    $border-radius: none
+);
 
-@import 'fonts';
-@import 'tumblelog';
 
 .tl-main-header {
     background-color: #0a1f2a;
@@ -45,7 +45,7 @@ $border-radius: none;
             padding-bottom: 2px;
 
             a {
-                color: $heading-color;
+                color: tumblelog.$heading-color;
                 padding: 5px;
 
                 &:hover {
@@ -97,14 +97,18 @@ figure {
 
 blockquote {
     padding-left: 10px;
-    border-left: solid 2px $text-color;
+    border-left: solid 2px tumblelog.$text-color;
+}
+
+.tl-tag-cloud {
+    margin-bottom: 16px;
 }
 
 .tl-archive {
     margin: 0;
     padding: 10px;
     background-color: #881018;
-    color: $date-color;
+    color: tumblelog.$date-color;
 
     h2 {
         margin-top: 0;

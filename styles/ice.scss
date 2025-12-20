@@ -1,22 +1,22 @@
-/* (c) John Bokma, 2019-2021 */
+/* (c) John Bokma, 2019-2025 */
 
-$background-color: #c9dbdf;
-$page-background-color: #e0e7e7;
-$text-color: #646b76;
-$heading-color: #1b1c1f;
-$label-color: #59868f;
-$border-color: $label-color;
-$date-color: $label-color;
-$self-color: $label-color;
-$link-color: $text-color;
-$pre-background-color: #eee;
-$blockquote-background-color: inherit;
+@use 'tumblelog' with (
+    $background-color: #c9dbdf,
+    $page-background-color: #e0e7e7,
+    $text-color: #646b76,
+    $heading-color: #1b1c1f,
+    $label-color: #59868f,
+    $border-color: #59868f,
+    $date-color: #59868f,
+    $self-color: #59868f,
+    $link-color: #646b76,
+    $pre-background-color: #eee,
+    $blockquote-background-color: inherit,
 
-$border: solid 2px $border-color;
-$border-radius: initial;
+    $border: solid 2px #59868f,
+    $border-radius: initial
+);
 
-@import 'fonts';
-@import 'tumblelog';
 
 .tl-main-header {
     text-transform: uppercase;
@@ -40,19 +40,19 @@ $border-radius: initial;
     }
     margin-top: 10px;
     margin-bottom: 20px;
-    background-color: $heading-color;
+    background-color: tumblelog.$heading-color;
     text-align: right;
 
     li {
         display: inline-block;
 
         a {
-            color: $page-background-color;
+            color: tumblelog.$page-background-color;
             font-size: 12px;
-            border-bottom: solid 1px $heading-color;
+            border-bottom: solid 1px tumblelog.$heading-color;
 
             &:hover {
-                border-bottom: solid 1px $page-background-color;
+                border-bottom: solid 1px tumblelog.$page-background-color;
             }
         }
     }
@@ -75,7 +75,7 @@ figure {
     }
 
     figcaption {
-        background-color: $heading-color;
+        background-color: tumblelog.$heading-color;
         padding: 4px;
         margin-bottom: 1em;
     }
@@ -83,7 +83,7 @@ figure {
 
 blockquote {
     padding-left: 10px;
-    border-left: solid 3px $border-color;
+    border-left: solid 3px tumblelog.$border-color;
 }
 
 .tl-archive,
@@ -97,7 +97,7 @@ footer {
     margin: 0;
     padding: 10px;
     border-top: 0;
-    background-color: $heading-color;
+    background-color: tumblelog.$heading-color;
 
     a {
         text-decoration: underline;

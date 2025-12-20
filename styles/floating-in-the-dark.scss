@@ -1,22 +1,21 @@
-/* (c) John Bokma, 2019-2021 */
+/* (c) John Bokma, 2019-2025 */
 
-$background-color: initial;
-$page-background-color: initial;
-$text-color: #c6c6c6;
-$heading-color: #828282;
-$label-color: #880c1d;
-$border-color: #880c1d;
-$date-color: white;
-$self-color: #828282;
-$link-color: #f7cf0a;
-$pre-background-color: #1e252f;
-$blockquote-background-color: black;
+@use 'tumblelog' with (
+    $background-color: initial,
+    $page-background-color: initial,
+    $text-color: #c6c6c6,
+    $heading-color: #828282,
+    $label-color: #880c1d,
+    $border-color: #880c1d,
+    $date-color: white,
+    $self-color: #828282,
+    $link-color: #f7cf0a,
+    $pre-background-color: #1e252f,
+    $blockquote-background-color: black,
 
-$border: solid 3px $border-color;
-$border-radius: initial;
-
-@import 'fonts';
-@import 'tumblelog';
+    $border: solid 3px #880c1d,
+    $border-radius: initial
+);
 
 body {
     background-image: radial-gradient(circle, #444, #0a0a0a);
@@ -113,7 +112,7 @@ figure {
 
     img {
         display: block;
-        border-radius: $border-radius $border-radius 0 0;
+        border-radius: tumblelog.$border-radius tumblelog.$border-radius 0 0;
     }
 
     figcaption {

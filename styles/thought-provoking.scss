@@ -1,32 +1,33 @@
-/* (c) John Bokma, 2019-2021
+/* (c) John Bokma, 2019-2025
  *
  * Palette taken in part from 'Thought Provoking' by Miss_Anthropy
  * https://www.colourlovers.com/palette/694737/Thought_Provoking
  */
 
-$background-color: #d95b43;
-$page-background-color: white;
+@use 'tumblelog' with (
+    $background-color: #d95b43,
+    $page-background-color: white,
+    $text-color: black,
+    $heading-color: #c02942,
+    $label-color: #01535f,
+    $border-color: #53777a,
+    $date-color: #53777a,
+    $self-color: #999,
+    $link-color: #d95b43,
+    $pre-background-color: #eee,
+    $blockquote-background-color: white,
+
+    $border-radius: initial
+);
+
+
 $main-header-background-color: #53777a;
 $main-header-color: white;
 $main-nav-color: white;
-$text-color: black;
-$heading-color: #c02942;
-$label-color: #01535f;
-$border-color: #53777a;
-$date-color: #53777a;
-$self-color: #999;
-$link-color: #d95b43;
-$pre-background-color: #eee;
-$blockquote-background-color: white;
 $blockquote-border-color: #999;
 $footer-background-color: #542437;
 $footer-color: white;
 
-$border: solid 1px $border-color;
-$border-radius: initial;
-
-@import 'fonts';
-@import 'tumblelog';
 
 .tl-page {
     margin: 0 auto;
@@ -57,7 +58,7 @@ footer {
 }
 
 blockquote {
-    border-radius: $border-radius;
+    border-radius: tumblelog.$border-radius;
     border-left: solid 3px $blockquote-border-color;
 }
 

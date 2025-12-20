@@ -1,28 +1,28 @@
-/* (c) John Bokma, 2019-2021 */
+/* (c) John Bokma, 2019-2025 */
 
-$background-color: #575d64;
-$page-background-color: #dfe0da;
-$text-color: #10110c;
-$heading-color: #1b1c1f;
-$label-color: #373e42;
-$border-color: #6d2b3d;
-$date-color: #dfe0da;
-$self-color: $label-color;
-$link-color: $text-color;
-$pre-background-color: #eee;
-$blockquote-background-color: inherit;
+@use 'tumblelog' with (
+    $background-color: #575d64,
+    $page-background-color: #dfe0da,
+    $text-color: #10110c,
+    $heading-color: #1b1c1f,
+    $label-color: #373e42,
+    $border-color: #6d2b3d,
+    $date-color: #dfe0da,
+    $self-color: #373e42,
+    $link-color: #10110c,
+    $pre-background-color: #eee,
+    $blockquote-background-color: inherit,
 
-$border: none;
-$border-radius: initial;
+    $border: none,
+    $border-radius: initial
+);
 
-@import 'fonts';
-@import 'tumblelog';
 
 .tl-main-header {
-    background-color: $background-color;
+    background-color: tumblelog.$background-color;
 
     h1 {
-        color: $label-color;
+        color: tumblelog.$label-color;
         font-weight: normal;
         text-shadow: rgba(10, 10, 10, 0.5) 2px 2px 1px;
     }
@@ -43,14 +43,14 @@ $border-radius: initial;
     }
     margin-top: 10px;
     margin-bottom: 0;
-    background-color: $background-color;
+    background-color: tumblelog.$background-color;
     text-align: right;
 
     li {
         display: inline-block;
 
         a {
-            color: $date-color;
+            color: tumblelog.$date-color;
             text-transform: lowercase;
             font-size: 12px;
         }
@@ -60,7 +60,7 @@ $border-radius: initial;
 time,
 .tl-topbar {
     min-height: 42px;
-    border-top: solid 20px $background-color;
+    border-top: solid 20px tumblelog.$background-color;
     position: relative;
     left: -10px;
     width: 480px;
@@ -100,7 +100,7 @@ figure {
 }
 
 .tl-archive {
-    border-top: solid 20px $background-color;
+    border-top: solid 20px tumblelog.$background-color;
     position: relative;
     left: -10px;
     width: 480px;
@@ -111,7 +111,7 @@ figure {
     h2 {
         margin-top: 0;
         padding-right: 10px;
-        color: $date-color;
+        color: tumblelog.$date-color;
         background-color: #9f2531;
         text-align: right;
         font-size: 14px;

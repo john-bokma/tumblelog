@@ -1,22 +1,19 @@
-/* (c) John Bokma, 2019-2021 */
+/* (c) John Bokma, 2019-2025 */
 
-$background-color: white;
-$page-background-color: white;
-$text-color: #333;
-$heading-color: black;
-$label-color: black;
-$border-color: #333;
-$date-color: black;
-$self-color: #333;
-$link-color: #00e;
-$pre-background-color: #eee;
-$blockquote-background-color: white;
+@use 'tumblelog' with (
+    $background-color: white,
+    $page-background-color: white,
+    $text-color: #333,
+    $heading-color: black,
+    $label-color: black,
+    $border-color: #333,
+    $date-color: black,
+    $self-color: #333,
+    $link-color: #00e,
+    $pre-background-color: #eee,
+    $blockquote-background-color: white,
+);
 
-$border: solid 1px $border-color;
-$border-radius: 6px;
-
-@import 'fonts';
-@import 'tumblelog';
 
 blockquote {
     border-radius: initial;

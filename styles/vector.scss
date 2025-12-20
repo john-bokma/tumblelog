@@ -1,22 +1,22 @@
-/* (c) John Bokma, 2019-2021 */
+/* (c) John Bokma, 2019-2025 */
 
-$background-color: white;
-$page-background-color: white;
-$text-color: #464646;
-$heading-color: $text-color;
-$label-color: #e3aa25;
-$border-color: #a4adad;
-$date-color: #acacac;
-$self-color: #acacac;
-$link-color: $text-color;
-$pre-background-color: #eee;
-$blockquote-background-color: inherit;
+@use 'tumblelog' with (
+    $background-color: white,
+    $page-background-color: white,
+    $text-color: #464646,
+    $heading-color: #464646,
+    $label-color: #e3aa25,
+    $border-color: #a4adad,
+    $date-color: #acacac,
+    $self-color: #acacac,
+    $link-color: #464646,
+    $pre-background-color: #eee,
+    $blockquote-background-color: inherit,
 
-$border: solid 2px $border-color;
-$border-radius: initial;
+    $border: solid 2px #a4adad,
+    $border-radius: initial
+);
 
-@import 'fonts';
-@import 'tumblelog';
 
 .tl-main-header {
     .tl-navigation {
@@ -51,13 +51,13 @@ article,
 .tl-tags-overview,
 .tl-archive {
     a {
-        border-bottom: solid 2px $label-color;
+        border-bottom: solid 2px tumblelog.$label-color;
     }
 }
 
 blockquote {
     padding-left: 10px;
-    border-left: solid 3px $label-color;
+    border-left: solid 3px tumblelog.$label-color;
 }
 
 footer {
@@ -69,6 +69,6 @@ footer {
     background-color: black;
 
     a {
-        color: $label-color;
+        color: tumblelog.$label-color;
     }
 }

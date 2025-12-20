@@ -1,4 +1,36 @@
-/* (c) John Bokma, 2019-2021 */
+/* (c) John Bokma, 2019-2025 */
+
+$font-stack: 'San Francisco',
+    'Trebuchet MS',
+    Verdana,
+    Helvetica,
+    sans-serif !default;
+
+// See https://www.client9.com/css-system-font-stack-monospace-v2/
+$code-font-stack: SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    'Liberation Mono',
+    'Courier New',
+    monospace !default;
+
+$background-color: null !default;
+$page-background-color: null !default;
+$text-color: null !default;
+$heading-color: null !default;
+$label-color: null !default;
+$border-color: null !default;
+$date-color: null !default;
+$self-color: null !default;
+$link-color: null !default;
+$pre-background-color: null !default;
+$blockquote-background-color: null !default;
+$tag-color: null !default;
+
+$border: solid 1px $border-color !default;
+$border-radius: 6px !default;
+
 
 html {
     box-sizing: border-box;

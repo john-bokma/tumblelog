@@ -1,47 +1,46 @@
-/* (c) John Bokma, 2019-2021
+/* (c) John Bokma, 2019-2025
  *
  * Palette taken from the Soothe Theme for Emacs by Jason Milkins.
  */
 
-$background-color: #0a0a0a;             // GRAY-1BG
-$page-background-color: #132228;        // BLUE-3BG
-$text-color: #ece5ce;                   // SNOW
-$heading-color: #d94a05;                // ORANGE-1
-$label-color: #01535f;                  // TURQUOISE-1
-$border-color: #333;                    // GRAY-3
-$date-color: #364e7a;                   // BLUE-4
-$self-color: #828282;                   // GRAY-2
-$link-color: #b13120;                   // RED-1
-$pre-background-color: #1e252f;         // BLUE-1BG
-$blockquote-background-color: #073e46;  // TURQUOISE-2
-$tag-color: #364e7a;                    // BLUE-4
+@use 'tumblelog' with (
+    $background-color: #0a0a0a,             // GRAY-1BG
+    $page-background-color: #132228,        // BLUE-3BG
+    $text-color: #ece5ce,                   // SNOW
+    $heading-color: #d94a05,                // ORANGE-1
+    $label-color: #01535f,                  // TURQUOISE-1
+    $border-color: #333,                    // GRAY-3
+    $date-color: #364e7a,                   // BLUE-4
+    $self-color: #828282,                   // GRAY-2
+    $link-color: #b13120,                   // RED-1
+    $pre-background-color: #1e252f,         // BLUE-1BG
+    $blockquote-background-color: #073e46,  // TURQUOISE-2
+    $tag-color: #364e7a,                    // BLUE-4
 
-$border: solid 1px $border-color;
-$border-radius: 6px;
+    $border-radius: 6px
+);
 
-@import 'fonts';
-@import 'tumblelog';
 
 figure {
     margin: 0;
 
     img {
         display: block;
-        border-radius: $border-radius $border-radius 0 0;
+        border-radius: tumblelog.$border-radius tumblelog.$border-radius 0 0;
     }
 
     figcaption {
-        color: $background-color;
-        background-color: $text-color;
+        color: tumblelog.$background-color;
+        background-color: tumblelog.$text-color;
         padding: 2px;
         text-align: center;
-        border-radius: 0 0 $border-radius $border-radius;
+        border-radius: 0 0 tumblelog.$border-radius tumblelog.$border-radius;
         margin-bottom: 1em;
     }
 }
 
 .tl-tags {
     a {
-        color: $tag-color;
+        color: tumblelog.$tag-color;
     }
 }

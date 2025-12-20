@@ -1,22 +1,22 @@
-/* (c) John Bokma, 2019-2021 */
+/* (c) John Bokma, 2019-2025 */
 
-$background-color: white;
-$page-background-color: white;
-$text-color: #333;
-$heading-color: #b9508c;
-$label-color: #c099a2;
-$border-color: #f5bc7c;
-$date-color: #33475b;
-$self-color: #828282;
-$link-color: #a1b64e;
-$pre-background-color: #eaf0f6;
-$blockquote-background-color: white;
+@use 'tumblelog' with (
+    $background-color: white,
+    $page-background-color: white,
+    $text-color: #333,
+    $heading-color: #b9508c,
+    $label-color: #c099a2,
+    $border-color: #f5bc7c,
+    $date-color: #33475b,
+    $self-color: #828282,
+    $link-color: #a1b64e,
+    $pre-background-color: #eaf0f6,
+    $blockquote-background-color: white,
 
-$border: solid 3px $border-color;
-$border-radius: initial;
+    $border: solid 3px #f5bc7c,
+    $border-radius: initial
+);
 
-@import 'fonts';
-@import 'tumblelog';
 
 .tl-main-header {
     background-color: #dfecee;
@@ -99,7 +99,7 @@ figure {
 
 blockquote {
     padding-left: 10px;
-    border-left: solid 3px $border-color;
+    border-left: solid 3px tumblelog.$border-color;
 }
 
 .tl-month-navigation {
