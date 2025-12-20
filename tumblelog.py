@@ -109,8 +109,7 @@ def collect_days_and_pages(entries):
     state = State.UNKNOWN
 
     for entry in entries:
-        match = RE_DATE_TITLE_ARTICLE.match(entry)
-        if match:
+        if (match := RE_DATE_TITLE_ARTICLE.match(entry)):
             if not match.group(2):
                 error(f'A day must have a title ({match.group(1)})')
             days.append({
@@ -121,8 +120,7 @@ def collect_days_and_pages(entries):
             state = State.DAY
             continue
 
-        match = RE_NAME_LABEL_DATE_TITLE_ARTICLE.match(entry)
-        if match:
+        if (match := RE_NAME_LABEL_DATE_TITLE_ARTICLE.match(entry)):
             if not match.group(2):
                 error(f'A page must have a label (@{match.group(1)})')
             if not match.group(5):
@@ -891,8 +889,7 @@ def convert_articles_with_metablock_to_html(items, config):
         articles = []
         for article_no, article in enumerate(item['articles'], start=1):
             try:
-                match = RE_YAML_MARKDOWN.match(article)
-                if not match.group(1):
+                if not (match := RE_YAML_MARKDOWN.match(article)).group(1):
                     raise ParseException('No mandatory YAML block found')
 
                 # Only load the most basic YAML
