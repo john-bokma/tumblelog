@@ -110,15 +110,11 @@ docker run --rm \
        --volume "`pwd`/../../projects/tumblelog/styles:/data/styles:ro" \
        --volume "`pwd`/htdocs:/data/htdocs" \
        --user `id -u`:`id -g` node/sass --no-source-map --style compressed \
-       --silence-deprecation import \
        styles/steel.scss htdocs/steel.css
 ```
 
 This should create a file named `steel.css` inside your `htdocs`
 directory.
-
-**Note**: I silence the deprecation regarding the use of `@import`. I
-will modify the Sass files soon in order to fix this issue.
 
 For more information regarding the Sass container see: [A Docker Image
 for Sass](http://johnbokma.com/blog/2021/06/17/a-docker-image-for-sass.html).
