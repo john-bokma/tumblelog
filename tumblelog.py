@@ -400,6 +400,8 @@ def create_year_pages(days, archive, config, min_year, max_year):
     start_year = int(start_year)
     end_year   = int(end_year)
 
+    years = list(range(start_year, end_year + 1))
+
     archive_html = html_for_archive(archive, None, '..', config['label-format'])
 
     day_names_row = html_for_day_names_row()
@@ -407,11 +409,10 @@ def create_year_pages(days, archive, config, min_year, max_year):
     it = reversed(days)
     day = next(it)
     date = day['date']
-    for year_index, year in enumerate(range(start_year, end_year + 1)):
+    for year_index, year in enumerate(years):
         body_html = ('<div class="tl-topbar"></div>\n'
             '<div class="tl-calendar">\n'
-            + html_for_year_nav_bar(
-                list(range(start_year, end_year + 1)), year_index))
+            + html_for_year_nav_bar(years, year_index))
 
         while True:
             tbody = ''
