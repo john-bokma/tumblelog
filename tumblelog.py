@@ -394,8 +394,11 @@ def create_index(days, archive, config, min_year, max_year):
 
 def create_year_pages(days, archive, config, min_year, max_year):
 
-    start_year = int((split_date(days[-1]['date']))[0])
-    end_year   = int((split_date(days[ 0]['date']))[0])
+    start_year, *_ = split_date(days[-1]['date'])
+    end_year,   *_ = split_date(days[ 0]['date'])
+
+    start_year = int(start_year)
+    end_year   = int(end_year)
 
     archive_html = html_for_archive(archive, None, '..', config['label-format'])
 
