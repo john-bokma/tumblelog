@@ -1,5 +1,12 @@
 # Change Log
 
+## [5.6.0] - 2025-12-20
+
+  - Switch to @use instead of deprecated @import in all styles
+  - Generate new screenshots
+  - Update README
+  - Bump version to 5.6.0
+
 ## [5.5.0] - 2025-12-19
 
   - Pin Alpine version to avoid gcc 15 issue in perl.Dockerfile
