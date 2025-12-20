@@ -204,7 +204,7 @@ def html_for_next_prev(days, index, config):
 
 def html_for_archive(archive, current_year_week, path, label_format):
     html = '<dl>\n'
-    for year in sorted(archive.keys(), reverse=True):
+    for year in sorted(archive, reverse=True):
         html += (f'  <dt><a href="{path}/{year}/">{year}</a></dt>\n'
                  f'  <dd>\n    <ul>\n')
         for week in archive[year]:
@@ -487,8 +487,8 @@ def create_month_pages(days, archive, config, min_year, max_year):
     archive_html = html_for_archive(
         archive, None, '../..', config['label-format'])
 
-    for year in sorted(years.keys()):
-        for month in sorted(years[year].keys()):
+    for year in sorted(years):
+        for month in sorted(years[year]):
             days_for_month = years[year][month]
             first_dt = parse_date(days_for_month[0]['date'])
             month_name = first_dt.strftime('%B')
@@ -631,8 +631,8 @@ def create_tag_pages(days, archive, config, min_year, max_year):
         archive, None, '../../archive', config['label-format'])
 
     tag_info = defaultdict(lambda: defaultdict(int))
-    for tag in sorted(tags.keys()):
-        years = sorted(tags[tag]['years'].keys())
+    for tag in sorted(tags):
+        years = sorted(tags[tag]['years'])
         tag_info[tag]['end_year'] = years[-1]
         tag_path = get_tag_path(tag)
         for year_index, year in enumerate(years):
@@ -678,7 +678,7 @@ def create_tag_pages(days, archive, config, min_year, max_year):
         + f"  <h2>{config['tags-title']}</h2>\n"
         + '  <ul class="tl-tag-cloud">\n')
 
-    for tag in sorted(tag_info.keys()):
+    for tag in sorted(tag_info):
         tag_path = get_tag_path(tag)
         size = get_cloud_size(tag_info[tag]['count'], min_count, max_count)
         body_html += (f'    <li class="tl-size-{size}">'
