@@ -212,30 +212,20 @@ sub create_blog {
     path( $config->{ 'output-dir' } )->mkpath();
 
     my $archive = create_archive( $days );
-    if ( @$days ) {
-        create_index( $days, $archive, $config, $min_year, $max_year );
-
-        create_day_and_week_pages(
-            $days, $archive, $config, $min_year, $max_year
-        );
-
-        create_month_pages(
-            $days, $archive, $config, $min_year, $max_year
-        );
-
-        create_year_pages(
-            $days, $archive, $config, $min_year, $max_year
-        );
-
-        create_tag_pages(
-            $days, $archive, $config, $min_year, $max_year
-        ) if $config->{ tags };
-
-        create_rss_feed( $days, $config );
-        create_json_feed( $days, $config );
-    }
-
     create_pages( $pages, $archive, $config, $min_year, $max_year );
+
+    return unless @$days;
+
+    create_index( $days, $archive, $config, $min_year, $max_year );
+    create_day_and_week_pages( $days, $archive, $config, $min_year, $max_year );
+    create_month_pages( $days, $archive, $config, $min_year, $max_year );
+    create_year_pages( $days, $archive, $config, $min_year, $max_year );
+
+    create_tag_pages( $days, $archive, $config, $min_year, $max_year )
+        if $config->{ tags };
+
+    create_rss_feed( $days, $config );
+    create_json_feed( $days, $config );
 
     return;
 }

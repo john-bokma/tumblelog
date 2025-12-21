@@ -975,17 +975,20 @@ def create_blog(config):
     Path(config['output-dir']).mkdir(parents=True, exist_ok=True)
 
     archive = create_archive(days)
-    if days:
-        create_index(days, archive, config, min_year, max_year)
-        create_day_and_week_pages(days, archive, config, min_year, max_year)
-        create_month_pages(days, archive, config, min_year, max_year)
-        create_year_pages(days, archive, config, min_year, max_year)
-        if config['tags']:
-            create_tag_pages(days, archive, config, min_year, max_year)
-        create_rss_feed(days, config)
-        create_json_feed(days, config)
-
     create_pages(pages, archive, config, min_year, max_year)
+
+    if not days:
+        return
+
+    create_index(days, archive, config, min_year, max_year)
+    create_day_and_week_pages(days, archive, config, min_year, max_year)
+    create_month_pages(days, archive, config, min_year, max_year)
+    create_year_pages(days, archive, config, min_year, max_year)
+    if config['tags']:
+        create_tag_pages(days, archive, config, min_year, max_year)
+    create_rss_feed(days, config)
+    create_json_feed(days, config)
+
 
 def create_argument_parser():
     usage = """
