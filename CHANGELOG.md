@@ -1,5 +1,13 @@
 # Change Log
 
+## [5.7.0] - 2025-12-21
+
+  - Use the walrus operator in `tumblelog.py`
+  - Use tuple unpacking in `create_year_pages` in `tumblelog.py`
+  - Use `sorted()` without `keys` in `tumblelog.py`
+  - Precompute `years` list in `create_year_pages` in `tumblelog.py`
+  - Make `create_blog` cleaner in both `tumblelog.pl` and `tumblelog.py`
+
 ## [5.6.0] - 2025-12-20
 
   - Switch to @use instead of deprecated @import in all styles
