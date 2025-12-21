@@ -887,8 +887,9 @@ def html_for_tags(tags, date, config):
 
 
 def convert_articles_with_metablock_to_html(items, config):
-
     ids = {}
+    parser = commonmark.Parser()
+    renderer = commonmark.HtmlRenderer()
     for item in items:
         articles = []
         for article_no, article in enumerate(item['articles'], start=1):
@@ -901,7 +902,7 @@ def convert_articles_with_metablock_to_html(items, config):
                 if not isinstance(meta, dict):
                     raise ParseException('YAML block must be a mapping')
 
-                ast = commonmark.Parser().parse(match.group(2))
+                ast = parser.parse(match.group(2))
                 identifier, heading = extract_identifier_and_heading(ast)
                 custom_id = meta.get('id')
                 if custom_id:
@@ -923,7 +924,7 @@ def convert_articles_with_metablock_to_html(items, config):
                     '<article>\n',
                     insert_identifier_and_add_permalink(
                         heading, item['date'], identifier, config),
-                    commonmark.HtmlRenderer().render(ast),
+                    renderer.render(ast),
                     html_for_tags(meta['tags'], item['date'], config),
                     '</article>\n'
                 ])
@@ -940,14 +941,16 @@ def convert_articles_with_metablock_to_html(items, config):
         item['articles'] = articles
 
 def convert_articles_to_html(items):
+    parser = commonmark.Parser()
+    renderer = commonmark.HtmlRenderer()
     for item in items:
         articles = []
         for article in item['articles']:
-            ast = commonmark.Parser().parse(article)
+            ast = parser.parse(article)
             rewrite_ast(ast)
             html = ''.join([
                 '<article>\n',
-                commonmark.HtmlRenderer().render(ast),
+                renderer.render(ast),
                 '</article>\n'
             ])
             articles.append({ 'html': html })
