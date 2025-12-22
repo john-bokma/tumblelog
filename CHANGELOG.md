@@ -1,5 +1,9 @@
 # Change Log
 
+## [5.9.0] - 2025-12-22
+
+  - Add a new style `mocha`
+
 ## [5.8.0] - 2025-12-22
 
   - Avoid needless object creation in HTML generation in `tumblelog.py`
