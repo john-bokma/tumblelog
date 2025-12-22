@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.8.0] - 2025-12-22
+
+  - Avoid needless object creation in HTML generation in `tumblelog.py`
+  - Don't keep track of tag count twice in `create_tag_pages`
+  - Remove `year_week` construct from `create_archive`
+
 ## [5.7.0] - 2025-12-21
 
   - Use the walrus operator in `tumblelog.py`

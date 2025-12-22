@@ -23,7 +23,7 @@ use constant {
     PAGE    => 2
 };
 
-my $VERSION = '5.7.0';
+my $VERSION = '5.8.0';
 
 my $RE_DATE_TITLE_ARTICLE = qr/
     ^(\d{4}-\d{2}-\d{2})    # A date in yyyy-mm-dd format at the start
