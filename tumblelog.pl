@@ -760,11 +760,9 @@ sub create_archive {
     my %archive;
     for my $day ( @$days ) {
         my ( $year, $week ) = get_year_and_week( parse_date( $day->{ date } ) );
-        my $year_week = join_year_week( $year, $week );
-        if ( !exists $seen{ $year_week } ) {
+        if ( !$seen{ $year }{ $week }++ ) {
             unshift @{ $archive{ sprintf '%04d', $year } },
                 sprintf '%02d', $week;
-            $seen{ $year_week } = 1;
         }
     }
 

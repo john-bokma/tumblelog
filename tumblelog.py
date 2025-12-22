@@ -153,14 +153,13 @@ def collect_days_and_pages(entries):
 
 def create_archive(days):
 
-    seen = set()
+    seen = defaultdict(set)
     archive = defaultdict(deque)
     for day in days:
         year, week, _ = parse_date(day['date']).isocalendar()
-        year_week = join_year_week(year, week)
-        if year_week not in seen:
+        if week not in seen[year]:
             archive[f'{year:04d}'].appendleft(f'{week:02d}')
-            seen.add(year_week)
+            seen[year].add(week)
 
     return archive
 
