@@ -614,16 +614,13 @@ def get_cloud_size(count, min_count, max_count):
                      / log(max_count / min_count))
 
 def create_tag_pages(days, archive, config, min_year, max_year):
-    tags = defaultdict(lambda: {
-        'count': 0,
-        'years': defaultdict(deque),
-    })
+    tag_years = defaultdict(lambda: defaultdict(deque))
+
     for day in days:
         year, _, _ = split_date(day['date'])
         for article in reversed(day['articles']):
             for tag in article['tags']:
-                tags[tag]['count'] += 1
-                tags[tag]['years'][year].appendleft({
+                tag_years[tag][year].appendleft({
                     'title': article['title'],
                     'date': day['date']
                 })
@@ -632,8 +629,8 @@ def create_tag_pages(days, archive, config, min_year, max_year):
         archive, None, '../../archive', config['label-format'])
 
     tag_info = defaultdict(lambda: defaultdict(int))
-    for tag in sorted(tags):
-        years = sorted(tags[tag]['years'])
+    for tag in sorted(tag_years):
+        years = sorted(tag_years[tag])
         tag_info[tag]['end_year'] = years[-1]
         tag_path = get_tag_path(tag)
         for year_index, year in enumerate(years):
@@ -645,7 +642,7 @@ def create_tag_pages(days, archive, config, min_year, max_year):
             ])
 
             for month_name, rows in groupby(
-                tags[tag]['years'][year],
+                tag_years[tag][year],
                 key=lambda r: parse_date(r['date']).strftime('%B'),
             ):
                 body_html += (

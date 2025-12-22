@@ -824,13 +824,12 @@ sub create_tag_pages {
 
     my ( $days, $archive, $config, $min_year, $max_year ) = @_;
 
-    my $tags = {};
+    my $tag_years = {};
     for my $day ( @$days ) {
         my $year = ( split_date( $day->{ date } ) )[ 0 ];
         for my $article ( reverse @{ $day->{ articles } } ) {
             for my $tag ( @{ $article->{ tags } } ) {
-                $tags->{ $tag }{ count }++;
-                unshift @{ $tags->{ $tag }{ years }{ $year } }, {
+                unshift @{ $tag_years->{ $tag }{ $year } }, {
                     title => $article->{ title },
                     date  => $day->{ date },
                 };
@@ -843,8 +842,8 @@ sub create_tag_pages {
     );
 
     my %tag_info;
-    for my $tag ( sort keys %$tags ) {
-        my @years = sort keys %{ $tags->{ $tag }{ years } };
+    for my $tag ( sort keys %$tag_years ) {
+        my @years = sort keys %{ $tag_years->{ $tag } };
         $tag_info{ $tag }{ end_year } = $years[ -1 ];
         my $tag_path = get_tag_path( $tag );
         my $year_index = 0;
@@ -856,7 +855,7 @@ sub create_tag_pages {
             $year_index++;
 
             my $current_month = '';
-            my $rows = $tags->{ $tag }{ years }{ $year };
+            my $rows = $tag_years->{ $tag }{ $year };
             for my $row ( @$rows ) {
                 my $tp = parse_date( $row->{ date } );
                 my $month_name = decode_utf8( $tp->strftime( '%B' ) );
