@@ -95,7 +95,7 @@ def get_year_week(date):
     return join_year_week(year, week)
 
 def read_entries(filename):
-    with open(filename, encoding='utf8') as f:
+    with open(filename, encoding='utf-8') as f:
         entries = [item for item in
                        re.split(r'^%\n', f.read(), flags=re.MULTILINE) if item]
     if not entries:
