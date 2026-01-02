@@ -682,10 +682,15 @@ sub html_for_archive {
     my ( $archive, $current_year_week, $path, $label_format ) = @_;
 
     my $html = qq(<dl>\n);
-    for my $year ( sort { $b <=> $a } keys %$archive ) {
-        $html .= qq(  <dt><a href="$path/$year/">$year</a></dt>\n)
-            . "  <dd>\n    <ul>\n";
-        for my $week ( @{ $archive->{ $year } } ) {
+    for my $year ( sort { $b <=> $a } keys %{ $archive->{ 'years_weeks' } } ) {
+        if ( exists $archive->{ 'years' }{ $year } ) {
+            $html .= qq(  <dt><a href="$path/$year/">$year</a></dt>\n);
+        }
+        else {
+            $html .= qq(  <dt class="tl-self">$year</dt>\n);
+        }
+        $html .= "  <dd>\n    <ul>\n";
+        for my $week ( @{ $archive->{ 'years_weeks' }{ $year } } ) {
             my $year_week = join_year_week( $year, $week );
             if ( defined $current_year_week
                      && $year_week eq $current_year_week ) {
@@ -759,9 +764,11 @@ sub create_archive {
     my %seen;
     my %archive;
     for my $day ( @$days ) {
-        my ( $year, $week ) = get_year_and_week( parse_date( $day->{ date } ) );
+        my $tp = parse_date( $day->{ date } );
+        $archive{ 'years' }{ sprintf '%04d', $tp->year() } = 1;
+        my ( $year, $week ) = get_year_and_week( $tp );
         if ( !$seen{ $year }{ $week }++ ) {
-            unshift @{ $archive{ sprintf '%04d', $year } },
+            unshift @{ $archive{ 'years_weeks' }{ sprintf '%04d', $year } },
                 sprintf '%02d', $week;
         }
     }

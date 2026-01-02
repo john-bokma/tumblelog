@@ -154,11 +154,16 @@ def collect_days_and_pages(entries):
 def create_archive(days):
 
     seen = defaultdict(set)
-    archive = defaultdict(deque)
+    archive = {
+        'years': set(),
+        'years_weeks': defaultdict(deque)
+    }
     for day in days:
-        year, week, _ = parse_date(day['date']).isocalendar()
+        dt = parse_date(day['date'])
+        archive['years'].add(f'{dt.year:04d}')
+        year, week, _ = dt.isocalendar()
         if week not in seen[year]:
-            archive[f'{year:04d}'].appendleft(f'{week:02d}')
+            archive['years_weeks'][f'{year:04d}'].appendleft(f'{week:02d}')
             seen[year].add(week)
 
     return archive
@@ -203,10 +208,13 @@ def html_for_next_prev(days, index, config):
 
 def html_for_archive(archive, current_year_week, path, label_format):
     html = '<dl>\n'
-    for year in sorted(archive, reverse=True):
-        html += (f'  <dt><a href="{path}/{year}/">{year}</a></dt>\n'
-                 f'  <dd>\n    <ul>\n')
-        for week in archive[year]:
+    for year in sorted(archive['years_weeks'], reverse=True):
+        if year in archive['years']:
+            html += f'  <dt><a href="{path}/{year}/">{year}</a></dt>\n'
+        else:
+            html += f'  <dt class="tl-self">{year}</dt>\n'
+        html += f'  <dd>\n    <ul>\n'
+        for week in archive['years_weeks'][year]:
             year_week = join_year_week(int(year), int(week))
             if year_week == current_year_week:
                 html += f'      <li class="tl-self">{week}</li>\n'
