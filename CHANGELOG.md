@@ -1,5 +1,11 @@
 # Change Log
 
+## [6.0.0] - 2026-01-02
+
+  - Fix year bug in archive creation: a year could show up while it
+    wasn't available
+  - Use `utf-8` in `read_entries` to make it more consistent in `tumblelog.py`
+
 ## [5.9.0] - 2025-12-22
 
   - Add a new style `mocha`
