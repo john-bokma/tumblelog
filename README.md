@@ -264,7 +264,7 @@ Next run the Python program (version with tags) inside the
 `example.com` directory as follows:
 
 ```
-python3 ../../projects/tumblelog/tumblelog.py
+python3 ../../projects/tumblelog/tumblelog.py \
         --template-filename example.html \
         --output-dir htdocs/ \
         --author 'Test' --name 'Test Blog' --description 'This is a test' \
