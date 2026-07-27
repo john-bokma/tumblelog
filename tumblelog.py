@@ -1050,8 +1050,7 @@ def convert_articles_with_metablock_to_html(items, config):
 
                 ast = parser.parse(match.group(2))
                 identifier, heading = extract_identifier_and_heading(ast)
-                custom_id = meta.get('id')
-                if custom_id:
+                if custom_id := meta.get('id'):
                     validate_identifier(custom_id)
                     identifier = custom_id
 
