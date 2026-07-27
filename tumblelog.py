@@ -839,11 +839,11 @@ def create_rss_feed(days, config):
             ''.join(
                 [
                     '<item>'
-                    '<title>', escape(title), '</title>'
-                    '<link>', escape(url), '</link>'
-                    '<guid isPermaLink="true">', escape(url), '</guid>'
-                    '<pubDate>', escape(pub_date), '</pubDate>'
-                    '<description>', escape(description), '</description>'
+                    f'<title>{escape(title)}</title>'
+                    f'<link>{escape(url)}</link>'
+                    f'<guid isPermaLink="true">{escape(url)}</guid>'
+                    f'<pubDate>{escape(pub_date)}</pubDate>'
+                    f'<description>{escape(description)}</description>'
                     '</item>'
                 ]
             )
@@ -854,11 +854,11 @@ def create_rss_feed(days, config):
             '<?xml version="1.0" encoding="UTF-8"?>'
             '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">'
             '<channel>'
-            '<title>', escape(config['name']), '</title>'
-            '<link>', escape(config['blog-url']), '</link>'
-            '<description>', escape(config['description']), '</description>'
-            '<atom:link href="', escape(config['rss-feed-url']),
-            '" rel="self" type="application/rss+xml" />',
+            f'<title>{escape(config["name"])}</title>'
+            f'<link>{escape(config["blog-url"])}</link>'
+            f'<description>{escape(config["description"])}</description>'
+            f'<atom:link href="{escape(config["rss-feed-url"])}"',
+            ' rel="self" type="application/rss+xml" />',
             *items,
             '</channel>'
             '</rss>'
@@ -975,7 +975,7 @@ def insert_identifier_and_add_permalink(heading, date, identifier, config):
     return ''.join(
         [
             heading[:3],
-            ' id="', escape(identifier), '">',
+            f' id="{escape(identifier)}">',
             wrap_in_permalink(heading[4:-6], config, date, identifier),
             heading[-6:]
         ]
