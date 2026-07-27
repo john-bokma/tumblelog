@@ -26,16 +26,20 @@ import commonmark.node
 
 VERSION = '6.0.0'
 
-RE_DATE_TITLE_ARTICLE = re.compile(r"""
+RE_DATE_TITLE_ARTICLE = re.compile(
+    r"""
     ^(\d{4}-\d{2}-\d{2})    # A date in yyyy-mm-dd format at the start
     [ \t]+                  # One or more spaces or tabs
     (.*?)                   # A title. If empty, an exception will be thrown
     [ \t]*                  # Optional trailing spaces or tabs
     \n                      # A new line
     ((?:.|\n)*)             # An article
-""", flags=re.VERBOSE)
+""",
+    flags=re.VERBOSE
+)
 
-RE_NAME_LABEL_DATE_TITLE_ARTICLE = re.compile(r"""
+RE_NAME_LABEL_DATE_TITLE_ARTICLE = re.compile(
+    r"""
     ^@([a-z0-9_-]+)         # AT sign followed by a page name at the start
     \[[ \t]*                # Start label followed by optional spaces or tabs
         (.*?)               # A label. If empty, an exception will be thrown
@@ -47,10 +51,13 @@ RE_NAME_LABEL_DATE_TITLE_ARTICLE = re.compile(r"""
     [ \t]*                  # Optional trailing spaces or tabs
     \n                      # A new line
     ((?:.|\n)*)             # An article
-""", flags=re.VERBOSE)
+""",
+    flags=re.VERBOSE
+)
 
 RE_YAML_MARKDOWN = re.compile(
-    r'\s*(---\n.*?\.\.\.\n)?(.*)', flags=re.DOTALL | re.MULTILINE)
+    r'\s*(---\n.*?\.\.\.\n)?(.*)', flags=re.DOTALL | re.MULTILINE
+)
 RE_TAG = regex.compile(r'^[\p{Ll}\d]+(?: [\p{Ll}\d]+)*$')
 
 RE_TITLE           = re.compile(r'(?x) \[% \s* title         \s* %\]')
@@ -67,72 +74,88 @@ RE_JSON_FEED_URL   = re.compile(r'(?x) \[% \s* json-feed-url \s* %\]')
 RE_BODY            = re.compile(r'(?x) \[% \s* body          \s* %\] \n')
 RE_ARCHIVE         = re.compile(r'(?x) \[% \s* archive       \s* %\] \n')
 
+
 class State(Enum):
     UNKNOWN = auto()
     DAY = auto()
     PAGE = auto()
 
+
 class ParseException(Exception):
     pass
+
 
 def join_year_week(year, week):
     return f'{year:04d}-{week:02d}'
 
+
 def split_year_week(year_week):
     return year_week.split('-')
+
 
 def split_date(date):
     return date.split('-')
 
+
 def parse_date(date):
     return datetime.strptime(date, '%Y-%m-%d')
 
+
 def year_week_title(fmt, year, week):
     return fmt.replace('%Y', year).replace('%V', week)
+
 
 def get_year_week(date):
     year, week, _ = parse_date(date).isocalendar()
     return join_year_week(year, week)
 
+
 def read_entries(filename):
     with open(filename, encoding='utf-8') as f:
-        entries = [item for item in
-                       re.split(r'^%\n', f.read(), flags=re.MULTILINE) if item]
+        entries = [
+            item
+            for item in re.split(r'^%\n', f.read(), flags=re.MULTILINE)
+            if item
+        ]
     if not entries:
         error('No blog entries found')
     return entries
 
-def collect_days_and_pages(entries):
 
+def collect_days_and_pages(entries):
     days = []
     pages = []
     state = State.UNKNOWN
 
     for entry in entries:
-        if (match := RE_DATE_TITLE_ARTICLE.match(entry)):
+        if match := RE_DATE_TITLE_ARTICLE.match(entry):
             if not match.group(2):
                 error(f'A day must have a title ({match.group(1)})')
-            days.append({
-                'date': match.group(1),
-                'title': match.group(2),
-                'articles': [match.group(3)]
-            })
+            days.append(
+                {
+                    'date': match.group(1),
+                    'title': match.group(2),
+                    'articles': [match.group(3)]
+                }
+            )
             state = State.DAY
             continue
 
-        if (match := RE_NAME_LABEL_DATE_TITLE_ARTICLE.match(entry)):
+        if match := RE_NAME_LABEL_DATE_TITLE_ARTICLE.match(entry):
             if not match.group(2):
                 error(f'A page must have a label (@{match.group(1)})')
             if not match.group(5):
                 error(f'A page must have a title (@{match.group(1)})')
-            pages.append({
-                'name': match.group(1),
-                'label': match.group(2),
-                'date': match.group(3),
-                'show-date': match.group(4) == '!',
-                'title': match.group(5),
-                'articles': [match.group(6)]
-            })
+            pages.append(
+                {
+                    'name': match.group(1),
+                    'label': match.group(2),
+                    'date': match.group(3),
+                    'show-date': match.group(4) == '!',
+                    'title': match.group(5),
+                    'articles': [match.group(6)]
+                }
+            )
             state = State.PAGE
             continue
 
@@ -151,8 +174,8 @@ def collect_days_and_pages(entries):
 
     return days, pages
 
-def create_archive(days):
 
+def create_archive(days):
     seen = defaultdict(set)
     archive = {
         'years': set(),
@@ -168,8 +191,8 @@ def create_archive(days):
 
     return archive
 
-def html_link_for_day(day, config):
 
+def html_link_for_day(day, config):
     title = escape(day['title'])
     label = escape(parse_date(day['date']).strftime(config['date-format']))
 
@@ -178,8 +201,8 @@ def html_link_for_day(day, config):
 
     return f'<a href="{uri}" title="{label}">{title}</a>'
 
-def html_for_next_prev(days, index, config):
 
+def html_for_next_prev(days, index, config):
     length = len(days)
     if length == 1:
         return ''
@@ -187,24 +210,29 @@ def html_for_next_prev(days, index, config):
     html = '<nav class="tl-next-prev">\n'
 
     if index:
-        html += ''.join([
-            '  <div class="next">',
-            html_link_for_day(days[index - 1], config),
-            '</div>'
-            '<div class="tl-right-arrow">\N{RIGHTWARDS ARROW}</div>\n'
-        ])
+        html += ''.join(
+            [
+                '  <div class="next">',
+                html_link_for_day(days[index - 1], config),
+                '</div>'
+                '<div class="tl-right-arrow">\N{RIGHTWARDS ARROW}</div>\n'
+            ]
+        )
 
     if index < length - 1:
-        html += ''.join([
-            '  <div class="tl-left-arrow">\N{LEFTWARDS ARROW}</div>'
-            '<div class="prev">',
-            html_link_for_day(days[index + 1], config),
-            '</div>\n'
-        ])
+        html += ''.join(
+            [
+                '  <div class="tl-left-arrow">\N{LEFTWARDS ARROW}</div>'
+                '<div class="prev">',
+                html_link_for_day(days[index + 1], config),
+                '</div>\n'
+            ]
+        )
 
     html += '</nav>\n'
 
     return html
+
 
 def html_for_archive(archive, current_year_week, path, label_format):
     html = '<dl>\n'
@@ -213,7 +241,7 @@ def html_for_archive(archive, current_year_week, path, label_format):
             html += f'  <dt><a href="{path}/{year}/">{year}</a></dt>\n'
         else:
             html += f'  <dt class="tl-self">{year}</dt>\n'
-        html += f'  <dd>\n    <ul>\n'
+        html += '  <dd>\n    <ul>\n'
         for week in archive['years_weeks'][year]:
             year_week = join_year_week(int(year), int(week))
             if year_week == current_year_week:
@@ -230,6 +258,7 @@ def html_for_archive(archive, current_year_week, path, label_format):
 
     return html
 
+
 def html_for_date(date, date_format, title, path):
     year, month, day = date.split('-')
     uri = f'{path}/{year}/{month}/{day}.html'
@@ -242,9 +271,10 @@ def html_for_date(date, date_format, title, path):
         f'<a href="{uri}" title="{title_text}">{link_text}</a></time>\n'
     )
 
+
 def rewrite_ast(ast):
-    """ Rewrite an image at the start of a paragraph followed by some text
-        to an image with a figcaption inside a figure element """
+    """Rewrite an image at the start of a paragraph followed by some text
+    to an image with a figcaption inside a figure element."""
 
     for node, entering in ast.walker():
         if node.t == 'paragraph' and not entering:
@@ -261,7 +291,7 @@ def rewrite_ast(ast):
                 sibling = child.nxt
                 while sibling:
                     nxt = sibling.nxt
-                    figcaption.append_child(sibling) # unlinks for us
+                    figcaption.append_child(sibling)  # unlinks for us
                     sibling = nxt
 
                 figure = commonmark.node.Node('custom_block', None)
@@ -273,12 +303,14 @@ def rewrite_ast(ast):
                 node.insert_before(figure)
                 node.unlink()
 
-def html_for_year_nav_bar(years, year_index, path=''):
 
+def html_for_year_nav_bar(years, year_index, path=''):
     if year_index > 0:
         prv = years[year_index - 1]
-        nav = ('    <div>\N{LEFTWARDS ARROW} '
-               f'<a href="../{prv}/{path}">{prv}</a></div>\n')
+        nav = (
+            '    <div>\N{LEFTWARDS ARROW} '
+            f'<a href="../{prv}/{path}">{prv}</a></div>\n'
+        )
     else:
         nav = '    <div></div>\n'
 
@@ -286,12 +318,15 @@ def html_for_year_nav_bar(years, year_index, path=''):
 
     if year_index < len(years) - 1:
         nxt = years[year_index + 1]
-        nav += (f'    <div><a href="../{nxt}/{path}">{nxt}</a> '
-                '\N{RIGHTWARDS ARROW}</div>\n')
+        nav += (
+            f'    <div><a href="../{nxt}/{path}">{nxt}</a> '
+            '\N{RIGHTWARDS ARROW}</div>\n'
+        )
     else:
         nav += '    <div></div>\n'
 
     return f'  <div class="tl-year">\n{nav}  </div>\n'
+
 
 def html_link_for_day_number(day):
     year, month, day_number = split_date(day['date'])
@@ -300,33 +335,38 @@ def html_link_for_day_number(day):
     mday = int(day_number)
     return f'<a href="{uri}" title="{title}">{mday}</a>'
 
-def html_for_row(current_year, dt, row, week_active):
 
+def html_for_row(current_year, dt, row, week_active):
     year, week, _ = dt.isocalendar()
     if week_active:
         if year == current_year:
             week_html = f'<a href="week/{week:02d}.html">{week}</a>'
         else:
-            week_html = (f'<a href="../{year:04d}/'
-                         f'week/{week:02d}.html">{week}</a>')
+            week_html = (
+                f'<a href="../{year:04d}/week/{week:02d}.html">{week}</a>'
+            )
     else:
         week_html = week
 
-    return ''.join([
-        '      <tr>\n'
-        f'        <th scope="row">{week_html}</th>\n',
-        *[f'        <td>{day}</td>\n' for day in row],
-        '      </tr>\n'
-    ])
+    return ''.join(
+        [
+            '      <tr>\n'
+            f'        <th scope="row">{week_html}</th>\n',
+            *(f'        <td>{day}</td>\n' for day in row),
+            '      </tr>\n'
+        ]
+    )
+
 
 def html_for_day_names_row():
-    dt = parse_date('2019-01-07') # Monday
+    dt = parse_date('2019-01-07')  # Monday
     names = ''
     for _ in range(7):
         day_name = dt.strftime('%a')
         names += f'        <th scope="col">{day_name}</th>\n'
         dt += timedelta(days=1)
     return f'      <tr>\n        <td></td>\n{names}      </tr>\n'
+
 
 def html_for_month_nav_bar(active_months, current_month, names):
     html = '  <nav>\n    <ul class="tl-month-navigation">\n'
@@ -344,14 +384,17 @@ def html_for_month_nav_bar(active_months, current_month, names):
     html += '    </ul>\n  </nav>\n'
     return html
 
+
 def html_for_day(day):
     _, _, day_number = split_date(day['date'])
     uri = f'{day_number}.html'
     title = escape(day['title'])
     return f'    <dt>{day_number}</dt><dd><a href="{uri}">{title}</a></dd>\n'
 
-def create_page(path, title, body_html, archive_html, config,
-                label, min_year, max_year):
+
+def create_page(
+    path, title, body_html, archive_html, config, label, min_year, max_year
+):
     if min_year == max_year:
         year_range = str(min_year)
     else:
@@ -378,29 +421,38 @@ def create_page(path, title, body_html, archive_html, config,
     html = RE_ARCHIVE.sub(archive_html, html)
 
     Path(config['output-dir']).joinpath(path).write_text(
-        html, encoding='utf-8')
+        html, encoding='utf-8'
+    )
 
     if not config['quiet']:
         print(f"Created '{path}'")
 
+
 def create_index(days, archive, config, min_year, max_year):
     body_html = ''
 
-    for day in days[:config['days']]:
+    for day in days[: config['days']]:
         body_html += html_for_date(
             day['date'], config['date-format'], day['title'], 'archive'
         ) + ''.join(article['html'] for article in day['articles'])
 
     archive_html = html_for_archive(
-        archive, None, 'archive', config['label-format'])
-
-    create_page(
-        'index.html', 'home', body_html, archive_html, config,
-        'home', min_year, max_year
+        archive, None, 'archive', config['label-format']
     )
 
-def create_year_pages(days, archive, config, min_year, max_year):
+    create_page(
+        'index.html',
+        'home',
+        body_html,
+        archive_html,
+        config,
+        'home',
+        min_year,
+        max_year
+    )
 
+
+def create_year_pages(days, archive, config, min_year, max_year):
     start_year, *_ = split_date(days[-1]['date'])
     end_year,   *_ = split_date(days[ 0]['date'])
 
@@ -409,7 +461,9 @@ def create_year_pages(days, archive, config, min_year, max_year):
 
     years = list(range(start_year, end_year + 1))
 
-    archive_html = html_for_archive(archive, None, '..', config['label-format'])
+    archive_html = html_for_archive(
+        archive, None, '..', config['label-format']
+    )
 
     day_names_row = html_for_day_names_row()
     dt = parse_date(f'{start_year}-01-01')
@@ -417,9 +471,11 @@ def create_year_pages(days, archive, config, min_year, max_year):
     day = next(it)
     date = day['date']
     for year_index, year in enumerate(years):
-        body_html = ('<div class="tl-topbar"></div>\n'
+        body_html = (
+            '<div class="tl-topbar"></div>\n'
             '<div class="tl-calendar">\n'
-            + html_for_year_nav_bar(years, year_index))
+            + html_for_year_nav_bar(years, year_index)
+        )
 
         while True:
             tbody = ''
@@ -459,17 +515,19 @@ def create_year_pages(days, archive, config, min_year, max_year):
             else:
                 caption = month_name
 
-            body_html += ''.join([
-                '  <table class="tl-month">\n'
-                f'    <caption>{caption}</caption>\n'
-                '    <thead>\n',
-                day_names_row,
-                '    </thead>\n'
-                '    <tbody>\n',
-                tbody,
-                '    </tbody>\n'
-                '  </table>\n'
-            ])
+            body_html += ''.join(
+                [
+                    '  <table class="tl-month">\n'
+                    f'    <caption>{caption}</caption>\n'
+                    '    <thead>\n',
+                    day_names_row,
+                    '    </thead>\n'
+                    '    <tbody>\n',
+                    tbody,
+                    '    </tbody>\n'
+                    '  </table>\n'
+                ]
+            )
 
             if dt.year != year:
                 break
@@ -477,15 +535,21 @@ def create_year_pages(days, archive, config, min_year, max_year):
         body_html += '</div>\n'
 
         Path(config['output-dir']).joinpath(f'archive/{year}').mkdir(
-            parents=True, exist_ok=True)
+            parents=True, exist_ok=True
+        )
         create_page(
             f'archive/{year}/index.html',
-            str(year), body_html, archive_html, config,
-            str(year), min_year, max_year
+            str(year),
+            body_html,
+            archive_html,
+            config,
+            str(year),
+            min_year,
+            max_year
         )
 
-def create_month_pages(days, archive, config, min_year, max_year):
 
+def create_month_pages(days, archive, config, min_year, max_year):
     years = defaultdict(lambda: defaultdict(deque))
     for day in days:
         year, month, _ = split_date(day['date'])
@@ -493,7 +557,8 @@ def create_month_pages(days, archive, config, min_year, max_year):
 
     month_names = get_month_names()
     archive_html = html_for_archive(
-        archive, None, '../..', config['label-format'])
+        archive, None, '../..', config['label-format']
+    )
 
     for year in sorted(years):
         for month in sorted(years[year]):
@@ -501,45 +566,62 @@ def create_month_pages(days, archive, config, min_year, max_year):
             first_dt = parse_date(days_for_month[0]['date'])
             month_name = first_dt.strftime('%B')
             nav_bar = html_for_month_nav_bar(years[year], month, month_names)
-            body_html = ''.join([
-                '<div class="tl-topbar"></div>\n'
-                '<div class="tl-month-overview">\n'
-                f'  <h2 class="tl-month-year">{month_name} '
-                f'<a href="../../{year}/">{year}</a></h2>'
-                '  <dl class="tl-days">\n',
-                *[html_for_day(day) for day in days_for_month],
-                '  </dl>\n',
-                nav_bar,
-                '</div>\n'
-            ])
+            body_html = ''.join(
+                [
+                    '<div class="tl-topbar"></div>\n'
+                    '<div class="tl-month-overview">\n'
+                    f'  <h2 class="tl-month-year">{month_name} '
+                    f'<a href="../../{year}/">{year}</a></h2>'
+                    '  <dl class="tl-days">\n',
+                    *(html_for_day(day) for day in days_for_month),
+                    '  </dl>\n',
+                    nav_bar,
+                    '</div>\n'
+                ]
+            )
             create_page(
                 f'archive/{year}/{month}/index.html',
-                f'{month_name}, {year}', body_html, archive_html, config,
-                first_dt.strftime('%b, %Y'), min_year, max_year
+                f'{month_name}, {year}',
+                body_html,
+                archive_html,
+                config,
+                first_dt.strftime('%b, %Y'),
+                min_year,
+                max_year
             )
 
-def create_week_page(year_week, body_html, archive, config, min_year, max_year):
 
+def create_week_page(
+    year_week, body_html, archive, config, min_year, max_year
+):
     archive_html = html_for_archive(
-        archive, year_week, '../..', config['label-format'])
+        archive, year_week, '../..', config['label-format']
+    )
 
     year, week = split_year_week(year_week)
     title = year_week_title(config['label-format'], year, week)
 
     Path(config['output-dir']).joinpath(f'archive/{year}/week').mkdir(
-        parents=True, exist_ok=True)
+        parents=True, exist_ok=True
+    )
     create_page(
         f'archive/{year}/week/{week}.html',
-        title, body_html, archive_html, config,
-        title, min_year, max_year
+        title,
+        body_html,
+        archive_html,
+        config,
+        title,
+        min_year,
+        max_year
     )
 
-def create_day_and_week_pages(days, archive, config, min_year, max_year):
 
+def create_day_and_week_pages(days, archive, config, min_year, max_year):
     week_body_html = ''
     current_year_week = get_year_week(days[0]['date'])
     day_archive_html = html_for_archive(
-        archive, None, '../..', config['label-format'])
+        archive, None, '../..', config['label-format']
+    )
 
     for day_index, day in enumerate(days):
         day_body_html = html_for_date(
@@ -552,12 +634,17 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
         next_prev_html = html_for_next_prev(days, day_index, config)
 
         Path(config['output-dir']).joinpath(f'archive/{year}/{month}').mkdir(
-            parents=True, exist_ok=True)
+            parents=True, exist_ok=True
+        )
         create_page(
             f'archive/{year}/{month}/{day_number}.html',
-            day['title'], day_body_html + next_prev_html, day_archive_html,
+            day['title'],
+            day_body_html + next_prev_html,
+            day_archive_html,
             config,
-            label, min_year, max_year
+            label,
+            min_year,
+            max_year
         )
 
         year_week = get_year_week(day['date'])
@@ -565,60 +652,79 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
             week_body_html += day_body_html
         else:
             create_week_page(
-                current_year_week, week_body_html, archive, config,
-                min_year, max_year
+                current_year_week,
+                week_body_html,
+                archive,
+                config,
+                min_year,
+                max_year
             )
             current_year_week = year_week
             week_body_html = day_body_html
 
     create_week_page(
-        year_week, week_body_html, archive, config,
-        min_year, max_year
+        year_week,
+        week_body_html,
+        archive,
+        config,
+        min_year,
+        max_year
     )
 
+
 def create_pages(pages, archive, config, min_year, max_year):
-
-    archive_html = html_for_archive(
-        archive, None, 'archive', config['label-format']) if archive else ''
-
+    archive_html = (
+        html_for_archive(archive, None, 'archive', config['label-format'])
+        if archive
+        else ''
+    )
     for page in pages:
         date = page['date']
         link_text = escape(parse_date(date).strftime(config['date-format']))
         if page['show-date']:
             body_html = (
-                f'<time class="tl-date" datetime="{date}">{link_text}</time>\n')
+                f'<time class="tl-date" datetime="{date}">{link_text}</time>\n'
+            )
         else:
             body_html = '<div class="tl-topbar"></div>\n'
 
         body_html += ''.join(article['html'] for article in page['articles'])
         create_page(
             f"{page['name']}.html",
-            page['title'], body_html, archive_html, config,
-            page['label'], min_year, max_year
+            page['title'],
+            body_html,
+            archive_html,
+            config,
+            page['label'],
+            min_year,
+            max_year
         )
 
-def get_url_title_description(day, config):
 
+def get_url_title_description(day, config):
     description = ''.join(article['html'] for article in day['articles'])
     year, month, day_number = split_date(day['date'])
     url = urllib.parse.urljoin(
-        config['blog-url'], f'archive/{year}/{month}/{day_number}.html')
-
+        config['blog-url'], f'archive/{year}/{month}/{day_number}.html'
+    )
     return url, day['title'], description
+
 
 def get_month_names():
     return [datetime(2019, mon, 1).strftime('%B') for mon in range(1, 13)]
 
+
 def get_end_of_day(date):
     return datetime.strptime(
-        f'{date} 23:59:59', '%Y-%m-%d %H:%M:%S').astimezone()
+        f'{date} 23:59:59', '%Y-%m-%d %H:%M:%S'
+    ).astimezone()
+
 
 def get_cloud_size(count, min_count, max_count):
     if min_count == max_count:
         return 1
+    return 1 + int(4 * log(count / min_count) / log(max_count / min_count))
 
-    return 1 + int(4 * log(count / min_count)
-                     / log(max_count / min_count))
 
 def create_tag_pages(days, archive, config, min_year, max_year):
     tag_years = defaultdict(lambda: defaultdict(deque))
@@ -627,13 +733,13 @@ def create_tag_pages(days, archive, config, min_year, max_year):
         year, _, _ = split_date(day['date'])
         for article in reversed(day['articles']):
             for tag in article['tags']:
-                tag_years[tag][year].appendleft({
-                    'title': article['title'],
-                    'date': day['date']
-                })
+                tag_years[tag][year].appendleft(
+                    {'title': article['title'], 'date': day['date']}
+                )
 
     archive_html = html_for_archive(
-        archive, None, '../../archive', config['label-format'])
+        archive, None, '../../archive', config['label-format']
+    )
 
     tag_info = defaultdict(lambda: defaultdict(int))
     for tag in sorted(tag_years):
@@ -641,12 +747,14 @@ def create_tag_pages(days, archive, config, min_year, max_year):
         tag_info[tag]['end_year'] = years[-1]
         tag_path = get_tag_path(tag)
         for year_index, year in enumerate(years):
-            body_html = ''.join([
-                '<div class="tl-topbar"></div>\n'
-                '<div class="tl-tag-overview">\n',
-                html_for_year_nav_bar(years, year_index, tag_path),
-                f'  <h2>{tag}</h2>\n'
-            ])
+            body_html = ''.join(
+                [
+                    '<div class="tl-topbar"></div>\n'
+                    '<div class="tl-tag-overview">\n',
+                    html_for_year_nav_bar(years, year_index, tag_path),
+                    f'  <h2>{tag}</h2>\n'
+                ]
+            )
 
             for month_name, rows in groupby(
                 tag_years[tag][year],
@@ -667,74 +775,95 @@ def create_tag_pages(days, archive, config, min_year, max_year):
             body_html += '</div>\n'
 
             Path(config['output-dir']).joinpath(f'tags/{year}/').mkdir(
-                parents=True, exist_ok=True)
+                parents=True, exist_ok=True
+            )
             create_page(
                 f'tags/{year}/{tag_path}',
-                tag, body_html, archive_html, config,
-                tag, min_year, max_year
+                tag,
+                body_html,
+                archive_html,
+                config,
+                tag,
+                min_year,
+                max_year
             )
 
     # Create a page with a tag cloud
     min_count = min(tag_info.values(), key=itemgetter('count'))['count']
     max_count = max(tag_info.values(), key=itemgetter('count'))['count']
 
-    body_html = ('<div class="tl-topbar"></div>\n'
+    body_html = (
+        '<div class="tl-topbar"></div>\n'
         '<div class="tl-tags-overview">\n'
         + f"  <h2>{config['tags-title']}</h2>\n"
-        + '  <ul class="tl-tag-cloud">\n')
+        + '  <ul class="tl-tag-cloud">\n'
+    )
 
     for tag in sorted(tag_info):
         tag_path = get_tag_path(tag)
         size = get_cloud_size(tag_info[tag]['count'], min_count, max_count)
-        body_html += (f'    <li class="tl-size-{size}">'
+        body_html += (
+            f'    <li class="tl-size-{size}">'
             + f'<a href="{tag_info[tag]["end_year"]}/{tag_path}">'
             + f"{tag}\N{NARROW NO-BREAK SPACE}({tag_info[tag]['count']})"
-            + '</a></li>\n')
+            + '</a></li>\n'
+        )
 
     body_html += '  </ul>\n</div>\n'
 
     create_page(
         'tags/index.html',
-        config['tags-title'], body_html, archive_html, config,
-        config['tags-label'], min_year, max_year
+        config['tags-title'],
+        body_html,
+        archive_html,
+        config,
+        config['tags-label'],
+        min_year,
+        max_year
     )
 
 
 def create_rss_feed(days, config):
     items = []
-    for day in days[:config['feed-size']]:
+    for day in days[: config['feed-size']]:
         url, title, description = get_url_title_description(day, config)
 
         end_of_day = get_end_of_day(day['date'])
         # RFC #822 in USA locale
         ctime = end_of_day.ctime()
-        pub_date = (f'{ctime[0:3]}, {end_of_day.day:02d} {ctime[4:7]}'
-                        + end_of_day.strftime(' %Y %H:%M:%S %z'))
+        pub_date = (
+            f'{ctime[0:3]}, {end_of_day.day:02d} {ctime[4:7]}'
+            + end_of_day.strftime(' %Y %H:%M:%S %z')
+        )
         items.append(
-            ''.join([
-                '<item>'
-                '<title>', escape(title), '</title>'
-                '<link>', escape(url), '</link>'
-                '<guid isPermaLink="true">', escape(url), '</guid>'
-                '<pubDate>', escape(pub_date), '</pubDate>'
-                '<description>', escape(description), '</description>'
-                '</item>'
-            ])
+            ''.join(
+                [
+                    '<item>'
+                    '<title>', escape(title), '</title>'
+                    '<link>', escape(url), '</link>'
+                    '<guid isPermaLink="true">', escape(url), '</guid>'
+                    '<pubDate>', escape(pub_date), '</pubDate>'
+                    '<description>', escape(description), '</description>'
+                    '</item>'
+                ]
+            )
         )
 
-    xml = ''.join([
-        '<?xml version="1.0" encoding="UTF-8"?>'
-        '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">'
-        '<channel>'
-        '<title>', escape(config['name']), '</title>'
-        '<link>', escape(config['blog-url']), '</link>'
-        '<description>', escape(config['description']),'</description>'
-        '<atom:link href="', escape(config['rss-feed-url']),
-        '" rel="self" type="application/rss+xml" />',
-        *items,
-        '</channel>'
-        '</rss>'
-    ])
+    xml = ''.join(
+        [
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">'
+            '<channel>'
+            '<title>', escape(config['name']), '</title>'
+            '<link>', escape(config['blog-url']), '</link>'
+            '<description>', escape(config['description']), '</description>'
+            '<atom:link href="', escape(config['rss-feed-url']),
+            '" rel="self" type="application/rss+xml" />',
+            *items,
+            '</channel>'
+            '</rss>'
+        ]
+    )
     feed_path = config['rss-path']
     p = Path(config['output-dir']).joinpath(feed_path)
     with p.open(mode='w', encoding='utf-8') as f:
@@ -743,38 +872,45 @@ def create_rss_feed(days, config):
     if not config['quiet']:
         print(f"Created '{feed_path}'")
 
+
 def create_json_feed(days, config):
     items = []
-    for day in days[:config['feed-size']]:
+    for day in days[: config['feed-size']]:
         url, title, description = get_url_title_description(day, config)
 
         end_of_day = get_end_of_day(day['date'])
         date_published = str(end_of_day).replace(' ', 'T')
 
-        items.append({
-            'id':    url,
-            'url':   url,
-            'title': title,
-            'content_html':   description,
-            'date_published': date_published,
-        })
+        items.append(
+            {
+                'id': url,
+                'url': url,
+                'title': title,
+                'content_html': description,
+                'date_published': date_published,
+            }
+        )
 
     feed = {
-        'version':       'https://jsonfeed.org/version/1.1',
-        'title':         config['name'],
+        'version': 'https://jsonfeed.org/version/1.1',
+        'title': config['name'],
         'home_page_url': config['blog-url'],
-        'feed_url':      config['json-feed-url'],
-        'description':   config['description'],
-        'authors': [{
-            'name': config['author']
-        }],
+        'feed_url': config['json-feed-url'],
+        'description': config['description'],
+        'authors': [{'name': config['author']}],
         'items': items
     }
     feed_path = config['json-path']
     p = Path(config['output-dir']).joinpath(feed_path)
     with p.open(mode='w', encoding='utf-8') as f:
-        json.dump(feed, f, indent=3, ensure_ascii=False, sort_keys=True,
-                  separators=(',', ': '))
+        json.dump(
+            feed,
+            f,
+            indent=3,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(',', ': ')
+        )
         print('', file=f)
 
     if not config['quiet']:
@@ -786,21 +922,23 @@ def get_tag_path(tag):
 
 
 def extract_identifier_and_heading(ast):
-
     it = ast.walker()
     node, entering = it.next()
     if node.t != 'document' or not entering:
         raise ParseException(
-            'Unexpected state encountered') # should never happen
+            'Unexpected state encountered'
+        )  # should never happen
 
     node, entering = it.next()
     if node.t != 'heading' or not entering:
         raise ParseException(
-            'An article must start with a level 2 heading (none found)')
+            'An article must start with a level 2 heading (none found)'
+        )
 
     if node.level != 2:
         raise ParseException(
-            f'An article must start with a level 2 heading, not {node.level}')
+            f'An article must start with a level 2 heading, not {node.level}'
+        )
 
     heading = commonmark.HtmlRenderer().render(node)
     heading_node = node
@@ -818,7 +956,7 @@ def extract_identifier_and_heading(ast):
 
     identifier = re.sub(r'\s+', '-', text.lower())
 
-    heading_node.unlink() # Output the title after modification later on
+    heading_node.unlink()  # Output the title after modification later on
 
     return identifier, heading
 
@@ -834,12 +972,14 @@ def wrap_in_permalink(string, config, date, identifier):
 
 
 def insert_identifier_and_add_permalink(heading, date, identifier, config):
-    return ''.join([
-        heading[:3],
-        ' id="', escape(identifier), '">',
-        wrap_in_permalink(heading[4:-6], config, date, identifier),
-        heading[-6:]
-    ])
+    return ''.join(
+        [
+            heading[:3],
+            ' id="', escape(identifier), '">',
+            wrap_in_permalink(heading[4:-6], config, date, identifier),
+            heading[-6:]
+        ]
+    )
 
 
 def validate_identifier(identifier):
@@ -872,22 +1012,24 @@ def validate_tags(tags):
 
 def html_for_tag(tag, year, config):
     tag_path = get_tag_path(tag)
-    url = urllib.parse.urljoin(
-        config['blog-url'],
-        f'tags/{year}/{tag_path}'
-    )
+    url = urllib.parse.urljoin(config['blog-url'], f'tags/{year}/{tag_path}')
     return f'<a href="{url}">{tag}</a>'
 
 
 def html_for_tags(tags, date, config):
     year, _, _ = split_date(date)
-    return ''.join([
-        '<ul class="tl-tags">',
-        ''.join([
-            '<li>' + html_for_tag(tag, year, config) + '</li>' for tag in tags
-        ]),
-        '</ul>\n'
-    ])
+    return ''.join(
+        [
+            '<ul class="tl-tags">',
+            ''.join(
+                [
+                    '<li>' + html_for_tag(tag, year, config) + '</li>'
+                    for tag in tags
+                ]
+            ),
+            '</ul>\n'
+        ]
+    )
 
 
 def convert_articles_with_metablock_to_html(items, config):
@@ -917,32 +1059,39 @@ def convert_articles_with_metablock_to_html(items, config):
                 if identifier in ids:
                     raise ParseException(
                         f"Duplicate id '{identifier}'"
-                        f" (used later in {ids[identifier]}")
+                        f" (used later in {ids[identifier]})"
+                    )
                 ids[identifier] = item['date']
                 if 'tags' not in meta:
                     raise ParseException('No tags are specified')
                 validate_tags(meta['tags'])
 
                 rewrite_ast(ast)
-                html = ''.join([
-                    '<article>\n',
-                    insert_identifier_and_add_permalink(
-                        heading, item['date'], identifier, config),
-                    renderer.render(ast),
-                    html_for_tags(meta['tags'], item['date'], config),
-                    '</article>\n'
-                ])
-                articles.append({
-                    'title': wrap_in_permalink(
-                        heading[4:-6], config, item['date'], identifier
-                    ),
-                    'html': html,
-                    'tags': meta['tags']
-                })
+                html = ''.join(
+                    [
+                        '<article>\n',
+                        insert_identifier_and_add_permalink(
+                            heading, item['date'], identifier, config
+                        ),
+                        renderer.render(ast),
+                        html_for_tags(meta['tags'], item['date'], config),
+                        '</article>\n'
+                    ]
+                )
+                articles.append(
+                    {
+                        'title': wrap_in_permalink(
+                            heading[4:-6], config, item['date'], identifier
+                        ),
+                        'html': html,
+                        'tags': meta['tags']
+                    }
+                )
             except (ParseException, yaml.parser.ParserError) as e:
                 error(f"{e} in article {article_no} of {item['date']}")
 
         item['articles'] = articles
+
 
 def convert_articles_to_html(items):
     parser = commonmark.Parser()
@@ -952,13 +1101,12 @@ def convert_articles_to_html(items):
         for article in item['articles']:
             ast = parser.parse(article)
             rewrite_ast(ast)
-            html = ''.join([
-                '<article>\n',
-                renderer.render(ast),
-                '</article>\n'
-            ])
-            articles.append({ 'html': html })
+            html = ''.join(
+                ['<article>\n', renderer.render(ast), '</article>\n']
+            )
+            articles.append({'html': html})
         item['articles'] = articles
+
 
 def create_blog(config):
     days, pages = collect_days_and_pages(read_entries(config['filename']))
@@ -1009,65 +1157,143 @@ def create_argument_parser():
   %(prog)s --help"""
 
     parser = argparse.ArgumentParser(usage=usage)
-    parser.add_argument('-t', '--template-filename', dest='template-filename',
-                        help='filename of template, required',
-                        metavar='TEMPLATE', required=True)
-    parser.add_argument('-o', '--output-dir', dest='output-dir',
-                        help='directory to store HTML files in, required',
-                        metavar='HTDOCS', required=True)
-    parser.add_argument('-a', '--author', dest='author',
-                        help='author of the blog, required',
-                        metavar='AUTHOR', required=True)
-    parser.add_argument('-n', '--name', dest='name',
-                        help='name of the blog, required',
-                        metavar='BLOGNAME', required=True)
-    parser.add_argument('--description', dest='description',
-                        help='description of the blog, required',
-                        metavar='DESCRIPTION', required=True)
-    parser.add_argument('-b', '--blog-url', dest='blog-url',
-                        help='URL of the blog, required',
-                        metavar='URL', required=True)
-    parser.add_argument('-d', '--days', dest='days',
-                        help='number of days to show on the index;'
-                        ' default: %(default)s',
-                        metavar='DAYS', type=int, default=14)
-    parser.add_argument('-c', '--css', dest='css',
-                        help='URL of the stylesheet to use;'
-                        ' default: %(default)s',
-                        metavar='URL', default='styles.css')
-    parser.add_argument('--date-format', dest='date-format',
-                        help='how to format the date;'
-                        " default: '%(default)s'",
-                        metavar='FORMAT', default='%d %b %Y')
-    parser.add_argument('--label-format', dest='label-format',
-                        help='how to format the label;'
-                        "default '%(default)s'",
-                        metavar='FORMAT', default='week %V, %Y')
-    parser.add_argument('--min-year', dest='min-year',
-                        help='minimum year for copyright notice',
-                        metavar='YEAR', type=int, default=None)
-    parser.add_argument('--tags', action='store_true', dest='tags',
-                        help='enable tags', default=False)
-    parser.add_argument('--tags-label', dest='tags-label',
-                        help='label shown on tags overview page;'
-                        " default: '%(default)s'",
-                        metavar='LABEL', default='tags')
-    parser.add_argument('--tags-title', dest='tags-title',
-                        help='title shown on tags overview page;'
-                        " default: '%(default)s'",
-                        metavar='TITLE', default='Tags')
-    parser.add_argument('--feed-size', dest='feed-size',
-                        help='number of entries in a feed',
-                        metavar='SIZE', type=int, default=25)
-    parser.add_argument('-q', '--quiet', action='store_true', dest='quiet',
-                        help="don't show progress", default=False)
-    parser.add_argument('-v', '--version', action='version', version=VERSION,
-                        help='show version and exit')
+    parser.add_argument(
+        '-t',
+        '--template-filename',
+        dest='template-filename',
+        help='filename of template, required',
+        metavar='TEMPLATE',
+        required=True
+    )
+    parser.add_argument(
+        '-o',
+        '--output-dir',
+        dest='output-dir',
+        help='directory to store HTML files in, required',
+        metavar='HTDOCS',
+        required=True
+    )
+    parser.add_argument(
+        '-a',
+        '--author',
+        dest='author',
+        help='author of the blog, required',
+        metavar='AUTHOR',
+        required=True
+    )
+    parser.add_argument(
+        '-n',
+        '--name',
+        dest='name',
+        help='name of the blog, required',
+        metavar='BLOGNAME',
+        required=True
+    )
+    parser.add_argument(
+        '--description',
+        dest='description',
+        help='description of the blog, required',
+        metavar='DESCRIPTION',
+        required=True
+    )
+    parser.add_argument(
+        '-b',
+        '--blog-url',
+        dest='blog-url',
+        help='URL of the blog, required',
+        metavar='URL',
+        required=True
+    )
+    parser.add_argument(
+        '-d',
+        '--days',
+        dest='days',
+        help='number of days to show on the index; default: %(default)s',
+        metavar='DAYS',
+        type=int,
+        default=14
+    )
+    parser.add_argument(
+        '-c',
+        '--css',
+        dest='css',
+        help='URL of the stylesheet to use; default: %(default)s',
+        metavar='URL',
+        default='styles.css'
+    )
+    parser.add_argument(
+        '--date-format',
+        dest='date-format',
+        help="how to format the date; default: '%(default)s'",
+        metavar='FORMAT',
+        default='%d %b %Y'
+    )
+    parser.add_argument(
+        '--label-format',
+        dest='label-format',
+        help="how to format the label; default '%(default)s'",
+        metavar='FORMAT',
+        default='week %V, %Y'
+    )
+    parser.add_argument(
+        '--min-year',
+        dest='min-year',
+        help='minimum year for copyright notice',
+        metavar='YEAR',
+        type=int,
+        default=None
+    )
+    parser.add_argument(
+        '--tags',
+        action='store_true',
+        dest='tags',
+        help='enable tags',
+        default=False
+    )
+    parser.add_argument(
+        '--tags-label',
+        dest='tags-label',
+        help="label shown on tags overview page; default: '%(default)s'",
+        metavar='LABEL',
+        default='tags'
+    )
+    parser.add_argument(
+        '--tags-title',
+        dest='tags-title',
+        help="title shown on tags overview page; default: '%(default)s'",
+        metavar='TITLE',
+        default='Tags'
+    )
+    parser.add_argument(
+        '--feed-size',
+        dest='feed-size',
+        help='number of entries in a feed',
+        metavar='SIZE',
+        type=int,
+        default=25
+    )
+    parser.add_argument(
+        '-q',
+        '--quiet',
+        action='store_true',
+        dest='quiet',
+        help="don't show progress",
+        default=False
+    )
+    parser.add_argument(
+        '-v',
+        '--version',
+        action='version',
+        version=VERSION,
+        help='show version and exit'
+    )
     return parser
+
 
 def error(message):
     print(message, file=sys.stderr)
     sys.exit(0)
+
 
 def get_config():
     parser = create_argument_parser()
@@ -1085,12 +1311,15 @@ def get_config():
 
     config['json-path'] = 'feed.json'
     config['json-feed-url'] = urllib.parse.urljoin(
-        config['blog-url'], config['json-path'])
+        config['blog-url'], config['json-path']
+    )
     config['rss-path'] = 'feed.rss'
     config['rss-feed-url'] = urllib.parse.urljoin(
-        config['blog-url'], config['rss-path'])
+        config['blog-url'], config['rss-path']
+    )
 
     return config
+
 
 locale.setlocale(locale.LC_ALL, '')
 create_blog(get_config())
