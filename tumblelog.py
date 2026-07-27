@@ -711,7 +711,7 @@ def get_url_title_description(day, config):
 
 
 def get_month_names():
-    return [datetime(2019, mon, 1).strftime('%B') for mon in range(1, 13)]
+    return [datetime(2019, month, 1).strftime('%B') for month in range(1, 13)]
 
 
 def get_end_of_day(date):
