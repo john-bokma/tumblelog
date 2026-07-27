@@ -1018,18 +1018,10 @@ def html_for_tag(tag, year, config):
 
 def html_for_tags(tags, date, config):
     year, _, _ = split_date(date)
-    return ''.join(
-        [
-            '<ul class="tl-tags">',
-            ''.join(
-                [
-                    '<li>' + html_for_tag(tag, year, config) + '</li>'
-                    for tag in tags
-                ]
-            ),
-            '</ul>\n'
-        ]
+    tag_items = ''.join(
+        f'<li>{html_for_tag(tag, year, config)}</li>' for tag in tags
     )
+    return f'<ul class="tl-tags">{tag_items}</ul>\n'
 
 
 def convert_articles_with_metablock_to_html(items, config):
