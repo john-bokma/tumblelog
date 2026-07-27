@@ -102,7 +102,7 @@ def parse_date(date):
 
 
 def year_week_title(fmt, year, week):
-    return fmt.replace('%Y', year).replace('%V', week)
+    return fmt.replace('%Y', str(year)).replace('%V', str(week))
 
 
 def get_year_week(date):
