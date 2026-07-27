@@ -1088,15 +1088,14 @@ def convert_articles_to_html(items):
     parser = commonmark.Parser()
     renderer = commonmark.HtmlRenderer()
     for item in items:
-        articles = []
-        for article in item['articles']:
+        def render_article(article):
             ast = parser.parse(article)
             rewrite_ast(ast)
-            html = ''.join(
-                ['<article>\n', renderer.render(ast), '</article>\n']
-            )
-            articles.append({'html': html})
-        item['articles'] = articles
+            return {'html': f'<article>\n{renderer.render(ast)}</article>\n'}
+
+        item['articles'] = [
+            render_article(article) for article in item['articles']
+        ]
 
 
 def create_blog(config):
