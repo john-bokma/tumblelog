@@ -406,17 +406,24 @@ def create_page(
     page_url = urllib.parse.urljoin(config['blog-url'], uri_path)
 
     html = config['template']
-    html = RE_TITLE.sub(escape(title), html)
-    html = RE_YEAR_RANGE.sub(escape(year_range), html)
-    html = RE_LABEL.sub(escape(label), html)
-    html = RE_CSS.sub(escape(css), html)
-    html = RE_NAME.sub(escape(config['name']), html)
-    html = RE_AUTHOR.sub(escape(config['author']), html)
-    html = RE_DESCRIPTION.sub(escape(config['description']), html)
-    html = RE_VERSION.sub(escape(VERSION), html)
-    html = RE_PAGE_URL.sub(escape(page_url), html)
-    html = RE_RSS_FEED_URL.sub(escape(config['rss-feed-url']), html)
-    html = RE_JSON_FEED_URL.sub(escape(config['json-feed-url']), html)
+
+    replacements = {
+        RE_TITLE: escape(title),
+        RE_YEAR_RANGE: escape(year_range),
+        RE_LABEL: escape(label),
+        RE_CSS: escape(css),
+        RE_NAME: escape(config['name']),
+        RE_AUTHOR: escape(config['author']),
+        RE_DESCRIPTION: escape(config['description']),
+        RE_VERSION: escape(VERSION),
+        RE_PAGE_URL: escape(page_url),
+        RE_RSS_FEED_URL: escape(config['rss-feed-url']),
+        RE_JSON_FEED_URL: escape(config['json-feed-url']),
+    }
+
+    for regex, replacement in replacements.items():
+        html = regex.sub(replacement, html)
+
     html = RE_BODY.sub(lambda _: body_html, html, count=1)
     html = RE_ARCHIVE.sub(archive_html, html)
 
