@@ -1104,7 +1104,7 @@ def convert_articles_to_html(items):
 
 
 def create_blog(config):
-    locale.setlocale(locale.LC_ALL, '')
+    locale.setlocale(locale.LC_ALL, '')  # use locale from OS/environment
     days, pages = collect_days_and_pages(read_entries(config['filename']))
 
     if config['tags']:
@@ -1288,7 +1288,7 @@ def create_argument_parser():
 
 def error(message):
     print(message, file=sys.stderr)
-    sys.exit(0)
+    sys.exit(1)
 
 
 def get_config():
