@@ -868,13 +868,11 @@ def create_rss_feed(days, config):
             ' rel="self" type="application/rss+xml" />',
             *items,
             '</channel>'
-            '</rss>'
+            '</rss>\n'
         ]
     )
-    feed_path = config['rss-path']
-    p = Path(config['output-dir']).joinpath(feed_path)
-    with p.open(mode='w', encoding='utf-8') as f:
-        print(xml, file=f)
+    feed_path = Path(config['output-dir']) / config['rss-path']
+    feed_path.write_text(xml, encoding='utf-8')
 
     if not config['quiet']:
         print(f"Created '{feed_path}'")
@@ -907,18 +905,17 @@ def create_json_feed(days, config):
         'authors': [{'name': config['author']}],
         'items': items
     }
-    feed_path = config['json-path']
-    p = Path(config['output-dir']).joinpath(feed_path)
-    with p.open(mode='w', encoding='utf-8') as f:
-        json.dump(
+    feed_path = Path(config['output-dir']) / config['json-path']
+    feed_path.write_text(
+        json.dumps(
             feed,
-            f,
             indent=3,
             ensure_ascii=False,
             sort_keys=True,
             separators=(',', ': ')
-        )
-        print('', file=f)
+        ) + '\n',
+        encoding='utf-8'
+    )
 
     if not config['quiet']:
         print(f"Created '{feed_path}'")
