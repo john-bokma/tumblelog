@@ -81,7 +81,7 @@ class State(Enum):
     PAGE = auto()
 
 
-class ParseException(Exception):
+class ParseError(Exception):
     pass
 
 
@@ -925,18 +925,16 @@ def extract_identifier_and_heading(ast):
     it = ast.walker()
     node, entering = it.next()
     if node.t != 'document' or not entering:
-        raise ParseException(
-            'Unexpected state encountered'
-        )  # should never happen
+        raise ParseError('Unexpected state encountered')  # should never happen
 
     node, entering = it.next()
     if node.t != 'heading' or not entering:
-        raise ParseException(
+        raise ParseError(
             'An article must start with a level 2 heading (none found)'
         )
 
     if node.level != 2:
-        raise ParseException(
+        raise ParseError(
             f'An article must start with a level 2 heading, not {node.level}'
         )
 
@@ -952,7 +950,7 @@ def extract_identifier_and_heading(ast):
             text += node.literal
 
     if not text:
-        raise ParseException('An article must have text after a heading')
+        raise ParseError('An article must have text after a heading')
 
     identifier = re.sub(r'\s+', '-', text.lower())
 
@@ -984,29 +982,29 @@ def insert_identifier_and_add_permalink(heading, date, identifier, config):
 
 def validate_identifier(identifier):
     if not isinstance(identifier, str):
-        raise ParseException('identifier is not a string')
+        raise ParseError('identifier is not a string')
     if not identifier:
-        raise ParseException('identifier can not be empty')
+        raise ParseError('identifier can not be empty')
     if re.search(r'\s', identifier):
-        raise ParseException('identifier can not contain whitespace')
+        raise ParseError('identifier can not contain whitespace')
 
 
 def validate_tags(tags):
     if not isinstance(tags, list):
-        raise ParseException('Tags must be specified as a list')
+        raise ParseError('Tags must be specified as a list')
 
     if not tags:
-        raise ParseException('At least one tag must be given')
+        raise ParseError('At least one tag must be given')
 
     seen = set()
     for tag in tags:
         if not tag:
-            raise ParseException('A tag must have a length')
+            raise ParseError('A tag must have a length')
         match = RE_TAG.match(tag)
         if not match:
-            raise ParseException(f"Invalid tag '{tag}' found")
+            raise ParseError(f"Invalid tag '{tag}' found")
         if tag in seen:
-            raise ParseException(f"Duplicate tag '{tag}' found")
+            raise ParseError(f"Duplicate tag '{tag}' found")
         seen.add(tag)
 
 
@@ -1033,12 +1031,12 @@ def convert_articles_with_metablock_to_html(items, config):
         for article_no, article in enumerate(item['articles'], start=1):
             try:
                 if not (match := RE_YAML_MARKDOWN.match(article)).group(1):
-                    raise ParseException('No mandatory YAML block found')
+                    raise ParseError('No mandatory YAML block found')
 
                 # Only load the most basic YAML
                 meta = yaml.load(match.group(1), Loader=yaml.BaseLoader)
                 if not isinstance(meta, dict):
-                    raise ParseException('YAML block must be a mapping')
+                    raise ParseError('YAML block must be a mapping')
 
                 ast = parser.parse(match.group(2))
                 identifier, heading = extract_identifier_and_heading(ast)
@@ -1048,13 +1046,13 @@ def convert_articles_with_metablock_to_html(items, config):
 
                 # identifier must be globally unique
                 if identifier in ids:
-                    raise ParseException(
+                    raise ParseError(
                         f"Duplicate id '{identifier}'"
-                        f" (used later in {ids[identifier]})"
+                        f' (used later in {ids[identifier]})'
                     )
                 ids[identifier] = item['date']
                 if 'tags' not in meta:
-                    raise ParseException('No tags are specified')
+                    raise ParseError('No tags are specified')
                 validate_tags(meta['tags'])
 
                 rewrite_ast(ast)
@@ -1078,7 +1076,7 @@ def convert_articles_with_metablock_to_html(items, config):
                         'tags': meta['tags']
                     }
                 )
-            except (ParseException, yaml.parser.ParserError) as e:
+            except (ParseError, yaml.parser.ParserError) as e:
                 error(f"{e} in article {article_no} of {item['date']}")
 
         item['articles'] = articles
