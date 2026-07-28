@@ -1104,6 +1104,7 @@ def convert_articles_to_html(items):
 
 
 def create_blog(config):
+    locale.setlocale(locale.LC_ALL, '')
     days, pages = collect_days_and_pages(read_entries(config['filename']))
 
     if config['tags']:
@@ -1316,5 +1317,5 @@ def get_config():
     return config
 
 
-locale.setlocale(locale.LC_ALL, '')
-create_blog(get_config())
+if __name__ == '__main__':
+    create_blog(get_config())
