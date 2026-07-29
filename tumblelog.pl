@@ -1239,14 +1239,11 @@ sub html_for_tags {
     my ( $tags, $date, $config ) = @_;
 
     my $year = ( split_date( $date ) )[ 0 ];
-    return  join( '',
-                  '<ul class="tl-tags">',
-                  map(
-                      '<li>' . html_for_tag( $_, $year, $config ) . '</li>',
-                      @$tags
-                  ),
-                  "</ul>\n"
-              );
+    my $items = join '', map {
+        '<li>' . html_for_tag( $_, $year, $config ) . '</li>'
+    } @$tags;
+
+    return qq(<ul class="tl-tags">$items</ul>\n);
 }
 
 sub convert_articles_with_metablock_to_html {
