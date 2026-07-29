@@ -14,7 +14,7 @@ use Time::Piece;
 use Time::Seconds;
 use Getopt::Long;
 use List::Util 'min';
-use Encode 'decode';
+use Unicode::UTF8 'decode_utf8';
 use Try::Tiny;
 
 use constant {
@@ -1058,12 +1058,6 @@ sub parse_date {
     return Time::Piece->strptime( shift, '%Y-%m-%d' );
 }
 
-sub decode_utf8 {
-    # UTF8 encoding for the Time::Piece strftime method, see bug #97539
-    # https://rt.cpan.org/Public/Bug/Display.html?id=97539
-    return decode( 'UTF-8', shift, Encode::FB_CROAK )
-}
-
 sub escape {
 
     my $str = shift;
@@ -1278,7 +1272,7 @@ sub convert_articles_with_metablock_to_html {
 
                 # identifier must be globally unique
                 die "Duplicate id '$identifier'"
-                    ." (used later in $ids{ $identifier })"
+                    . " (used later in $ids{ $identifier })"
                     if exists $ids{ $identifier };
                 $ids{ $identifier } = $item->{ date };
 

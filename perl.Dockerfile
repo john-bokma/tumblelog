@@ -11,6 +11,7 @@ RUN apk add --no-cache --virtual .build-deps \
     && apk add --no-cache perl cmark-dev tzdata \
     && cpanm --no-man-pages --from https://cpan.metacpan.org/ \
              URI JSON::XS YAML::XS Path::Tiny CommonMark Try::Tiny \
+             Unicode::UTF8 \
     && rm -rf ~/.cpanm \
     && apk del .build-deps
 
