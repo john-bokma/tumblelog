@@ -976,9 +976,9 @@ def validate_identifier(identifier):
     if not isinstance(identifier, str):
         raise ParseError('identifier is not a string')
     if not identifier:
-        raise ParseError('identifier can not be empty')
+        raise ParseError('identifier must not be empty')
     if re.search(r'\s', identifier):
-        raise ParseError('identifier can not contain whitespace')
+        raise ParseError('identifier must not contain whitespace')
 
 
 def validate_tags(tags):

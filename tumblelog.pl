@@ -1200,8 +1200,8 @@ sub validate_identifier {
     my $identifier = shift;
 
     ref $identifier eq '' or die 'identifier is not a string';
-    length $identifier or die 'identifier can not be empty';
-    die 'identifier can not contain whitespace' if $identifier =~ /\s/;
+    length $identifier or die 'identifier must not be empty';
+    die 'identifier must not contain whitespace' if $identifier =~ /\s/;
     return;
 }
 
