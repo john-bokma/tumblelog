@@ -1364,12 +1364,12 @@ sub collect_days_and_pages {
 sub read_entries {
 
     my $filename = shift;
-    my $entries = [ grep { length $_ } split /^%\n/m,
-                    path( $filename )->slurp_utf8() ];
+    my @entries = grep { length $_ } split /^%\n/m,
+        path( $filename )->slurp_utf8();
 
-    @$entries or die 'No entries found';
+    @entries or die 'No entries found';
 
-    return $entries;
+    return \@entries;
 }
 
 sub show_usage_and_exit {
