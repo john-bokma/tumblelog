@@ -802,18 +802,19 @@ def create_tag_pages(days, archive, config, min_year, max_year):
     body_html = (
         '<div class="tl-topbar"></div>\n'
         '<div class="tl-tags-overview">\n'
-        + f"  <h2>{config['tags-title']}</h2>\n"
-        + '  <ul class="tl-tag-cloud">\n'
+        f"  <h2>{config['tags-title']}</h2>\n"
+        '  <ul class="tl-tag-cloud">\n'
     )
 
     for tag in sorted(tag_info):
+        tag_info_entry = tag_info[tag]
         tag_path = get_tag_path(tag)
-        size = get_cloud_size(tag_info[tag]['count'], min_count, max_count)
+        size = get_cloud_size(tag_info_entry['count'], min_count, max_count)
         body_html += (
             f'    <li class="tl-size-{size}">'
-            + f'<a href="{tag_info[tag]["end_year"]}/{tag_path}">'
-            + f"{tag}\N{NARROW NO-BREAK SPACE}({tag_info[tag]['count']})"
-            + '</a></li>\n'
+            f'<a href="{tag_info_entry["end_year"]}/{tag_path}">'
+            f"{tag}\N{NARROW NO-BREAK SPACE}({tag_info_entry['count']})"
+            '</a></li>\n'
         )
 
     body_html += '  </ul>\n</div>\n'

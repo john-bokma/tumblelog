@@ -899,14 +899,16 @@ sub create_tag_pages {
         . qq(<div class="tl-tags-overview">\n)
         . "  <h2>$config->{ 'tags-title' }</h2>\n"
         . qq(  <ul class="tl-tag-cloud">\n);
+
     for my $tag ( sort keys %tag_info ) {
+        my $tag_info_entry = $tag_info{ $tag };
         my $tag_path = get_tag_path( $tag );
         my $size = get_cloud_size(
-            $tag_info{ $tag }{ count }, $min_count, $max_count
+            $tag_info_entry->{ count }, $min_count, $max_count
         );
         $body_html .= qq(    <li class="tl-size-$size">)
-            . qq(<a href="$tag_info{ $tag }{ end_year }/$tag_path">)
-            . "$tag\N{NARROW NO-BREAK SPACE}($tag_info{ $tag }{ count })"
+            . qq(<a href="$tag_info_entry->{ end_year }/$tag_path">)
+            . "$tag\N{NARROW NO-BREAK SPACE}($tag_info_entry->{ count })"
             . "</a></li>\n";
     }
     $body_html .= "  </ul>\n</div>\n";
