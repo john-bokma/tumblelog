@@ -994,9 +994,9 @@ def validate_tags(tags):
             raise ParseError('A tag must have a length')
         match = RE_TAG.match(tag)
         if not match:
-            raise ParseError(f"Invalid tag '{tag}' found")
+            raise ParseError(f"Invalid tag: '{tag}'")
         if tag in seen:
-            raise ParseError(f"Duplicate tag '{tag}' found")
+            raise ParseError(f"Duplicate tag: '{tag}'")
         seen.add(tag)
 
 

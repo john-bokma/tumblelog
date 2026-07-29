@@ -1215,8 +1215,9 @@ sub validate_tags {
     my %seen;
     for my $tag ( @$tags ) {
         length $tag or die 'A tag must have a length';
-        $tag =~ $RE_TAG or die "Invalid tag '$tag' found";
-        ++$seen{ $tag } == 1 or die "Duplicate tag '$tag' found";
+        $tag =~ $RE_TAG or die "Invalid tag: '$tag'";
+        exists $seen{ $tag } and die "Duplicate tag: '$tag'";
+        $seen{ $tag }++;
     }
     return;
 }
