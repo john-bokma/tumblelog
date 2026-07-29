@@ -1021,7 +1021,8 @@ sub year_week_title {
 
     my ( $format, $year, $week ) = @_;
 
-    ( my $str = $format ) =~ s/%V/ sprintf '%02d', $week /ge;
+    my $str = $format;
+    $str =~ s/%V/ sprintf '%02d', $week /ge;
     $str =~ s/%Y/ sprintf '%04d', $year /ge;
     return $str;
 }
