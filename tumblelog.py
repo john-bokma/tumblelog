@@ -210,23 +210,19 @@ def html_for_next_prev(days, index, config):
     html = '<nav class="tl-next-prev">\n'
 
     if index:
-        html += ''.join(
-            [
-                '  <div class="next">',
-                html_link_for_day(days[index - 1], config),
-                '</div>'
-                '<div class="tl-right-arrow">\N{RIGHTWARDS ARROW}</div>\n'
-            ]
+        html += (
+            '  <div class="next">'
+            f'{html_link_for_day(days[index - 1], config)}'
+            '</div>'
+            '<div class="tl-right-arrow">\N{RIGHTWARDS ARROW}</div>\n'
         )
 
     if index < length - 1:
-        html += ''.join(
-            [
-                '  <div class="tl-left-arrow">\N{LEFTWARDS ARROW}</div>'
-                '<div class="prev">',
-                html_link_for_day(days[index + 1], config),
-                '</div>\n'
-            ]
+        html += (
+            '  <div class="tl-left-arrow">\N{LEFTWARDS ARROW}</div>'
+            '<div class="prev">'
+            f'{html_link_for_day(days[index + 1], config)}'
+            '</div>\n'
         )
 
     html += '</nav>\n'
@@ -522,18 +518,16 @@ def create_year_pages(days, archive, config, min_year, max_year):
             else:
                 caption = month_name
 
-            body_html += ''.join(
-                [
-                    '  <table class="tl-month">\n'
-                    f'    <caption>{caption}</caption>\n'
-                    '    <thead>\n',
-                    day_names_row,
-                    '    </thead>\n'
-                    '    <tbody>\n',
-                    tbody,
-                    '    </tbody>\n'
-                    '  </table>\n'
-                ]
+            body_html += (
+                '  <table class="tl-month">\n'
+                f'    <caption>{caption}</caption>\n'
+                '    <thead>\n'
+                f'{day_names_row}'
+                '    </thead>\n'
+                '    <tbody>\n'
+                f'{tbody}'
+                '    </tbody>\n'
+                '  </table>\n'
             )
 
             if dt.year != year:
@@ -581,8 +575,8 @@ def create_month_pages(days, archive, config, min_year, max_year):
                     f'<a href="../../{year}/">{year}</a></h2>'
                     '  <dl class="tl-days">\n',
                     *(html_for_day(day) for day in days_for_month),
-                    '  </dl>\n',
-                    nav_bar,
+                    '  </dl>\n'
+                    f'{nav_bar}'
                     '</div>\n'
                 ]
             )
@@ -754,13 +748,11 @@ def create_tag_pages(days, archive, config, min_year, max_year):
         tag_info[tag]['end_year'] = years[-1]
         tag_path = get_tag_path(tag)
         for year_index, year in enumerate(years):
-            body_html = ''.join(
-                [
-                    '<div class="tl-topbar"></div>\n'
-                    '<div class="tl-tag-overview">\n',
-                    html_for_year_nav_bar(years, year_index, tag_path),
-                    f'  <h2>{tag}</h2>\n'
-                ]
+            body_html = (
+                '<div class="tl-topbar"></div>\n'
+                '<div class="tl-tag-overview">\n'
+                f'{html_for_year_nav_bar(years, year_index, tag_path)}'
+                f'  <h2>{tag}</h2>\n'
             )
 
             for month_name, rows in groupby(
@@ -844,16 +836,14 @@ def create_rss_feed(days, config):
             + end_of_day.strftime(' %Y %H:%M:%S %z')
         )
         items.append(
-            ''.join(
-                [
-                    '<item>'
-                    f'<title>{escape(title)}</title>'
-                    f'<link>{escape(url)}</link>'
-                    f'<guid isPermaLink="true">{escape(url)}</guid>'
-                    f'<pubDate>{escape(pub_date)}</pubDate>'
-                    f'<description>{escape(description)}</description>'
-                    '</item>'
-                ]
+            (
+                '<item>'
+                f'<title>{escape(title)}</title>'
+                f'<link>{escape(url)}</link>'
+                f'<guid isPermaLink="true">{escape(url)}</guid>'
+                f'<pubDate>{escape(pub_date)}</pubDate>'
+                f'<description>{escape(description)}</description>'
+                '</item>'
             )
         )
 
@@ -865,7 +855,7 @@ def create_rss_feed(days, config):
             f'<title>{escape(config["name"])}</title>'
             f'<link>{escape(config["blog-url"])}</link>'
             f'<description>{escape(config["description"])}</description>'
-            f'<atom:link href="{escape(config["rss-feed-url"])}"',
+            f'<atom:link href="{escape(config["rss-feed-url"])}"'
             ' rel="self" type="application/rss+xml" />',
             *items,
             '</channel>'
@@ -975,13 +965,10 @@ def wrap_in_permalink(string, config, date, identifier):
 
 
 def insert_identifier_and_add_permalink(heading, date, identifier, config):
-    return ''.join(
-        [
-            heading[:3],
-            f' id="{escape(identifier)}">',
-            wrap_in_permalink(heading[4:-6], config, date, identifier),
-            heading[-6:]
-        ]
+    return (
+        f'{heading[:3]} id="{escape(identifier)}">'
+        f'{wrap_in_permalink(heading[4:-6], config, date, identifier)}'
+        f'{heading[-6:]}'
     )
 
 
@@ -1061,16 +1048,15 @@ def convert_articles_with_metablock_to_html(items, config):
                 validate_tags(meta['tags'])
 
                 rewrite_ast(ast)
-                html = ''.join(
-                    [
-                        '<article>\n',
-                        insert_identifier_and_add_permalink(
-                            heading, item['date'], identifier, config
-                        ),
-                        renderer.render(ast),
-                        html_for_tags(meta['tags'], item['date'], config),
-                        '</article>\n'
-                    ]
+                permalink_heading = insert_identifier_and_add_permalink(
+                    heading, item['date'], identifier, config
+                )
+                html = (
+                    '<article>\n'
+                    f'{permalink_heading}'
+                    f'{renderer.render(ast)}'
+                    f"{html_for_tags(meta['tags'], item['date'], config)}"
+                    '</article>\n'
                 )
                 articles.append(
                     {
