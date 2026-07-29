@@ -1238,7 +1238,7 @@ sub html_for_tags {
 
     my ( $tags, $date, $config ) = @_;
 
-    my $year = ( split_date( $date ) )[ 0 ];
+    my ( $year ) = split_date( $date );
     my $items = join '', map {
         '<li>' . html_for_tag( $_, $year, $config ) . '</li>'
     } @$tags;
