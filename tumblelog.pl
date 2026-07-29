@@ -793,12 +793,11 @@ sub get_url_title_description {
 sub get_month_names {
 
     my $date = parse_date( '2019-01-01' );
-    my @names;
-    for ( 1 .. 12 ) {
-        push @names, decode_utf8( $date->strftime( '%B' ) );
+    return map {
+        my $month = decode_utf8( $date->strftime( '%B' ) );
         $date = $date->add_months( 1 );
-    }
-    return @names;
+        $month;
+    } 1 .. 12;
 }
 
 sub get_end_of_day {
