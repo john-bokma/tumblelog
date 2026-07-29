@@ -419,8 +419,8 @@ sub create_year_pages {
 
     my ( $days, $archive, $config, $min_year, $max_year ) = @_;
 
-    my $start_year = ( split_date( $days->[ -1 ]{ date } ) )[ 0 ];
-    my $end_year   = ( split_date( $days->[  0 ]{ date } ) )[ 0 ];
+    my ( $start_year ) = split_date( $days->[ -1 ]{ date } );
+    my ( $end_year )   = split_date( $days->[  0 ]{ date } );
 
     my $archive_html = html_for_archive(
         $archive, undef, '..', $config->{ 'label-format' }
@@ -830,7 +830,7 @@ sub create_tag_pages {
 
     my $tag_years = {};
     for my $day ( @$days ) {
-        my $year = ( split_date( $day->{ date } ) )[ 0 ];
+        my ( $year ) = split_date( $day->{ date } );
         for my $article ( reverse @{ $day->{ articles } } ) {
             for my $tag ( @{ $article->{ tags } } ) {
                 unshift @{ $tag_years->{ $tag }{ $year } }, {
