@@ -1,4 +1,32 @@
-# Change Log
+# Changelog
+
+
+## [6.1.0] - 2026-07-29
+
+  - Reformat `tumblelog.py`
+  - Use walrus operator to get and check custom_id in `tumblelog.py`
+  - Use f-string to embed escape call in `tumblelog.py`
+  - Don't rely on duck-typing in `year_week_title` (`tumblelog.py`)
+  - Use `month` instead of `mon` in `get_month_names` (`tumblelog.py`)
+  - Make `html_for_tags` more readable and Pythonic (`tumblelog.py`)
+  - Replace manual loop with list comp (`tumblelog.py`)
+  - Replace ParseException with ParseError (`tumblelog.py`)
+  - Use a replacements dictionary to reduce repetitive code (`tumblelog.py`)
+  - Call `create_blog` only when not imported (`tumblelog.py`)
+  - Make `error` return with `sys.exit(1)` instead of zero (`tumblelog.py`)
+  - Use `write_text` to save each feed (`tumblelog.py`)
+  - Use `Unicode::UTF8` instead of hand rolled `decode_utf8` (`tumblelog.pl`)
+  - Reduce dictionary look-ups
+  - Remove `''.join` where not needed (`tumblelog.py`)
+  - Use map in `get_month_names` (`tumblelog.pl`)
+  - Improve exception in `validate_tags`
+  - Make `year_week_title` more readable (`tumblelog.pl`)
+  - Make `html_for_tags` more readable (`tumblelog.pl`)
+  - Make `read_entries more` idiomatic Perl (`tumblelog.pl`)
+  - Make `html_for_tags` more idiomatic Perl (`tumblelog.pl`)
+  - Make `create_year_pages` and `create_tag_pages` more idiomatic Perl
+    (`tumblelog.pl`)
+  - Use "must not" instead of "can not" in `validate_identifier`
 
 ## [6.0.0] - 2026-01-02
 
