@@ -11,6 +11,7 @@ from math import log
 from html import escape
 from enum import Enum, auto
 from operator import itemgetter
+from dataclasses import dataclass
 from itertools import groupby
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -73,6 +74,32 @@ RE_RSS_FEED_URL    = re.compile(r'(?x) \[% \s* rss-feed-url  \s* %\]')
 RE_JSON_FEED_URL   = re.compile(r'(?x) \[% \s* json-feed-url \s* %\]')
 RE_BODY            = re.compile(r'(?x) \[% \s* body          \s* %\] \n')
 RE_ARCHIVE         = re.compile(r'(?x) \[% \s* archive       \s* %\] \n')
+
+
+@dataclass(frozen=True, kw_only=True)
+class Config:
+    template_filename: str
+    output_dir: str
+    author: str
+    name: str
+    description: str
+    blog_url: str
+    days: int
+    css: str
+    date_format: str
+    label_format: str
+    min_year: int
+    tags: bool
+    tags_label: str
+    tags_title: str
+    feed_size: int
+    quiet: bool
+    filename: str
+    template: str
+    json_path: str
+    json_feed_url: str
+    rss_path: str
+    rss_feed_url: str
 
 
 class State(Enum):
@@ -196,7 +223,7 @@ def create_archive(days):
 
 def html_link_for_day(day, config):
     title = escape(day['title'])
-    label = escape(parse_date(day['date']).strftime(config['date-format']))
+    label = escape(parse_date(day['date']).strftime(config.date_format))
 
     year, month, day_number = split_date(day['date'])
     uri = f'../../{year}/{month}/{day_number}.html'
@@ -399,24 +426,24 @@ def create_page(
         year_range = f'{min_year}\N{EN DASH}{max_year}'
 
     slashes = path.count('/')
-    css = ''.join(['../' * slashes, config['css']])
+    css = ''.join(['../' * slashes, config.css])
     uri_path = re.sub(r'\bindex\.html$', '', path)
-    page_url = urllib.parse.urljoin(config['blog-url'], uri_path)
+    page_url = urllib.parse.urljoin(config.blog_url, uri_path)
 
-    html = config['template']
+    html = config.template
 
     replacements = {
         RE_TITLE: escape(title),
         RE_YEAR_RANGE: escape(year_range),
         RE_LABEL: escape(label),
         RE_CSS: escape(css),
-        RE_NAME: escape(config['name']),
-        RE_AUTHOR: escape(config['author']),
-        RE_DESCRIPTION: escape(config['description']),
+        RE_NAME: escape(config.name),
+        RE_AUTHOR: escape(config.author),
+        RE_DESCRIPTION: escape(config.description),
         RE_VERSION: escape(VERSION),
         RE_PAGE_URL: escape(page_url),
-        RE_RSS_FEED_URL: escape(config['rss-feed-url']),
-        RE_JSON_FEED_URL: escape(config['json-feed-url']),
+        RE_RSS_FEED_URL: escape(config.rss_feed_url),
+        RE_JSON_FEED_URL: escape(config.json_feed_url),
     }
 
     for regex, replacement in replacements.items():
@@ -425,24 +452,24 @@ def create_page(
     html = RE_BODY.sub(lambda _: body_html, html, count=1)
     html = RE_ARCHIVE.sub(archive_html, html)
 
-    Path(config['output-dir']).joinpath(path).write_text(
+    Path(config.output_dir).joinpath(path).write_text(
         html, encoding='utf-8'
     )
 
-    if not config['quiet']:
+    if not config.quiet:
         print(f"Created '{path}'")
 
 
 def create_index(days, archive, config, min_year, max_year):
     body_html = ''
 
-    for day in days[: config['days']]:
+    for day in days[: config.days]:
         body_html += html_for_date(
-            day['date'], config['date-format'], day['title'], 'archive'
+            day['date'], config.date_format, day['title'], 'archive'
         ) + ''.join(article['html'] for article in day['articles'])
 
     archive_html = html_for_archive(
-        archive, None, 'archive', config['label-format']
+        archive, None, 'archive', config.label_format
     )
 
     create_page(
@@ -467,7 +494,7 @@ def create_year_pages(days, archive, config, min_year, max_year):
     years = list(range(start_year, end_year + 1))
 
     archive_html = html_for_archive(
-        archive, None, '..', config['label-format']
+        archive, None, '..', config.label_format
     )
 
     day_names_row = html_for_day_names_row()
@@ -537,7 +564,7 @@ def create_year_pages(days, archive, config, min_year, max_year):
 
         body_html += '</div>\n'
 
-        Path(config['output-dir']).joinpath(f'archive/{year}').mkdir(
+        Path(config.output_dir).joinpath(f'archive/{year}').mkdir(
             parents=True, exist_ok=True
         )
         create_page(
@@ -560,7 +587,7 @@ def create_month_pages(days, archive, config, min_year, max_year):
 
     month_names = get_month_names()
     archive_html = html_for_archive(
-        archive, None, '../..', config['label-format']
+        archive, None, '../..', config.label_format
     )
 
     for year in sorted(years):
@@ -598,13 +625,13 @@ def create_week_page(
     year_week, body_html, archive, config, min_year, max_year
 ):
     archive_html = html_for_archive(
-        archive, year_week, '../..', config['label-format']
+        archive, year_week, '../..', config.label_format
     )
 
     year, week = split_year_week(year_week)
-    title = year_week_title(config['label-format'], year, week)
+    title = year_week_title(config.label_format, year, week)
 
-    Path(config['output-dir']).joinpath(f'archive/{year}/week').mkdir(
+    Path(config.output_dir).joinpath(f'archive/{year}/week').mkdir(
         parents=True, exist_ok=True
     )
     create_page(
@@ -623,20 +650,20 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
     week_body_html = ''
     current_year_week = get_year_week(days[0]['date'])
     day_archive_html = html_for_archive(
-        archive, None, '../..', config['label-format']
+        archive, None, '../..', config.label_format
     )
 
     for day_index, day in enumerate(days):
         day_body_html = html_for_date(
-            day['date'], config['date-format'], day['title'], '../..'
+            day['date'], config.date_format, day['title'], '../..'
         ) + ''.join(article['html'] for article in day['articles'])
 
-        label = parse_date(day['date']).strftime(config['date-format'])
+        label = parse_date(day['date']).strftime(config.date_format)
 
         year, month, day_number = split_date(day['date'])
         next_prev_html = html_for_next_prev(days, day_index, config)
 
-        Path(config['output-dir']).joinpath(f'archive/{year}/{month}').mkdir(
+        Path(config.output_dir).joinpath(f'archive/{year}/{month}').mkdir(
             parents=True, exist_ok=True
         )
         create_page(
@@ -677,13 +704,13 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
 
 def create_pages(pages, archive, config, min_year, max_year):
     archive_html = (
-        html_for_archive(archive, None, 'archive', config['label-format'])
+        html_for_archive(archive, None, 'archive', config.label_format)
         if archive
         else ''
     )
     for page in pages:
         date = page['date']
-        link_text = escape(parse_date(date).strftime(config['date-format']))
+        link_text = escape(parse_date(date).strftime(config.date_format))
         if page['show-date']:
             body_html = (
                 f'<time class="tl-date" datetime="{date}">{link_text}</time>\n'
@@ -708,7 +735,7 @@ def get_url_title_description(day, config):
     description = ''.join(article['html'] for article in day['articles'])
     year, month, day_number = split_date(day['date'])
     url = urllib.parse.urljoin(
-        config['blog-url'], f'archive/{year}/{month}/{day_number}.html'
+        config.blog_url, f'archive/{year}/{month}/{day_number}.html'
     )
     return url, day['title'], description
 
@@ -741,7 +768,7 @@ def create_tag_pages(days, archive, config, min_year, max_year):
                 )
 
     archive_html = html_for_archive(
-        archive, None, '../../archive', config['label-format']
+        archive, None, '../../archive', config.label_format
     )
 
     tag_info = defaultdict(lambda: defaultdict(int))
@@ -775,7 +802,7 @@ def create_tag_pages(days, archive, config, min_year, max_year):
 
             body_html += '</div>\n'
 
-            Path(config['output-dir']).joinpath(f'tags/{year}/').mkdir(
+            Path(config.output_dir).joinpath(f'tags/{year}/').mkdir(
                 parents=True, exist_ok=True
             )
             create_page(
@@ -796,7 +823,7 @@ def create_tag_pages(days, archive, config, min_year, max_year):
     body_html = (
         '<div class="tl-topbar"></div>\n'
         '<div class="tl-tags-overview">\n'
-        f"  <h2>{config['tags-title']}</h2>\n"
+        f"  <h2>{config.tags_title}</h2>\n"
         '  <ul class="tl-tag-cloud">\n'
     )
 
@@ -815,11 +842,11 @@ def create_tag_pages(days, archive, config, min_year, max_year):
 
     create_page(
         'tags/index.html',
-        config['tags-title'],
+        config.tags_title,
         body_html,
         archive_html,
         config,
-        config['tags-label'],
+        config.tags_label,
         min_year,
         max_year
     )
@@ -827,7 +854,7 @@ def create_tag_pages(days, archive, config, min_year, max_year):
 
 def create_rss_feed(days, config):
     items = []
-    for day in days[: config['feed-size']]:
+    for day in days[: config.feed_size]:
         url, title, description = get_url_title_description(day, config)
 
         end_of_day = get_end_of_day(day['date'])
@@ -854,26 +881,26 @@ def create_rss_feed(days, config):
             '<?xml version="1.0" encoding="UTF-8"?>'
             '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">'
             '<channel>'
-            f'<title>{escape(config["name"])}</title>'
-            f'<link>{escape(config["blog-url"])}</link>'
-            f'<description>{escape(config["description"])}</description>'
-            f'<atom:link href="{escape(config["rss-feed-url"])}"'
+            f'<title>{escape(config.name)}</title>'
+            f'<link>{escape(config.blog_url)}</link>'
+            f'<description>{escape(config.description)}</description>'
+            f'<atom:link href="{escape(config.rss_feed_url)}"'
             ' rel="self" type="application/rss+xml" />',
             *items,
             '</channel>'
             '</rss>\n'
         ]
     )
-    feed_path = Path(config['output-dir']) / config['rss-path']
+    feed_path = Path(config.output_dir) / config.rss_path
     feed_path.write_text(xml, encoding='utf-8')
 
-    if not config['quiet']:
+    if not config.quiet:
         print(f"Created '{feed_path}'")
 
 
 def create_json_feed(days, config):
     items = []
-    for day in days[: config['feed-size']]:
+    for day in days[: config.feed_size]:
         url, title, description = get_url_title_description(day, config)
 
         end_of_day = get_end_of_day(day['date'])
@@ -891,14 +918,14 @@ def create_json_feed(days, config):
 
     feed = {
         'version': 'https://jsonfeed.org/version/1.1',
-        'title': config['name'],
-        'home_page_url': config['blog-url'],
-        'feed_url': config['json-feed-url'],
-        'description': config['description'],
-        'authors': [{'name': config['author']}],
+        'title': config.name,
+        'home_page_url': config.blog_url,
+        'feed_url': config.json_feed_url,
+        'description': config.description,
+        'authors': [{'name': config.author}],
         'items': items
     }
-    feed_path = Path(config['output-dir']) / config['json-path']
+    feed_path = Path(config.output_dir) / config.json_path
     feed_path.write_text(
         json.dumps(
             feed,
@@ -910,7 +937,7 @@ def create_json_feed(days, config):
         encoding='utf-8'
     )
 
-    if not config['quiet']:
+    if not config.quiet:
         print(f"Created '{feed_path}'")
 
 
@@ -960,7 +987,7 @@ def wrap_in_permalink(string, config, date, identifier):
     year, month, day_number = split_date(date)
     safe_fragment = urllib.parse.quote(identifier, safe="/!:'?()$,+@&*%;=")
     url = urllib.parse.urljoin(
-        config['blog-url'],
+        config.blog_url,
         f'archive/{year}/{month}/{day_number}.html#{safe_fragment}'
     )
     return f'<a href="{url}">{string}</a>'
@@ -1004,7 +1031,7 @@ def validate_tags(tags):
 
 def html_for_tag(tag, year, config):
     tag_path = get_tag_path(tag)
-    url = urllib.parse.urljoin(config['blog-url'], f'tags/{year}/{tag_path}')
+    url = urllib.parse.urljoin(config.blog_url, f'tags/{year}/{tag_path}')
     return f'<a href="{url}">{tag}</a>'
 
 
@@ -1091,17 +1118,17 @@ def convert_articles_to_html(items):
 
 def create_blog(config):
     locale.setlocale(locale.LC_ALL, '')  # use locale from OS/environment
-    days, pages = collect_days_and_pages(read_raw_entries(config['filename']))
+    days, pages = collect_days_and_pages(read_raw_entries(config.filename))
 
-    if config['tags']:
+    if config.tags:
         convert_articles_with_metablock_to_html(days, config)
     else:
         convert_articles_to_html(days)
     convert_articles_to_html(pages)
 
     max_year = datetime.now().year
-    if config['min-year'] is not None:
-        min_year = config['min-year']
+    if config.min_year is not None:
+        min_year = config.min_year
     else:
         min_year = max_year
         if days:
@@ -1109,7 +1136,7 @@ def create_blog(config):
         if pages:
             min_year = min(min_year, int((split_date(pages[-1]['date']))[0]))
 
-    Path(config['output-dir']).mkdir(parents=True, exist_ok=True)
+    Path(config.output_dir).mkdir(parents=True, exist_ok=True)
 
     archive = create_archive(days)
     create_pages(pages, archive, config, min_year, max_year)
@@ -1121,7 +1148,7 @@ def create_blog(config):
     create_day_and_week_pages(days, archive, config, min_year, max_year)
     create_month_pages(days, archive, config, min_year, max_year)
     create_year_pages(days, archive, config, min_year, max_year)
-    if config['tags']:
+    if config.tags:
         create_tag_pages(days, archive, config, min_year, max_year)
     create_rss_feed(days, config)
     create_json_feed(days, config)
@@ -1142,7 +1169,7 @@ def create_argument_parser():
     parser.add_argument(
         '-t',
         '--template-filename',
-        dest='template-filename',
+        dest='template_filename',
         help='filename of template, required',
         metavar='TEMPLATE',
         required=True
@@ -1150,7 +1177,7 @@ def create_argument_parser():
     parser.add_argument(
         '-o',
         '--output-dir',
-        dest='output-dir',
+        dest='output_dir',
         help='directory to store HTML files in, required',
         metavar='HTDOCS',
         required=True
@@ -1181,7 +1208,7 @@ def create_argument_parser():
     parser.add_argument(
         '-b',
         '--blog-url',
-        dest='blog-url',
+        dest='blog_url',
         help='URL of the blog, required',
         metavar='URL',
         required=True
@@ -1205,21 +1232,21 @@ def create_argument_parser():
     )
     parser.add_argument(
         '--date-format',
-        dest='date-format',
+        dest='date_format',
         help="how to format the date; default: '%(default)s'",
         metavar='FORMAT',
         default='%d %b %Y'
     )
     parser.add_argument(
         '--label-format',
-        dest='label-format',
+        dest='label_format',
         help="how to format the label; default '%(default)s'",
         metavar='FORMAT',
         default='week %V, %Y'
     )
     parser.add_argument(
         '--min-year',
-        dest='min-year',
+        dest='min_year',
         help='minimum year for copyright notice',
         metavar='YEAR',
         type=int,
@@ -1234,21 +1261,21 @@ def create_argument_parser():
     )
     parser.add_argument(
         '--tags-label',
-        dest='tags-label',
+        dest='tags_label',
         help="label shown on tags overview page; default: '%(default)s'",
         metavar='LABEL',
         default='tags'
     )
     parser.add_argument(
         '--tags-title',
-        dest='tags-title',
+        dest='tags_title',
         help="title shown on tags overview page; default: '%(default)s'",
         metavar='TITLE',
         default='Tags'
     )
     parser.add_argument(
         '--feed-size',
-        dest='feed-size',
+        dest='feed_size',
         help='number of entries in a feed',
         metavar='SIZE',
         type=int,
@@ -1287,20 +1314,25 @@ def get_config():
     if len(args) > 1:
         print('Additional arguments have been skipped', file=sys.stderr)
 
-    config['filename'] = args[0]
-    with open(config['template-filename'], encoding='utf-8') as f:
-        config['template'] = f.read()
+    with open(config['template_filename'], encoding='utf-8') as f:
+        template = f.read()
 
-    config['json-path'] = 'feed.json'
-    config['json-feed-url'] = urllib.parse.urljoin(
-        config['blog-url'], config['json-path']
-    )
-    config['rss-path'] = 'feed.rss'
-    config['rss-feed-url'] = urllib.parse.urljoin(
-        config['blog-url'], config['rss-path']
-    )
+    json_path = 'feed.json'
+    rss_path = 'feed.rss'
 
-    return config
+    return Config(
+        **config,
+        filename=args[0],
+        template=template,
+        json_path=json_path,
+        json_feed_url= urllib.parse.urljoin(
+            config['blog_url'], json_path
+        ),
+        rss_path=rss_path,
+        rss_feed_url= urllib.parse.urljoin(
+            config['blog_url'], rss_path
+        )
+    )
 
 
 if __name__ == '__main__':
