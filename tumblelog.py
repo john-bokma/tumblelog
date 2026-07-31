@@ -110,61 +110,63 @@ def get_year_week(date):
     return join_year_week(year, week)
 
 
-def read_entries(filename):
+def read_raw_entries(filename):
     with open(filename, encoding='utf-8') as f:
-        entries = [
+        raw_entries = [
             item
             for item in re.split(r'^%\n', f.read(), flags=re.MULTILINE)
             if item
         ]
-    if not entries:
-        error('No blog entries found')
-    return entries
+    if not raw_entries:
+        error('No tumblelog entries found')
+    return raw_entries
 
 
-def collect_days_and_pages(entries):
+def collect_days_and_pages(raw_entries):
     days = []
     pages = []
     state = State.UNKNOWN
 
-    for entry in entries:
-        if match := RE_DATE_TITLE_ARTICLE.match(entry):
-            if not match.group(2):
+    for raw_entry in raw_entries:
+        if match := RE_DATE_TITLE_ARTICLE.match(raw_entry):
+            date, title, article = match.groups()
+            if not title:
                 error(f'A day must have a title ({match.group(1)})')
             days.append(
                 {
-                    'date': match.group(1),
-                    'title': match.group(2),
-                    'articles': [match.group(3)]
+                    'date': date,
+                    'title': title,
+                    'articles': [article]
                 }
             )
             state = State.DAY
             continue
 
-        if match := RE_NAME_LABEL_DATE_TITLE_ARTICLE.match(entry):
-            if not match.group(2):
-                error(f'A page must have a label (@{match.group(1)})')
-            if not match.group(5):
-                error(f'A page must have a title (@{match.group(1)})')
+        if match := RE_NAME_LABEL_DATE_TITLE_ARTICLE.match(raw_entry):
+            name, label, date, show_date, title, article = match.groups()
+            if not label:
+                error(f'A page must have a label (@{name})')
+            if not title:
+                error(f'A page must have a title (@{name})')
             pages.append(
                 {
-                    'name': match.group(1),
-                    'label': match.group(2),
-                    'date': match.group(3),
-                    'show-date': match.group(4) == '!',
-                    'title': match.group(5),
-                    'articles': [match.group(6)]
+                    'name': name,
+                    'label': label,
+                    'date': date,
+                    'show-date': show_date == '!',
+                    'title': title,
+                    'articles': [article]
                 }
             )
             state = State.PAGE
             continue
 
         if state == State.DAY:
-            days[-1]['articles'].append(entry)
+            days[-1]['articles'].append(raw_entry)
             continue
 
         if state == State.PAGE:
-            pages[-1]['articles'].append(entry)
+            pages[-1]['articles'].append(raw_entry)
             continue
 
         error('No date or page specified for first tumblelog entry')
@@ -1089,7 +1091,7 @@ def convert_articles_to_html(items):
 
 def create_blog(config):
     locale.setlocale(locale.LC_ALL, '')  # use locale from OS/environment
-    days, pages = collect_days_and_pages(read_entries(config['filename']))
+    days, pages = collect_days_and_pages(read_raw_entries(config['filename']))
 
     if config['tags']:
         convert_articles_with_metablock_to_html(days, config)

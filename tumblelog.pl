@@ -182,7 +182,7 @@ sub create_blog {
     my $config = shift;
 
     my ( $days, $pages ) = collect_days_and_pages(
-        read_entries( $config->{ filename } )
+        read_raw_entries( $config->{ filename } )
     );
 
     if ( $config->{ tags } ) {
@@ -1310,14 +1310,14 @@ sub convert_articles_with_metablock_to_html {
 
 sub collect_days_and_pages {
 
-    my $entries = shift;
+    my $raw_entries = shift;
 
     my @days;
     my @pages;
     my $state = UNKNOWN;
- ENTRY:
-    for my $entry ( @$entries ) {
-        if ($entry =~ $RE_DATE_TITLE_ARTICLE ) {
+ RAW_ENTRY:
+    for my $raw_entry ( @$raw_entries ) {
+        if ($raw_entry =~ $RE_DATE_TITLE_ARTICLE ) {
             $2 ne '' or die "A day must have a title ($1)\n";
             push @days, {
                 date     => $1,
@@ -1325,9 +1325,9 @@ sub collect_days_and_pages {
                 articles => [ $3 ],
             };
             $state = DAY;
-            next ENTRY;
+            next RAW_ENTRY;
         }
-        if ( $entry =~ $RE_NAME_LABEL_DATE_TITLE_ARTICLE ) {
+        if ( $raw_entry =~ $RE_NAME_LABEL_DATE_TITLE_ARTICLE ) {
             $2 ne '' or die "A page must have a label (\@$1)\n";
             $5 ne '' or die "A page must have a title (\@$1)\n";
             push @pages, {
@@ -1339,17 +1339,17 @@ sub collect_days_and_pages {
                 articles    => [ $6 ],
             };
             $state = PAGE;
-            next ENTRY;
+            next RAW_ENTRY;
         }
 
         if ( $state == DAY ) {
-            push @{ $days[ -1 ]{ articles } }, $entry;
-            next ENTRY;
+            push @{ $days[ -1 ]{ articles } }, $raw_entry;
+            next RAW_ENTRY;
         }
 
         if ( $state == PAGE ) {
-            push @{ $pages[ -1]{ articles } }, $entry;
-            next ENTRY;
+            push @{ $pages[ -1]{ articles } }, $raw_entry;
+            next RAW_ENTRY;
         };
 
         die 'No date or page specified for first tumblelog entry';
@@ -1361,15 +1361,15 @@ sub collect_days_and_pages {
     return ( \@days, \@pages );
 }
 
-sub read_entries {
+sub read_raw_entries {
 
     my $filename = shift;
-    my @entries = grep { length $_ } split /^%\n/m,
+    my @raw_entries = grep { length $_ } split /^%\n/m,
         path( $filename )->slurp_utf8();
 
-    @entries or die 'No entries found';
+    @raw_entries or die 'No tumblelog entries found';
 
-    return \@entries;
+    return \@raw_entries;
 }
 
 sub show_usage_and_exit {
