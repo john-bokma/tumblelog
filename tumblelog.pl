@@ -186,12 +186,12 @@ sub create_blog {
     );
 
     if ( $config->{ tags } ) {
-        convert_articles_with_metablock_to_html( $days, $config );
+        convert_day_articles_with_metablock_to_html( $days, $config );
     }
     else {
-        convert_articles_to_html( $days );
+        convert_entry_articles_to_html( $days );
     }
-    convert_articles_to_html( $pages );
+    convert_entry_articles_to_html( $pages );
 
     my $max_year = localtime()->year(); # current year
     my $min_year;
@@ -1120,20 +1120,18 @@ sub rewrite_ast {
     return \@nodes;
 }
 
-sub convert_articles_to_html {
+sub convert_entry_articles_to_html {
 
-    my $items = shift;
-    for my $item ( @$items ) {
-        my @articles;
-        for my $article ( @{ $item->{ articles } } ) {
-            my $ast = CommonMark->parse_document( $article );
+    my $entries = shift;
+    for my $entry ( @$entries ) {
+        for my $article ( @{ $entry->{ articles } } ) {
+            my $ast = CommonMark->parse_document( $article->{ text } );
             my $nodes = rewrite_ast( $ast );
-            my $html = qq(<article>\n)
+            $article->{ html } = qq(<article>\n)
                 . $ast->render_html( OPT_UNSAFE )  # support (inline) HTML
                 . "</article>\n";
-            push @articles, { html => $html };
+            $article->{ text } = undef;
         }
-        $item->{ articles } = \@articles;
     }
     return;
 }
@@ -1246,23 +1244,23 @@ sub html_for_tags {
     return qq(<ul class="tl-tags">$items</ul>\n);
 }
 
-sub convert_articles_with_metablock_to_html {
+sub convert_day_articles_with_metablock_to_html {
 
-    my ( $items, $config ) = @_;
+    my ( $days, $config ) = @_;
 
     my %ids;
-    for my $item ( @$items ) {
-        my @articles;
+    for my $day ( @$days ) {
         my $article_no = 1;
-        for my $article ( @{ $item->{ articles } } ) {
+        for my $article ( @{ $day->{ articles } } ) {
             try {
-                my ( $yaml, $md ) = $article =~ $RE_YAML_MARKDOWN;
-                $yaml or die 'No mandatory YAML block found';
+                my ( $yaml_block, $markdown ) = $article->{ text }
+                    =~ $RE_YAML_MARKDOWN;
+                $yaml_block or die 'No mandatory YAML block found';
 
-                my $meta = Load $yaml;
+                my $meta = Load $yaml_block;
                 ref $meta eq 'HASH' or die 'YAML block must be a mapping';
 
-                my $ast = CommonMark->parse_document( $md );
+                my $ast = CommonMark->parse_document( $markdown );
                 my ( $identifier, $heading )
                     = extract_identifier_and_heading( $ast );
                 if ( exists $meta->{ id } ) {
@@ -1274,36 +1272,32 @@ sub convert_articles_with_metablock_to_html {
                 die "Duplicate id '$identifier'"
                     . " (used later in $ids{ $identifier })"
                     if exists $ids{ $identifier };
-                $ids{ $identifier } = $item->{ date };
+                $ids{ $identifier } = $day->{ date };
 
                 exists $meta->{tags} or die 'No tags are specified';
                 validate_tags( $meta->{ tags } );
 
                 my $nodes = rewrite_ast( $ast );
-                my $html = qq(<article>\n)
+                $article->{ title } = wrap_in_permalink(
+                    substr($heading, 4, -6), $config, $day->{ date },
+                    $identifier
+                );
+                $article->{ html } = qq(<article>\n)
                     . insert_identifier_and_add_permalink(
-                        $heading, $item->{ date }, $identifier, $config
+                        $heading, $day->{ date }, $identifier, $config
                     )
                     . $ast->render_html( OPT_UNSAFE )  # support (inline) HTML
-                    . html_for_tags( $meta->{ tags }, $item->{ date }, $config )
+                    . html_for_tags( $meta->{ tags }, $day->{ date }, $config )
                     . "</article>\n";
-
-                push @articles, {
-                    title => wrap_in_permalink(
-                        substr($heading, 4, -6), $config, $item->{ date },
-                        $identifier
-                    ),
-                    html => $html,
-                    tags => $meta->{ tags },
-                };
+                $article->{ tags } = $meta->{ tags };
+                $article->{ text } = undef;
             }
             catch {
                 my ( $error ) = $_ =~ /(.*) at /s;
-                die "$error in article $article_no of $item->{ date }\n";
+                die "$error in article $article_no of $day->{ date }\n";
             };
             $article_no++;
         }
-        $item->{ articles } = \@articles;
     }
     return;
 }
@@ -1322,7 +1316,14 @@ sub collect_days_and_pages {
             push @days, {
                 date     => $1,
                 title    => $2,
-                articles => [ $3 ],
+                articles => [
+                    {
+                        text  => $3,
+                        title => undef,
+                        html  => undef,
+                        tags  => undef,
+                    },
+                ],
             };
             $state = DAY;
             next RAW_ENTRY;
@@ -1336,19 +1337,36 @@ sub collect_days_and_pages {
                 date        => $3,
                 'show-date' => $4 eq '!',
                 title       => $5,
-                articles    => [ $6 ],
+                articles    => [
+                    {
+                        text  => $6,
+                        title => undef,
+                        html  => undef,
+                        tags  => undef,
+                    }
+                ],
             };
             $state = PAGE;
             next RAW_ENTRY;
         }
 
         if ( $state == DAY ) {
-            push @{ $days[ -1 ]{ articles } }, $raw_entry;
+            push @{ $days[ -1 ]{ articles } }, {
+                text  => $raw_entry,
+                title => undef,
+                html  => undef,
+                tags  => undef,
+            };
             next RAW_ENTRY;
         }
 
         if ( $state == PAGE ) {
-            push @{ $pages[ -1]{ articles } }, $raw_entry;
+            push @{ $days[ -1 ]{ articles } }, {
+                text  => $raw_entry,
+                title => undef,
+                html  => undef,
+                tags  => undef,
+            };
             next RAW_ENTRY;
         };
 
