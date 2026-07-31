@@ -128,6 +128,16 @@ class Page(Entry):
     show_date: bool
 
 
+@dataclass(kw_only=True)
+class TagEntry:
+    title: str
+    date: str
+
+@dataclass
+class TagInfo:
+    count: int = 0
+    end_year: str = ''
+
 class State(Enum):
     UNKNOWN = auto()
     DAY = auto()
@@ -786,17 +796,17 @@ def create_tag_pages(days, archive, config, min_year, max_year):
         for article in reversed(day.articles):
             for tag in article.tags:
                 tag_years[tag][year].appendleft(
-                    {'title': article.title, 'date': day.date}
+                    TagEntry(title=article.title, date=day.date)
                 )
 
     archive_html = html_for_archive(
         archive, None, '../../archive', config.label_format
     )
 
-    tag_info = defaultdict(lambda: defaultdict(int))
+    tag_info = defaultdict(TagInfo)
     for tag in sorted(tag_years):
         years = sorted(tag_years[tag])
-        tag_info[tag]['end_year'] = years[-1]
+        tag_info[tag].end_year = years[-1]
         tag_path = get_tag_path(tag)
         for year_index, year in enumerate(years):
             body_html = (
@@ -808,7 +818,7 @@ def create_tag_pages(days, archive, config, min_year, max_year):
 
             for month_name, rows in groupby(
                 tag_years[tag][year],
-                key=lambda r: parse_date(r['date']).strftime('%B'),
+                key=lambda r: parse_date(r.date).strftime('%B'),
             ):
                 body_html += (
                     f'  <h3>{month_name}</h3>\n'
@@ -816,9 +826,9 @@ def create_tag_pages(days, archive, config, min_year, max_year):
                 )
 
                 for row in rows:
-                    _, _, nr = split_date(row['date'])
-                    body_html += f"    <dt>{nr}</dt><dd>{row['title']}</dd>\n"
-                    tag_info[tag]['count'] += 1
+                    _, _, nr = split_date(row.date)
+                    body_html += f"    <dt>{nr}</dt><dd>{row.title}</dd>\n"
+                    tag_info[tag].count += 1
 
                 body_html += '  </dl>\n'
 
@@ -839,8 +849,8 @@ def create_tag_pages(days, archive, config, min_year, max_year):
             )
 
     # Create a page with a tag cloud
-    min_count = min(tag_info.values(), key=itemgetter('count'))['count']
-    max_count = max(tag_info.values(), key=itemgetter('count'))['count']
+    min_count = min(tag_info.values(), key=attrgetter('count')).count
+    max_count = max(tag_info.values(), key=attrgetter('count')).count
 
     body_html = (
         '<div class="tl-topbar"></div>\n'
@@ -852,11 +862,11 @@ def create_tag_pages(days, archive, config, min_year, max_year):
     for tag in sorted(tag_info):
         tag_info_entry = tag_info[tag]
         tag_path = get_tag_path(tag)
-        size = get_cloud_size(tag_info_entry['count'], min_count, max_count)
+        size = get_cloud_size(tag_info_entry.count, min_count, max_count)
         body_html += (
             f'    <li class="tl-size-{size}">'
-            f'<a href="{tag_info_entry["end_year"]}/{tag_path}">'
-            f"{tag}\N{NARROW NO-BREAK SPACE}({tag_info_entry['count']})"
+            f'<a href="{tag_info_entry.end_year}/{tag_path}">'
+            f"{tag}\N{NARROW NO-BREAK SPACE}({tag_info_entry.count})"
             '</a></li>\n'
         )
 
