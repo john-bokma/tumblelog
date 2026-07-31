@@ -103,10 +103,10 @@ class Config:
 
 @dataclass(kw_only=True)
 class Article:
-    text: str
-    title: str = None
-    html: str = None
-    tags: list[str] = None
+    text: str | None
+    title: str | None = None
+    html: str | None = None
+    tags: list[str] | None = None
 
 
 @dataclass(kw_only=True)
