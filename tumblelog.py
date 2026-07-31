@@ -10,7 +10,7 @@ import urllib.parse
 from math import log
 from html import escape
 from enum import Enum, auto
-from operator import itemgetter
+from operator import attrgetter, itemgetter
 from dataclasses import dataclass
 from itertools import groupby
 from pathlib import Path
@@ -101,6 +101,32 @@ class Config:
     rss_path: str
     rss_feed_url: str
 
+@dataclass(kw_only=True)
+class Article:
+    text: str
+    title: str = None
+    html: str = None
+    tags: list[str] = None
+
+
+@dataclass(kw_only=True)
+class Entry:
+    date: str
+    title: str
+    articles: list[Article]
+
+
+@dataclass(kw_only=True)
+class Day(Entry):
+    pass
+
+
+@dataclass(kw_only=True)
+class Page(Entry):
+    name: str
+    label: str
+    show_date: bool
+
 
 class State(Enum):
     UNKNOWN = auto()
@@ -156,50 +182,46 @@ def collect_days_and_pages(raw_entries):
 
     for raw_entry in raw_entries:
         if match := RE_DATE_TITLE_ARTICLE.match(raw_entry):
-            date, title, article = match.groups()
+            date, title, text = match.groups()
             if not title:
                 error(f'A day must have a title ({match.group(1)})')
             days.append(
-                {
-                    'date': date,
-                    'title': title,
-                    'articles': [article]
-                }
+                Day(date=date, title=title, articles=[Article(text=text)])
             )
             state = State.DAY
             continue
 
         if match := RE_NAME_LABEL_DATE_TITLE_ARTICLE.match(raw_entry):
-            name, label, date, show_date, title, article = match.groups()
+            name, label, date, show_date, title, text = match.groups()
             if not label:
                 error(f'A page must have a label (@{name})')
             if not title:
                 error(f'A page must have a title (@{name})')
             pages.append(
-                {
-                    'name': name,
-                    'label': label,
-                    'date': date,
-                    'show-date': show_date == '!',
-                    'title': title,
-                    'articles': [article]
-                }
+                Page(
+                    name=name,
+                    label=label,
+                    date=date,
+                    show_date=show_date == '!',
+                    title=title,
+                    articles=[Article(text=text)]
+                )
             )
             state = State.PAGE
             continue
 
         if state == State.DAY:
-            days[-1]['articles'].append(raw_entry)
+            days[-1].articles.append(Article(text=raw_entry))
             continue
 
         if state == State.PAGE:
-            pages[-1]['articles'].append(raw_entry)
+            pages[-1].articles.append(Article(text=raw_entry))
             continue
 
         error('No date or page specified for first tumblelog entry')
 
-    days.sort(key=itemgetter('date'), reverse=True)
-    pages.sort(key=itemgetter('date'), reverse=True)
+    days.sort(key=attrgetter('date'), reverse=True)
+    pages.sort(key=attrgetter('date'), reverse=True)
 
     return days, pages
 
@@ -211,7 +233,7 @@ def create_archive(days):
         'years_weeks': defaultdict(deque)
     }
     for day in days:
-        dt = parse_date(day['date'])
+        dt = parse_date(day.date)
         archive['years'].add(f'{dt.year:04d}')
         year, week, _ = dt.isocalendar()
         if week not in seen[year]:
@@ -222,10 +244,10 @@ def create_archive(days):
 
 
 def html_link_for_day(day, config):
-    title = escape(day['title'])
-    label = escape(parse_date(day['date']).strftime(config.date_format))
+    title = escape(day.title)
+    label = escape(parse_date(day.date).strftime(config.date_format))
 
-    year, month, day_number = split_date(day['date'])
+    year, month, day_number = split_date(day.date)
     uri = f'../../{year}/{month}/{day_number}.html'
 
     return f'<a href="{uri}" title="{label}">{title}</a>'
@@ -354,9 +376,9 @@ def html_for_year_nav_bar(years, year_index, path=''):
 
 
 def html_link_for_day_number(day):
-    year, month, day_number = split_date(day['date'])
+    year, month, day_number = split_date(day.date)
     uri = f'../{year}/{month}/{day_number}.html'
-    title = escape(day['title'])
+    title = escape(day.title)
     mday = int(day_number)
     return f'<a href="{uri}" title="{title}">{mday}</a>'
 
@@ -411,9 +433,9 @@ def html_for_month_nav_bar(active_months, current_month, names):
 
 
 def html_for_day(day):
-    _, _, day_number = split_date(day['date'])
+    _, _, day_number = split_date(day.date)
     uri = f'{day_number}.html'
-    title = escape(day['title'])
+    title = escape(day.title)
     return f'    <dt>{day_number}</dt><dd><a href="{uri}">{title}</a></dd>\n'
 
 
@@ -465,8 +487,8 @@ def create_index(days, archive, config, min_year, max_year):
 
     for day in days[: config.days]:
         body_html += html_for_date(
-            day['date'], config.date_format, day['title'], 'archive'
-        ) + ''.join(article['html'] for article in day['articles'])
+            day.date, config.date_format, day.title, 'archive'
+        ) + ''.join(article.html for article in day.articles)
 
     archive_html = html_for_archive(
         archive, None, 'archive', config.label_format
@@ -485,8 +507,8 @@ def create_index(days, archive, config, min_year, max_year):
 
 
 def create_year_pages(days, archive, config, min_year, max_year):
-    start_year, *_ = split_date(days[-1]['date'])
-    end_year,   *_ = split_date(days[ 0]['date'])
+    start_year, *_ = split_date(days[-1].date)
+    end_year,   *_ = split_date(days[ 0].date)
 
     start_year = int(start_year)
     end_year   = int(end_year)
@@ -501,7 +523,7 @@ def create_year_pages(days, archive, config, min_year, max_year):
     dt = parse_date(f'{start_year}-01-01')
     it = reversed(days)
     day = next(it)
-    date = day['date']
+    date = day.date
     for year_index, year in enumerate(years):
         body_html = (
             '<div class="tl-topbar"></div>\n'
@@ -524,7 +546,7 @@ def create_year_pages(days, archive, config, min_year, max_year):
                     row[wday] = html_link_for_day_number(day)
                     try:
                         day = next(it)
-                        date = day['date']
+                        date = day.date
                     except StopIteration:
                         pass
                 else:
@@ -582,7 +604,7 @@ def create_year_pages(days, archive, config, min_year, max_year):
 def create_month_pages(days, archive, config, min_year, max_year):
     years = defaultdict(lambda: defaultdict(deque))
     for day in days:
-        year, month, _ = split_date(day['date'])
+        year, month, _ = split_date(day.date)
         years[year][month].appendleft(day)
 
     month_names = get_month_names()
@@ -593,7 +615,7 @@ def create_month_pages(days, archive, config, min_year, max_year):
     for year in sorted(years):
         for month in sorted(years[year]):
             days_for_month = years[year][month]
-            first_dt = parse_date(days_for_month[0]['date'])
+            first_dt = parse_date(days_for_month[0].date)
             month_name = first_dt.strftime('%B')
             nav_bar = html_for_month_nav_bar(years[year], month, month_names)
             body_html = ''.join(
@@ -648,19 +670,19 @@ def create_week_page(
 
 def create_day_and_week_pages(days, archive, config, min_year, max_year):
     week_body_html = ''
-    current_year_week = get_year_week(days[0]['date'])
+    current_year_week = get_year_week(days[0].date)
     day_archive_html = html_for_archive(
         archive, None, '../..', config.label_format
     )
 
     for day_index, day in enumerate(days):
         day_body_html = html_for_date(
-            day['date'], config.date_format, day['title'], '../..'
-        ) + ''.join(article['html'] for article in day['articles'])
+            day.date, config.date_format, day.title, '../..'
+        ) + ''.join(article.html for article in day.articles)
 
-        label = parse_date(day['date']).strftime(config.date_format)
+        label = parse_date(day.date).strftime(config.date_format)
 
-        year, month, day_number = split_date(day['date'])
+        year, month, day_number = split_date(day.date)
         next_prev_html = html_for_next_prev(days, day_index, config)
 
         Path(config.output_dir).joinpath(f'archive/{year}/{month}').mkdir(
@@ -668,7 +690,7 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
         )
         create_page(
             f'archive/{year}/{month}/{day_number}.html',
-            day['title'],
+            day.title,
             day_body_html + next_prev_html,
             day_archive_html,
             config,
@@ -677,7 +699,7 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
             max_year
         )
 
-        year_week = get_year_week(day['date'])
+        year_week = get_year_week(day.date)
         if year_week == current_year_week:
             week_body_html += day_body_html
         else:
@@ -709,35 +731,35 @@ def create_pages(pages, archive, config, min_year, max_year):
         else ''
     )
     for page in pages:
-        date = page['date']
+        date = page.date
         link_text = escape(parse_date(date).strftime(config.date_format))
-        if page['show-date']:
+        if page.show_date:
             body_html = (
                 f'<time class="tl-date" datetime="{date}">{link_text}</time>\n'
             )
         else:
             body_html = '<div class="tl-topbar"></div>\n'
 
-        body_html += ''.join(article['html'] for article in page['articles'])
+        body_html += ''.join(article.html for article in page.articles)
         create_page(
-            f"{page['name']}.html",
-            page['title'],
+            f"{page.name}.html",
+            page.title,
             body_html,
             archive_html,
             config,
-            page['label'],
+            page.label,
             min_year,
             max_year
         )
 
 
 def get_url_title_description(day, config):
-    description = ''.join(article['html'] for article in day['articles'])
-    year, month, day_number = split_date(day['date'])
+    description = ''.join(article.html for article in day.articles)
+    year, month, day_number = split_date(day.date)
     url = urllib.parse.urljoin(
         config.blog_url, f'archive/{year}/{month}/{day_number}.html'
     )
-    return url, day['title'], description
+    return url, day.title, description
 
 
 def get_month_names():
@@ -760,11 +782,11 @@ def create_tag_pages(days, archive, config, min_year, max_year):
     tag_years = defaultdict(lambda: defaultdict(deque))
 
     for day in days:
-        year, _, _ = split_date(day['date'])
-        for article in reversed(day['articles']):
-            for tag in article['tags']:
+        year, _, _ = split_date(day.date)
+        for article in reversed(day.articles):
+            for tag in article.tags:
                 tag_years[tag][year].appendleft(
-                    {'title': article['title'], 'date': day['date']}
+                    {'title': article.title, 'date': day.date}
                 )
 
     archive_html = html_for_archive(
@@ -857,7 +879,7 @@ def create_rss_feed(days, config):
     for day in days[: config.feed_size]:
         url, title, description = get_url_title_description(day, config)
 
-        end_of_day = get_end_of_day(day['date'])
+        end_of_day = get_end_of_day(day.date)
         # RFC #822 in USA locale
         ctime = end_of_day.ctime()
         pub_date = (
@@ -903,7 +925,7 @@ def create_json_feed(days, config):
     for day in days[: config.feed_size]:
         url, title, description = get_url_title_description(day, config)
 
-        end_of_day = get_end_of_day(day['date'])
+        end_of_day = get_end_of_day(day.date)
         date_published = str(end_of_day).replace(' ', 'T')
 
         items.append(
@@ -1043,23 +1065,24 @@ def html_for_tags(tags, date, config):
     return f'<ul class="tl-tags">{tag_items}</ul>\n'
 
 
-def convert_articles_with_metablock_to_html(items, config):
+def convert_day_articles_with_metablock_to_html(days, config):
     ids = {}
     parser = commonmark.Parser()
     renderer = commonmark.HtmlRenderer()
-    for item in items:
-        articles = []
-        for article_no, article in enumerate(item['articles'], start=1):
+    for day in days:
+        for article_no, article in enumerate(day.articles, start=1):
             try:
-                if not (match := RE_YAML_MARKDOWN.match(article)).group(1):
+                match = RE_YAML_MARKDOWN.match(article.text)
+                yaml_block, markdown = match.groups()
+                if not yaml_block:
                     raise ParseError('No mandatory YAML block found')
 
                 # Only load the most basic YAML
-                meta = yaml.load(match.group(1), Loader=yaml.BaseLoader)
+                meta = yaml.load(yaml_block, Loader=yaml.BaseLoader)
                 if not isinstance(meta, dict):
                     raise ParseError('YAML block must be a mapping')
 
-                ast = parser.parse(match.group(2))
+                ast = parser.parse(markdown)
                 identifier, heading = extract_identifier_and_heading(ast)
                 if custom_id := meta.get('id'):
                     validate_identifier(custom_id)
@@ -1071,60 +1094,51 @@ def convert_articles_with_metablock_to_html(items, config):
                         f"Duplicate id '{identifier}'"
                         f' (used later in {ids[identifier]})'
                     )
-                ids[identifier] = item['date']
+                ids[identifier] = day.date
                 if 'tags' not in meta:
                     raise ParseError('No tags are specified')
                 validate_tags(meta['tags'])
 
                 rewrite_ast(ast)
                 permalink_heading = insert_identifier_and_add_permalink(
-                    heading, item['date'], identifier, config
+                    heading, day.date, identifier, config
                 )
-                html = (
+
+                article.title = wrap_in_permalink(
+                    heading[4:-6], config, day.date, identifier
+                )
+                article.html = (
                     '<article>\n'
                     f'{permalink_heading}'
                     f'{renderer.render(ast)}'
-                    f"{html_for_tags(meta['tags'], item['date'], config)}"
+                    f"{html_for_tags(meta['tags'], day.date, config)}"
                     '</article>\n'
                 )
-                articles.append(
-                    {
-                        'title': wrap_in_permalink(
-                            heading[4:-6], config, item['date'], identifier
-                        ),
-                        'html': html,
-                        'tags': meta['tags']
-                    }
-                )
+                article.tags = meta['tags']
+                article.text = None
             except (ParseError, yaml.parser.ParserError) as e:
-                error(f"{e} in article {article_no} of {item['date']}")
-
-        item['articles'] = articles
+                error(f"{e} in article {article_no} of {day.date}")
 
 
-def convert_articles_to_html(items):
+def convert_entry_articles_to_html(entries):
     parser = commonmark.Parser()
     renderer = commonmark.HtmlRenderer()
-    for item in items:
-        def render_article(article):
-            ast = parser.parse(article)
+    for entry in entries:
+        for article in entry.articles:
+            ast = parser.parse(article.text)
             rewrite_ast(ast)
-            return {'html': f'<article>\n{renderer.render(ast)}</article>\n'}
-
-        item['articles'] = [
-            render_article(article) for article in item['articles']
-        ]
-
+            article.html = f'<article>\n{renderer.render(ast)}</article>\n'
+            article.text = None
 
 def create_blog(config):
     locale.setlocale(locale.LC_ALL, '')  # use locale from OS/environment
     days, pages = collect_days_and_pages(read_raw_entries(config.filename))
 
     if config.tags:
-        convert_articles_with_metablock_to_html(days, config)
+        convert_day_articles_with_metablock_to_html(days, config)
     else:
-        convert_articles_to_html(days)
-    convert_articles_to_html(pages)
+        convert_entry_articles_to_html(days)
+    convert_entry_articles_to_html(pages)
 
     max_year = datetime.now().year
     if config.min_year is not None:
@@ -1132,9 +1146,9 @@ def create_blog(config):
     else:
         min_year = max_year
         if days:
-            min_year = min(min_year, int((split_date(days[-1]['date']))[0]))
+            min_year = min(min_year, int((split_date(days[-1].date))[0]))
         if pages:
-            min_year = min(min_year, int((split_date(pages[-1]['date']))[0]))
+            min_year = min(min_year, int((split_date(pages[-1].date))[0]))
 
     Path(config.output_dir).mkdir(parents=True, exist_ok=True)
 
