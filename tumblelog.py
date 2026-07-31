@@ -133,10 +133,18 @@ class TagEntry:
     title: str
     date: str
 
+
 @dataclass
 class TagInfo:
     count: int = 0
     end_year: str = ''
+
+
+@dataclass(kw_only=True)
+class Archive:
+    years: set[str]
+    years_weeks: dict[str, deque]
+
 
 class State(Enum):
     UNKNOWN = auto()
@@ -238,19 +246,17 @@ def collect_days_and_pages(raw_entries):
 
 def create_archive(days):
     seen = defaultdict(set)
-    archive = {
-        'years': set(),
-        'years_weeks': defaultdict(deque)
-    }
+    years = set()
+    years_weeks = defaultdict(deque)
     for day in days:
         dt = parse_date(day.date)
-        archive['years'].add(f'{dt.year:04d}')
+        years.add(f'{dt.year:04d}')
         year, week, _ = dt.isocalendar()
         if week not in seen[year]:
-            archive['years_weeks'][f'{year:04d}'].appendleft(f'{week:02d}')
+            years_weeks[f'{year:04d}'].appendleft(f'{week:02d}')
             seen[year].add(week)
 
-    return archive
+    return Archive(years=years, years_weeks=years_weeks)
 
 
 def html_link_for_day(day, config):
@@ -293,13 +299,13 @@ def html_for_next_prev(days, index, config):
 
 def html_for_archive(archive, current_year_week, path, label_format):
     html = '<dl>\n'
-    for year in sorted(archive['years_weeks'], reverse=True):
-        if year in archive['years']:
+    for year in sorted(archive.years_weeks, reverse=True):
+        if year in archive.years:
             html += f'  <dt><a href="{path}/{year}/">{year}</a></dt>\n'
         else:
             html += f'  <dt class="tl-self">{year}</dt>\n'
         html += '  <dd>\n    <ul>\n'
-        for week in archive['years_weeks'][year]:
+        for week in archive.years_weeks[year]:
             year_week = join_year_week(int(year), int(week))
             if year_week == current_year_week:
                 html += f'      <li class="tl-self">{week}</li>\n'
