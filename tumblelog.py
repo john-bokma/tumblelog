@@ -9,18 +9,20 @@ import argparse
 import urllib.parse
 from math import log
 from html import escape
+from typing import cast, Any
 from enum import Enum, auto
-from operator import attrgetter, itemgetter
+from operator import attrgetter
 from dataclasses import dataclass
 from itertools import groupby
 from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict, deque
+from collections.abc import Sequence
 import yaml
 try:
     from yaml import CBaseLoader as BaseLoader
 except ImportError:
-    from yaml import BaseLoader
+    from yaml import BaseLoader  # type: ignore[assignment]
 
 import commonmark
 import commonmark.node
@@ -101,6 +103,7 @@ class Config:
     rss_path: str
     rss_feed_url: str
 
+
 @dataclass(kw_only=True)
 class Article:
     text: str | None
@@ -156,32 +159,34 @@ class ParseError(Exception):
     pass
 
 
-def join_year_week(year, week):
+def join_year_week(year: int, week: int) -> str:
     return f'{year:04d}-{week:02d}'
 
 
-def split_year_week(year_week):
-    return year_week.split('-')
+def split_year_week(year_week: str) -> tuple[str, str]:
+    year, week = year_week.split('-')
+    return year, week
 
 
-def split_date(date):
-    return date.split('-')
+def split_date(date: str) -> tuple[str, str, str]:
+    year, month, day = date.split('-')
+    return year, month, day
 
 
-def parse_date(date):
+def parse_date(date: str) -> datetime:
     return datetime.strptime(date, '%Y-%m-%d')
 
 
-def year_week_title(fmt, year, week):
+def year_week_title(fmt: str, year: int | str, week: int | str) -> str:
     return fmt.replace('%Y', str(year)).replace('%V', str(week))
 
 
-def get_year_week(date):
+def get_year_week(date: str) -> str:
     year, week, _ = parse_date(date).isocalendar()
     return join_year_week(year, week)
 
 
-def read_raw_entries(filename):
+def read_raw_entries(filename: str) -> list[str]:
     with open(filename, encoding='utf-8') as f:
         raw_entries = [
             item
@@ -193,7 +198,9 @@ def read_raw_entries(filename):
     return raw_entries
 
 
-def collect_days_and_pages(raw_entries):
+def collect_days_and_pages(
+        raw_entries: list[str]
+) -> tuple[list[Day], list[Page]]:
     days = []
     pages = []
     state = State.UNKNOWN
@@ -244,10 +251,10 @@ def collect_days_and_pages(raw_entries):
     return days, pages
 
 
-def create_archive(days):
-    seen = defaultdict(set)
-    years = set()
-    years_weeks = defaultdict(deque)
+def create_archive(days: list[Day]) -> Archive:
+    seen: defaultdict[int, set[int]] = defaultdict(set)
+    years: set[str] = set()
+    years_weeks: defaultdict[str, deque[str]] = defaultdict(deque)
     for day in days:
         dt = parse_date(day.date)
         years.add(f'{dt.year:04d}')
@@ -259,7 +266,7 @@ def create_archive(days):
     return Archive(years=years, years_weeks=years_weeks)
 
 
-def html_link_for_day(day, config):
+def html_link_for_day(day: Day, config: Config) -> str:
     title = escape(day.title)
     label = escape(parse_date(day.date).strftime(config.date_format))
 
@@ -269,7 +276,9 @@ def html_link_for_day(day, config):
     return f'<a href="{uri}" title="{label}">{title}</a>'
 
 
-def html_for_next_prev(days, index, config):
+def html_for_next_prev(
+    days: list[Day], index: int, config: Config
+) -> str:
     length = len(days)
     if length == 1:
         return ''
@@ -297,7 +306,12 @@ def html_for_next_prev(days, index, config):
     return html
 
 
-def html_for_archive(archive, current_year_week, path, label_format):
+def html_for_archive(
+    archive: Archive,
+    current_year_week: str | None,
+    path: str,
+    label_format: str
+) -> str:
     html = '<dl>\n'
     for year in sorted(archive.years_weeks, reverse=True):
         if year in archive.years:
@@ -322,7 +336,7 @@ def html_for_archive(archive, current_year_week, path, label_format):
     return html
 
 
-def html_for_date(date, date_format, title, path):
+def html_for_date(date: str, date_format: str, title: str, path: str) -> str:
     year, month, day = date.split('-')
     uri = f'{path}/{year}/{month}/{day}.html'
 
@@ -335,7 +349,7 @@ def html_for_date(date, date_format, title, path):
     )
 
 
-def rewrite_ast(ast):
+def rewrite_ast(ast: commonmark.node.Node) -> None:
     """Rewrite an image at the start of a paragraph followed by some text
     to an image with a figcaption inside a figure element."""
 
@@ -344,7 +358,7 @@ def rewrite_ast(ast):
             child = node.first_child
             if child and child.t == 'image' and node.last_child is not child:
                 sibling = child.nxt
-                if sibling.t == 'softbreak':
+                if sibling is not None and sibling.t == 'softbreak':
                     sibling.unlink()
 
                 figcaption = commonmark.node.Node('custom_block', None)
@@ -367,7 +381,9 @@ def rewrite_ast(ast):
                 node.unlink()
 
 
-def html_for_year_nav_bar(years, year_index, path=''):
+def html_for_year_nav_bar(
+    years: list[str], year_index: int, path: str = ''
+) -> str:
     if year_index > 0:
         prv = years[year_index - 1]
         nav = (
@@ -391,7 +407,7 @@ def html_for_year_nav_bar(years, year_index, path=''):
     return f'  <div class="tl-year">\n{nav}  </div>\n'
 
 
-def html_link_for_day_number(day):
+def html_link_for_day_number(day: Day) -> str:
     year, month, day_number = split_date(day.date)
     uri = f'../{year}/{month}/{day_number}.html'
     title = escape(day.title)
@@ -399,17 +415,19 @@ def html_link_for_day_number(day):
     return f'<a href="{uri}" title="{title}">{mday}</a>'
 
 
-def html_for_row(current_year, dt, row, week_active):
+def html_for_row(
+    current_year: str, dt: datetime, row: list[str], week_active: bool
+) -> str:
     year, week, _ = dt.isocalendar()
     if week_active:
-        if year == current_year:
+        if str(year) == current_year:
             week_html = f'<a href="week/{week:02d}.html">{week}</a>'
         else:
             week_html = (
                 f'<a href="../{year:04d}/week/{week:02d}.html">{week}</a>'
             )
     else:
-        week_html = week
+        week_html = str(week)
 
     return ''.join(
         [
@@ -421,7 +439,7 @@ def html_for_row(current_year, dt, row, week_active):
     )
 
 
-def html_for_day_names_row():
+def html_for_day_names_row() -> str:
     dt = parse_date('2019-01-07')  # Monday
     names = ''
     for _ in range(7):
@@ -431,7 +449,11 @@ def html_for_day_names_row():
     return f'      <tr>\n        <td></td>\n{names}      </tr>\n'
 
 
-def html_for_month_nav_bar(active_months, current_month, names):
+def html_for_month_nav_bar(
+    active_months: defaultdict[str, deque[Day]],
+    current_month: str,
+    names: list[str]
+) -> str:
     html = '  <nav>\n    <ul class="tl-month-navigation">\n'
     for mon in range(1, 13):
         month = f'{mon:02d}'
@@ -448,7 +470,7 @@ def html_for_month_nav_bar(active_months, current_month, names):
     return html
 
 
-def html_for_day(day):
+def html_for_day(day: Day) -> str:
     _, _, day_number = split_date(day.date)
     uri = f'{day_number}.html'
     title = escape(day.title)
@@ -456,8 +478,15 @@ def html_for_day(day):
 
 
 def create_page(
-    path, title, body_html, archive_html, config, label, min_year, max_year
-):
+    path: str,
+    title: str,
+    body_html: str,
+    archive_html: str,
+    config: Config,
+    label: str,
+    min_year: int,
+    max_year: int
+) -> None:
     if min_year == max_year:
         year_range = str(min_year)
     else:
@@ -484,8 +513,8 @@ def create_page(
         RE_JSON_FEED_URL: escape(config.json_feed_url),
     }
 
-    for regex, replacement in replacements.items():
-        html = regex.sub(replacement, html)
+    for regexpr, replacement in replacements.items():
+        html = regexpr.sub(replacement, html)
 
     html = RE_BODY.sub(lambda _: body_html, html, count=1)
     html = RE_ARCHIVE.sub(archive_html, html)
@@ -498,13 +527,19 @@ def create_page(
         print(f"Created '{path}'")
 
 
-def create_index(days, archive, config, min_year, max_year):
+def create_index(
+    days: list[Day],
+    archive: Archive,
+    config: Config,
+    min_year: int,
+    max_year: int
+) -> None:
     body_html = ''
 
     for day in days[: config.days]:
         body_html += html_for_date(
             day.date, config.date_format, day.title, 'archive'
-        ) + ''.join(article.html for article in day.articles)
+        ) + ''.join(cast(str, article.html) for article in day.articles)
 
     archive_html = html_for_archive(
         archive, None, 'archive', config.label_format
@@ -522,14 +557,17 @@ def create_index(days, archive, config, min_year, max_year):
     )
 
 
-def create_year_pages(days, archive, config, min_year, max_year):
+def create_year_pages(
+    days: list[Day],
+    archive: Archive,
+    config: Config,
+    min_year: int,
+    max_year: int
+) -> None:
     start_year, *_ = split_date(days[-1].date)
     end_year,   *_ = split_date(days[ 0].date)
 
-    start_year = int(start_year)
-    end_year   = int(end_year)
-
-    years = list(range(start_year, end_year + 1))
+    years = [str(year) for year in range(int(start_year), int(end_year) + 1)]
 
     archive_html = html_for_archive(
         archive, None, '..', config.label_format
@@ -566,7 +604,7 @@ def create_year_pages(days, archive, config, min_year, max_year):
                     except StopIteration:
                         pass
                 else:
-                    row[wday] = dt.day
+                    row[wday] = str(dt.day)
 
                 if wday == 6:
                     tbody += html_for_row(year, dt, row, week_active)
@@ -597,7 +635,7 @@ def create_year_pages(days, archive, config, min_year, max_year):
                 '  </table>\n'
             )
 
-            if dt.year != year:
+            if dt.year != int(year):
                 break
 
         body_html += '</div>\n'
@@ -617,8 +655,16 @@ def create_year_pages(days, archive, config, min_year, max_year):
         )
 
 
-def create_month_pages(days, archive, config, min_year, max_year):
-    years = defaultdict(lambda: defaultdict(deque))
+def create_month_pages(
+    days: list[Day],
+    archive: Archive,
+    config: Config,
+    min_year: int,
+    max_year: int
+) -> None:
+    years: defaultdict[str, defaultdict[str, deque[Day]]] = defaultdict(
+        lambda: defaultdict(deque)
+    )
     for day in days:
         year, month, _ = split_date(day.date)
         years[year][month].appendleft(day)
@@ -660,8 +706,13 @@ def create_month_pages(days, archive, config, min_year, max_year):
 
 
 def create_week_page(
-    year_week, body_html, archive, config, min_year, max_year
-):
+    year_week: str,
+    body_html: str,
+    archive: Archive,
+    config: Config,
+    min_year: int,
+    max_year: int
+) -> None:
     archive_html = html_for_archive(
         archive, year_week, '../..', config.label_format
     )
@@ -684,7 +735,13 @@ def create_week_page(
     )
 
 
-def create_day_and_week_pages(days, archive, config, min_year, max_year):
+def create_day_and_week_pages(
+    days: list[Day],
+    archive: Archive,
+    config: Config,
+    min_year: int,
+    max_year: int
+) -> None:
     week_body_html = ''
     current_year_week = get_year_week(days[0].date)
     day_archive_html = html_for_archive(
@@ -694,7 +751,7 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
     for day_index, day in enumerate(days):
         day_body_html = html_for_date(
             day.date, config.date_format, day.title, '../..'
-        ) + ''.join(article.html for article in day.articles)
+        ) + ''.join(cast(str, article.html) for article in day.articles)
 
         label = parse_date(day.date).strftime(config.date_format)
 
@@ -740,7 +797,13 @@ def create_day_and_week_pages(days, archive, config, min_year, max_year):
     )
 
 
-def create_pages(pages, archive, config, min_year, max_year):
+def create_pages(
+    pages: list[Page],
+    archive: Archive,
+    config: Config,
+    min_year: int,
+    max_year: int
+) -> None:
     archive_html = (
         html_for_archive(archive, None, 'archive', config.label_format)
         if archive
@@ -756,7 +819,9 @@ def create_pages(pages, archive, config, min_year, max_year):
         else:
             body_html = '<div class="tl-topbar"></div>\n'
 
-        body_html += ''.join(article.html for article in page.articles)
+        body_html += ''.join(
+            cast(str, article.html) for article in page.articles
+        )
         create_page(
             f"{page.name}.html",
             page.title,
@@ -769,8 +834,11 @@ def create_pages(pages, archive, config, min_year, max_year):
         )
 
 
-def get_url_title_description(day, config):
-    description = ''.join(article.html for article in day.articles)
+def get_url_title_description(
+    day: Day,
+    config: Config
+) -> tuple[str, str, str]:
+    description = ''.join(cast(str, article.html) for article in day.articles)
     year, month, day_number = split_date(day.date)
     url = urllib.parse.urljoin(
         config.blog_url, f'archive/{year}/{month}/{day_number}.html'
@@ -778,38 +846,48 @@ def get_url_title_description(day, config):
     return url, day.title, description
 
 
-def get_month_names():
+def get_month_names() -> list[str]:
     return [datetime(2019, month, 1).strftime('%B') for month in range(1, 13)]
 
 
-def get_end_of_day(date):
+def get_end_of_day(date: str) -> datetime:
     return datetime.strptime(
         f'{date} 23:59:59', '%Y-%m-%d %H:%M:%S'
     ).astimezone()
 
 
-def get_cloud_size(count, min_count, max_count):
+def get_cloud_size(count: int, min_count: int, max_count: int) -> int:
     if min_count == max_count:
         return 1
     return 1 + int(4 * log(count / min_count) / log(max_count / min_count))
 
 
-def create_tag_pages(days, archive, config, min_year, max_year):
-    tag_years = defaultdict(lambda: defaultdict(deque))
+def create_tag_pages(
+    days: list[Day],
+    archive: Archive,
+    config: Config,
+    min_year: int,
+    max_year: int
+) -> None:
+    tag_years: defaultdict[
+        str, defaultdict[str, deque[TagEntry]]
+    ] = defaultdict(lambda: defaultdict(deque))
 
     for day in days:
         year, _, _ = split_date(day.date)
         for article in reversed(day.articles):
-            for tag in article.tags:
-                tag_years[tag][year].appendleft(
-                    TagEntry(title=article.title, date=day.date)
-                )
+            if article.tags:
+                for tag in article.tags:
+                    assert article.title is not None
+                    tag_years[tag][year].appendleft(
+                        TagEntry(title=article.title, date=day.date)
+                    )
 
     archive_html = html_for_archive(
         archive, None, '../../archive', config.label_format
     )
 
-    tag_info = defaultdict(TagInfo)
+    tag_info: defaultdict[str, TagInfo] = defaultdict(TagInfo)
     for tag in sorted(tag_years):
         years = sorted(tag_years[tag])
         tag_info[tag].end_year = years[-1]
@@ -890,7 +968,7 @@ def create_tag_pages(days, archive, config, min_year, max_year):
     )
 
 
-def create_rss_feed(days, config):
+def create_rss_feed(days: list[Day], config: Config) -> None:
     items = []
     for day in days[: config.feed_size]:
         url, title, description = get_url_title_description(day, config)
@@ -936,7 +1014,7 @@ def create_rss_feed(days, config):
         print(f"Created '{feed_path}'")
 
 
-def create_json_feed(days, config):
+def create_json_feed(days: list[Day], config: Config):
     items = []
     for day in days[: config.feed_size]:
         url, title, description = get_url_title_description(day, config)
@@ -979,11 +1057,13 @@ def create_json_feed(days, config):
         print(f"Created '{feed_path}'")
 
 
-def get_tag_path(tag):
+def get_tag_path(tag: str) -> str:
     return f"{tag.replace(' ', '-')}.html"
 
 
-def extract_identifier_and_heading(ast):
+def extract_identifier_and_heading(
+    ast: commonmark.node.Node
+) -> tuple[str, str]:
     it = ast.walker()
     node, entering = it.next()
     if node.t != 'document' or not entering:
@@ -1021,7 +1101,12 @@ def extract_identifier_and_heading(ast):
     return identifier, heading
 
 
-def wrap_in_permalink(string, config, date, identifier):
+def wrap_in_permalink(
+    string: str,
+    config: Config,
+    date: str,
+    identifier: str
+) -> str:
     year, month, day_number = split_date(date)
     safe_fragment = urllib.parse.quote(identifier, safe="/!:'?()$,+@&*%;=")
     url = urllib.parse.urljoin(
@@ -1031,7 +1116,12 @@ def wrap_in_permalink(string, config, date, identifier):
     return f'<a href="{url}">{string}</a>'
 
 
-def insert_identifier_and_add_permalink(heading, date, identifier, config):
+def insert_identifier_and_add_permalink(
+    heading: str,
+    date: str,
+    identifier: str,
+    config: Config
+) -> str:
     return (
         f'{heading[:3]} id="{escape(identifier)}">'
         f'{wrap_in_permalink(heading[4:-6], config, date, identifier)}'
@@ -1039,7 +1129,7 @@ def insert_identifier_and_add_permalink(heading, date, identifier, config):
     )
 
 
-def validate_identifier(identifier):
+def validate_identifier(identifier: str) -> None:
     if not isinstance(identifier, str):
         raise ParseError('identifier is not a string')
     if not identifier:
@@ -1048,7 +1138,7 @@ def validate_identifier(identifier):
         raise ParseError('identifier must not contain whitespace')
 
 
-def validate_tags(tags):
+def validate_tags(tags: Any) -> None:
     if not isinstance(tags, list):
         raise ParseError('Tags must be specified as a list')
 
@@ -1067,13 +1157,13 @@ def validate_tags(tags):
         seen.add(tag)
 
 
-def html_for_tag(tag, year, config):
+def html_for_tag(tag: str, year: str, config: Config) -> str:
     tag_path = get_tag_path(tag)
     url = urllib.parse.urljoin(config.blog_url, f'tags/{year}/{tag_path}')
     return f'<a href="{url}">{tag}</a>'
 
 
-def html_for_tags(tags, date, config):
+def html_for_tags(tags: list[str], date: str, config: Config) -> str:
     year, _, _ = split_date(date)
     tag_items = ''.join(
         f'<li>{html_for_tag(tag, year, config)}</li>' for tag in tags
@@ -1081,14 +1171,19 @@ def html_for_tags(tags, date, config):
     return f'<ul class="tl-tags">{tag_items}</ul>\n'
 
 
-def convert_day_articles_with_metablock_to_html(days, config):
-    ids = {}
+def convert_day_articles_with_metablock_to_html(
+    days: list[Day],
+    config: Config
+) -> None:
+    ids: dict[str, str] = {}
     parser = commonmark.Parser()
     renderer = commonmark.HtmlRenderer()
     for day in days:
         for article_no, article in enumerate(day.articles, start=1):
             try:
+                assert article.text is not None
                 match = RE_YAML_MARKDOWN.match(article.text)
+                assert match is not None
                 yaml_block, markdown = match.groups()
                 if not yaml_block:
                     raise ParseError('No mandatory YAML block found')
@@ -1136,17 +1231,19 @@ def convert_day_articles_with_metablock_to_html(days, config):
                 error(f"{e} in article {article_no} of {day.date}")
 
 
-def convert_entry_articles_to_html(entries):
+def convert_entry_articles_to_html(entries: Sequence[Entry]) -> None:
     parser = commonmark.Parser()
     renderer = commonmark.HtmlRenderer()
     for entry in entries:
         for article in entry.articles:
+            assert article.text is not None
             ast = parser.parse(article.text)
             rewrite_ast(ast)
             article.html = f'<article>\n{renderer.render(ast)}</article>\n'
             article.text = None
 
-def create_blog(config):
+
+def create_blog(config: Config) -> None:
     locale.setlocale(locale.LC_ALL, '')  # use locale from OS/environment
     days, pages = collect_days_and_pages(read_raw_entries(config.filename))
 
@@ -1184,7 +1281,7 @@ def create_blog(config):
     create_json_feed(days, config)
 
 
-def create_argument_parser():
+def create_argument_parser() -> argparse.ArgumentParser:
     usage = """
   %(prog)s --template-filename TEMPLATE --output-dir HTDOCS
       --author AUTHOR --name BLOGNAME --description DESCRIPTION
@@ -1329,12 +1426,12 @@ def create_argument_parser():
     return parser
 
 
-def error(message):
+def error(message: str) -> None:
     print(message, file=sys.stderr)
     sys.exit(1)
 
 
-def get_config():
+def get_config() -> Config:
     parser = create_argument_parser()
     arguments, args = parser.parse_known_args()
     config = vars(arguments)
@@ -1355,11 +1452,11 @@ def get_config():
         filename=args[0],
         template=template,
         json_path=json_path,
-        json_feed_url= urllib.parse.urljoin(
+        json_feed_url=urllib.parse.urljoin(
             config['blog_url'], json_path
         ),
         rss_path=rss_path,
-        rss_feed_url= urllib.parse.urljoin(
+        rss_feed_url=urllib.parse.urljoin(
             config['blog_url'], rss_path
         )
     )
