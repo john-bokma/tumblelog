@@ -27,7 +27,7 @@ except ImportError:
 import commonmark
 import commonmark.node
 
-VERSION = '6.2.0'
+VERSION = '6.2.1'
 
 RE_DATE_TITLE_ARTICLE = re.compile(
     r"""
@@ -203,11 +203,15 @@ def collect_days_and_pages(
 ) -> tuple[list[Day], list[Page]]:
     days = []
     pages = []
+    dates_seen = set()
     state = State.UNKNOWN
 
     for raw_entry in raw_entries:
         if match := RE_DATE_TITLE_ARTICLE.match(raw_entry):
             date, title, text = match.groups()
+            if date in dates_seen:
+                error(f'Date used more than once: {date}')
+            dates_seen.add(date)
             if not title:
                 error(f'A day must have a title ({match.group(1)})')
             days.append(

@@ -23,7 +23,7 @@ use constant {
     PAGE    => 2
 };
 
-my $VERSION = '6.2.0';
+my $VERSION = '6.2.1';
 
 my $RE_DATE_TITLE_ARTICLE = qr/
     ^(\d{4}-\d{2}-\d{2})    # A date in yyyy-mm-dd format at the start
@@ -1308,10 +1308,15 @@ sub collect_days_and_pages {
 
     my @days;
     my @pages;
+    my %dates_seen;
     my $state = UNKNOWN;
  RAW_ENTRY:
     for my $raw_entry ( @$raw_entries ) {
         if ($raw_entry =~ $RE_DATE_TITLE_ARTICLE ) {
+            if (exists $dates_seen{ $1 } ) {
+                die "Date used more than once: $1\n";
+            }
+            $dates_seen{ $1 }++;
             $2 ne '' or die "A day must have a title ($1)\n";
             push @days, {
                 date     => $1,

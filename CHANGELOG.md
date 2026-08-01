@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.2.1] - 2026-08-01
+
+  - Fail when a date is used more than once in blog
+
 ## [6.2.0] - 2026-08-01
 
   - Rename entry to raw_entry when its just read from file
