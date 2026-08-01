@@ -1,5 +1,15 @@
 # Changelog
 
+## [6.2.0] - 2026-08-01
+
+  - Rename entry to raw_entry when its just read from file
+  - Use a dataclass for configuration (`tumblelog.py`)
+  - Make an article a well-defined struct (`tumblelog.pl`)
+  - Introduce dataclasses `Article`, `Entry`, `Day`, and `Page` (`tumblelog.py`)
+  - Introduce `TagEntry` and `TagInfo` dataclasses (`tumblelog.py`)
+  - Introduce `Archive` dataclass (`tumblelog.py`)
+  - Fix types of `Article` dataclass (`tumblelog.py`)
+  - Add type hints (`tumblelog.py`)
 
 ## [6.1.0] - 2026-07-29
 
