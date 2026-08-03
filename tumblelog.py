@@ -204,13 +204,14 @@ def collect_days_and_pages(
     days = []
     pages = []
     dates_seen = set()
+    names_seen = set()
     state = State.UNKNOWN
 
     for raw_entry in raw_entries:
         if match := RE_DATE_TITLE_ARTICLE.match(raw_entry):
             date, title, text = match.groups()
             if date in dates_seen:
-                error(f'Date used more than once: {date}')
+                error(f'Date must be unique: {date}')
             dates_seen.add(date)
             if not title:
                 error(f'A day must have a title ({match.group(1)})')
@@ -222,6 +223,9 @@ def collect_days_and_pages(
 
         if match := RE_NAME_LABEL_DATE_TITLE_ARTICLE.match(raw_entry):
             name, label, date, show_date, title, text = match.groups()
+            if name in names_seen:
+                error(f'Name must be unique: {name}')
+            names_seen.add(name)
             if not label:
                 error(f'A page must have a label (@{name})')
             if not title:
@@ -248,6 +252,9 @@ def collect_days_and_pages(
             continue
 
         error('No date or page specified for first tumblelog entry')
+
+    if days and 'index' in names_seen:
+        error("A page can't be named 'index' if you have a blog")
 
     days.sort(key=attrgetter('date'), reverse=True)
     pages.sort(key=attrgetter('date'), reverse=True)

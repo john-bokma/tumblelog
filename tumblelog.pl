@@ -1309,12 +1309,13 @@ sub collect_days_and_pages {
     my @days;
     my @pages;
     my %dates_seen;
+    my %names_seen;
     my $state = UNKNOWN;
  RAW_ENTRY:
     for my $raw_entry ( @$raw_entries ) {
         if ($raw_entry =~ $RE_DATE_TITLE_ARTICLE ) {
-            if (exists $dates_seen{ $1 } ) {
-                die "Date used more than once: $1\n";
+            if ( exists $dates_seen{ $1 } ) {
+                die "Date must be unique: $1\n";
             }
             $dates_seen{ $1 }++;
             $2 ne '' or die "A day must have a title ($1)\n";
@@ -1334,6 +1335,10 @@ sub collect_days_and_pages {
             next RAW_ENTRY;
         }
         if ( $raw_entry =~ $RE_NAME_LABEL_DATE_TITLE_ARTICLE ) {
+            if ( exists $names_seen{ $1 } ) {
+                die "Name must be unique: $1\n";
+            }
+            $names_seen{ $1 }++;
             $2 ne '' or die "A page must have a label (\@$1)\n";
             $5 ne '' or die "A page must have a title (\@$1)\n";
             push @pages, {
@@ -1375,7 +1380,11 @@ sub collect_days_and_pages {
             next RAW_ENTRY;
         };
 
-        die 'No date or page specified for first tumblelog entry';
+        die "No date or page specified for first tumblelog entry\n";
+    }
+
+    if ( @days and exists $names_seen{ 'index' } ) {
+        die "A page can't be named 'index' if you have a blog\n";
     }
 
     @days  = sort { $b->{ date } cmp $a->{ date } } @days;
@@ -1390,7 +1399,7 @@ sub read_raw_entries {
     my @raw_entries = grep { length $_ } split /^%\n/m,
         path( $filename )->slurp_utf8();
 
-    @raw_entries or die 'No tumblelog entries found';
+    @raw_entries or die "No tumblelog entries found\n";
 
     return \@raw_entries;
 }
