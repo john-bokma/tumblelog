@@ -897,7 +897,8 @@ def create_tag_pages(
         for article in reversed(day.articles):
             if article.tags:
                 for tag in article.tags:
-                    assert article.title is not None
+                    if article.title is None:
+                        raise RuntimeError('Unexpected: article.title is None')
                     tag_years[tag][int(year_str)].appendleft(
                         TagEntry(title=article.title, date=day.date)
                     )
@@ -1200,9 +1201,11 @@ def convert_day_articles_with_metablock_to_html(
     for day in days:
         for article_no, article in enumerate(day.articles, start=1):
             try:
-                assert article.text is not None
+                if article.text is None:
+                    raise RuntimeError('Unexpected: article.title is None')
                 match = RE_YAML_MARKDOWN.match(article.text)
-                assert match is not None
+                if match is None:
+                    raise RuntimeError('Unexpected: no match occurred')
                 yaml_block, markdown = match.groups()
                 if not yaml_block:
                     raise ParseError('No mandatory YAML block found')
@@ -1257,7 +1260,8 @@ def convert_entry_articles_to_html(entries: Sequence[Entry]) -> None:
     renderer = commonmark.HtmlRenderer()
     for entry in entries:
         for article in entry.articles:
-            assert article.text is not None
+            if article.text is None:
+                raise RuntimeError('Unexpected: article.text is None')
             ast = parser.parse(article.text)
             rewrite_ast(ast)
             article.html = f'<article>\n{renderer.render(ast)}</article>\n'
