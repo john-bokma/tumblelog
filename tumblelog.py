@@ -9,7 +9,7 @@ import argparse
 import urllib.parse
 from math import log
 from html import escape
-from typing import cast, Any
+from typing import cast, Any, NoReturn
 from enum import Enum, auto
 from operator import attrgetter
 from dataclasses import dataclass
@@ -17,7 +17,7 @@ from itertools import groupby
 from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict, deque
-from collections.abc import Sequence
+from collections.abc import Sequence, Container
 import yaml
 try:
     from yaml import CBaseLoader as BaseLoader
@@ -146,7 +146,7 @@ class TagInfo:
 @dataclass(kw_only=True)
 class Archive:
     years: set[str]
-    years_weeks: dict[str, deque]
+    years_weeks: dict[str, deque[str]]
 
 
 class State(Enum):
@@ -424,7 +424,7 @@ def html_for_row(
 ) -> str:
     year, week, _ = dt.isocalendar()
     if week_active:
-        if str(year) == current_year:
+        if year == int(current_year):
             week_html = f'<a href="week/{week:02d}.html">{week}</a>'
         else:
             week_html = (
@@ -454,9 +454,7 @@ def html_for_day_names_row() -> str:
 
 
 def html_for_month_nav_bar(
-    active_months: defaultdict[str, deque[Day]],
-    current_month: str,
-    names: list[str]
+    active_months: Container[str], current_month: str, names: list[str]
 ) -> str:
     html = '  <nav>\n    <ul class="tl-month-navigation">\n'
     for mon in range(1, 13):
@@ -1018,7 +1016,7 @@ def create_rss_feed(days: list[Day], config: Config) -> None:
         print(f"Created '{feed_path}'")
 
 
-def create_json_feed(days: list[Day], config: Config):
+def create_json_feed(days: list[Day], config: Config) -> None:
     items = []
     for day in days[: config.feed_size]:
         url, title, description = get_url_title_description(day, config)
@@ -1430,7 +1428,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def error(message: str) -> None:
+def error(message: str) -> NoReturn:
     print(message, file=sys.stderr)
     sys.exit(1)
 
