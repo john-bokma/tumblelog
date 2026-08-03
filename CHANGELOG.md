@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.4.1] - 2026-08-03
+
+  - Push to pages instead of days if state equals PAGE (tumblelog.pl)
+
 ## [6.4.0] - 2026-08-03
 
   - Replace `error` function with raise (`tumblelog.py`)
