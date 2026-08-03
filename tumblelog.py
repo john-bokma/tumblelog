@@ -1200,7 +1200,7 @@ def convert_day_articles_with_metablock_to_html(
         for article_no, article in enumerate(day.articles, start=1):
             try:
                 if article.text is None:
-                    raise RuntimeError('Unexpected: article.title is None')
+                    raise RuntimeError('Unexpected: article.text is None')
                 match = RE_YAML_MARKDOWN.match(article.text)
                 if match is None:
                     raise RuntimeError('Unexpected: no match occurred')
