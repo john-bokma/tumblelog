@@ -140,7 +140,7 @@ class TagEntry:
 @dataclass
 class TagInfo:
     count: int = 0
-    end_year: str = ''
+    end_year: int = 0
 
 
 @dataclass(kw_only=True)
@@ -386,7 +386,7 @@ def rewrite_ast(ast: commonmark.node.Node) -> None:
 
 
 def html_for_year_nav_bar(
-    years: list[str], year_index: int, path: str = ''
+    years: list[int], year_index: int, path: str = ''
 ) -> str:
     if year_index > 0:
         prv = years[year_index - 1]
@@ -420,11 +420,11 @@ def html_link_for_day_number(day: Day) -> str:
 
 
 def html_for_row(
-    current_year: str, dt: datetime, row: list[str], week_active: bool
+    current_year: int, dt: datetime, row: list[str], week_active: bool
 ) -> str:
     year, week, _ = dt.isocalendar()
     if week_active:
-        if year == int(current_year):
+        if year == current_year:
             week_html = f'<a href="week/{week:02d}.html">{week}</a>'
         else:
             week_html = (
@@ -569,7 +569,7 @@ def create_year_pages(
     start_year, *_ = split_date(days[-1].date)
     end_year,   *_ = split_date(days[ 0].date)
 
-    years = [str(year) for year in range(int(start_year), int(end_year) + 1)]
+    years = list(range(int(start_year), int(end_year) + 1))
 
     archive_html = html_for_archive(
         archive, None, '..', config.label_format
@@ -637,7 +637,7 @@ def create_year_pages(
                 '  </table>\n'
             )
 
-            if dt.year != int(year):
+            if dt.year != year:
                 break
 
         body_html += '</div>\n'
@@ -872,16 +872,16 @@ def create_tag_pages(
     max_year: int
 ) -> None:
     tag_years: defaultdict[
-        str, defaultdict[str, deque[TagEntry]]
+        str, defaultdict[int, deque[TagEntry]]
     ] = defaultdict(lambda: defaultdict(deque))
 
     for day in days:
-        year, _, _ = split_date(day.date)
+        year_str, _, _ = split_date(day.date)
         for article in reversed(day.articles):
             if article.tags:
                 for tag in article.tags:
                     assert article.title is not None
-                    tag_years[tag][year].appendleft(
+                    tag_years[tag][int(year_str)].appendleft(
                         TagEntry(title=article.title, date=day.date)
                     )
 
@@ -920,11 +920,11 @@ def create_tag_pages(
 
             body_html += '</div>\n'
 
-            Path(config.output_dir).joinpath(f'tags/{year}/').mkdir(
+            Path(config.output_dir).joinpath(f'tags/{year:04d}/').mkdir(
                 parents=True, exist_ok=True
             )
             create_page(
-                f'tags/{year}/{tag_path}',
+                f'tags/{year:04d}/{tag_path}',
                 tag,
                 body_html,
                 archive_html,
