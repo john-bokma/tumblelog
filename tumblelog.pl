@@ -1371,7 +1371,7 @@ sub collect_days_and_pages {
         }
 
         if ( $state == PAGE ) {
-            push @{ $days[ -1 ]{ articles } }, {
+            push @{ $pages[ -1 ]{ articles } }, {
                 text  => $raw_entry,
                 title => undef,
                 html  => undef,
