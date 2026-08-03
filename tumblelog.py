@@ -9,7 +9,6 @@ import argparse
 import urllib.parse
 from math import log
 from html import escape
-from typing import Any
 from enum import Enum, auto
 from operator import attrgetter
 from dataclasses import dataclass
@@ -1157,7 +1156,7 @@ def validate_identifier(identifier: str) -> None:
         raise ParseError('identifier must not contain whitespace')
 
 
-def validate_tags(tags: Any) -> None:
+def validate_tags(tags: object) -> None:
     if not isinstance(tags, list):
         raise ParseError('Tags must be specified as a list')
 
