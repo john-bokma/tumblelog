@@ -1253,7 +1253,6 @@ def convert_entry_articles_to_html(entries: Sequence[Entry]) -> None:
 
 
 def create_blog(config: Config) -> None:
-    locale.setlocale(locale.LC_ALL, '')  # use locale from OS/environment
     days, pages = collect_days_and_pages(read_raw_entries(config.filename))
 
     if config.tags:
@@ -1472,4 +1471,5 @@ def get_config() -> Config:
 
 
 if __name__ == '__main__':
+    locale.setlocale(locale.LC_ALL, '')  # use locale from OS/environment
     create_blog(get_config())
