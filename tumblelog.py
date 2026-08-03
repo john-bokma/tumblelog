@@ -895,13 +895,14 @@ def create_tag_pages(
     for day in days:
         year_str, _, _ = split_date(day.date)
         for article in reversed(day.articles):
-            if article.tags:
-                for tag in article.tags:
-                    if article.title is None:
-                        raise RuntimeError('Unexpected: article.title is None')
-                    tag_years[tag][int(year_str)].appendleft(
-                        TagEntry(title=article.title, date=day.date)
-                    )
+            if article.tags is None:
+                raise RuntimeError('Unexpected: article.tags is None')
+            for tag in article.tags:
+                if article.title is None:
+                    raise RuntimeError('Unexpected: article.title is None')
+                tag_years[tag][int(year_str)].appendleft(
+                    TagEntry(title=article.title, date=day.date)
+                )
 
     archive_html = html_for_archive(
         archive, None, '../../archive', config.label_format
