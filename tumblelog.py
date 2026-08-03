@@ -1482,4 +1482,8 @@ def get_config() -> Config:
 
 if __name__ == '__main__':
     locale.setlocale(locale.LC_ALL, '')  # use locale from OS/environment
-    create_blog(get_config())
+    try:
+        create_blog(get_config())
+    except TumblelogError as e:
+        print(e, file=sys.stderr)
+        sys.exit(1)
