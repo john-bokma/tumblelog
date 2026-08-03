@@ -9,7 +9,7 @@ import argparse
 import urllib.parse
 from math import log
 from html import escape
-from typing import cast, Any, NoReturn
+from typing import Any
 from enum import Enum, auto
 from operator import attrgetter
 from dataclasses import dataclass
@@ -405,10 +405,10 @@ def html_for_year_nav_bar(
     years: list[int], year_index: int, path: str = ''
 ) -> str:
     if year_index > 0:
-        prv = years[year_index - 1]
+        prev_year = years[year_index - 1]
         nav = (
             '    <div>\N{LEFTWARDS ARROW} '
-            f'<a href="../{prv}/{path}">{prv}</a></div>\n'
+            f'<a href="../{prev_year:04d}/{path}">{prev_year}</a></div>\n'
         )
     else:
         nav = '    <div></div>\n'
@@ -416,9 +416,9 @@ def html_for_year_nav_bar(
     nav += f'    <h2>{years[year_index]}</h2>\n'
 
     if year_index < len(years) - 1:
-        nxt = years[year_index + 1]
+        next_year = years[year_index + 1]
         nav += (
-            f'    <div><a href="../{nxt}/{path}">{nxt}</a> '
+            f'    <div><a href="../{next_year:04d}/{path}">{next_year}</a> '
             '\N{RIGHTWARDS ARROW}</div>\n'
         )
     else:
@@ -593,8 +593,8 @@ def create_year_pages(
 
     day_names_row = html_for_day_names_row()
     dt = parse_date(f'{start_year}-01-01')
-    it = reversed(days)
-    day = next(it)
+    iterator = reversed(days)
+    day = next(iterator)
     date = day.date
     for year_index, year in enumerate(years):
         body_html = (
@@ -617,7 +617,7 @@ def create_year_pages(
                     week_active = True
                     row[wday] = html_link_for_day_number(day)
                     try:
-                        day = next(it)
+                        day = next(iterator)
                         date = day.date
                     except StopIteration:
                         pass
@@ -929,8 +929,10 @@ def create_tag_pages(
                 )
 
                 for row in rows:
-                    _, _, nr = split_date(row.date)
-                    body_html += f"    <dt>{nr}</dt><dd>{row.title}</dd>\n"
+                    _, _, day_number = split_date(row.date)
+                    body_html += (
+                        f"    <dt>{day_number}</dt><dd>{row.title}</dd>\n"
+                    )
                     tag_info[tag].count += 1
 
                 body_html += '  </dl>\n'
@@ -1083,12 +1085,12 @@ def get_tag_path(tag: str) -> str:
 def extract_identifier_and_heading(
     ast: commonmark.node.Node
 ) -> tuple[str, str]:
-    it = ast.walker()
-    node, entering = it.next()
+    iterator = ast.walker()
+    node, entering = iterator.next()
     if node.t != 'document' or not entering:
         raise ParseError('Unexpected state encountered')  # should never happen
 
-    node, entering = it.next()
+    node, entering = iterator.next()
     if node.t != 'heading' or not entering:
         raise ParseError(
             'An article must start with a level 2 heading (none found)'
@@ -1104,7 +1106,7 @@ def extract_identifier_and_heading(
 
     text = ''
     while True:
-        node, entering = it.next()
+        node, entering = iterator.next()
         if node.t == 'heading' and not entering:
             break
         if node.literal:
@@ -1210,7 +1212,7 @@ def convert_day_articles_with_metablock_to_html(
                     raise ParseError('No mandatory YAML block found')
 
                 # Only load the most basic YAML
-                meta = yaml.load(yaml_block, Loader=yaml.BaseLoader)
+                meta = yaml.load(yaml_block, Loader=BaseLoader)
                 if not isinstance(meta, dict):
                     raise ParseError('YAML block must be a mapping')
 
