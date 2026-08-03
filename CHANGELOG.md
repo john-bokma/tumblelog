@@ -1,5 +1,14 @@
 # Changelog
 
+## [6.3.0] - 2026-08-03
+
+  - Improve typing hints (`tumblelog.py`)
+  - Use int for years in `create_year_pages` and `create_tag_pages`
+    (`tumblelog.py`)
+  - Check page names are unique and don't conflict with blog
+  - Format year correctly (`tumblelog.py`)
+  - Move setlocale to main (`tumblelog.py`)
+
 ## [6.2.1] - 2026-08-01
 
   - Fail when a date is used more than once in blog
