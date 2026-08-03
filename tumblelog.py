@@ -537,9 +537,7 @@ def create_page(
     html = RE_BODY.sub(lambda _: body_html, html, count=1)
     html = RE_ARCHIVE.sub(archive_html, html)
 
-    Path(config.output_dir).joinpath(path).write_text(
-        html, encoding='utf-8'
-    )
+    (Path(config.output_dir) / path).write_text(html, encoding='utf-8')
 
     if not config.quiet:
         print(f"Created '{path}'")
@@ -658,7 +656,7 @@ def create_year_pages(
 
         body_html += '</div>\n'
 
-        Path(config.output_dir).joinpath(f'archive/{year}').mkdir(
+        (Path(config.output_dir) / 'archive' / f'{year:04d}').mkdir(
             parents=True, exist_ok=True
         )
         create_page(
@@ -738,7 +736,7 @@ def create_week_page(
     year, week = split_year_week(year_week)
     title = year_week_title(config.label_format, year, week)
 
-    Path(config.output_dir).joinpath(f'archive/{year}/week').mkdir(
+    (Path(config.output_dir) / 'archive' / year / 'week').mkdir(
         parents=True, exist_ok=True
     )
     create_page(
@@ -776,7 +774,7 @@ def create_day_and_week_pages(
         year, month, day_number = split_date(day.date)
         next_prev_html = html_for_next_prev(days, day_index, config)
 
-        Path(config.output_dir).joinpath(f'archive/{year}/{month}').mkdir(
+        (Path(config.output_dir) / 'archive' / year / month).mkdir(
             parents=True, exist_ok=True
         )
         create_page(
@@ -939,7 +937,7 @@ def create_tag_pages(
 
             body_html += '</div>\n'
 
-            Path(config.output_dir).joinpath(f'tags/{year:04d}/').mkdir(
+            (Path(config.output_dir) / 'tags' / f'{year:04d}').mkdir(
                 parents=True, exist_ok=True
             )
             create_page(
