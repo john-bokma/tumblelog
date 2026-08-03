@@ -958,7 +958,7 @@ def create_tag_pages(
         size = get_cloud_size(tag_info_entry.count, min_count, max_count)
         body_html += (
             f'    <li class="tl-size-{size}">'
-            f'<a href="{tag_info_entry.end_year}/{tag_path}">'
+            f'<a href="{tag_info_entry.end_year:04d}/{tag_path}">'
             f"{tag}\N{NARROW NO-BREAK SPACE}({tag_info_entry.count})"
             '</a></li>\n'
         )
