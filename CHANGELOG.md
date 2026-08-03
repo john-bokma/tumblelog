@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.4.0] - 2026-08-03
+
+  - Replace `error` function with raise (`tumblelog.py`)
+  - Replace `assert` with `raise RuntimeError` (`tumblelog.py`)
+  - Raise a `RuntimeError` if tags is `None` in `create_tag_pages`
+    (`tumblelog.py`)
+  - Remove cast of `article.html` to `str` (tumblelog.py)
+  - Handle a `TumblelogError` exception end-user friendly (`tumblelog.py`)
+  - Use longer variable names (`tumblelog.py`)
+  - Use `/` instead of `joinpath` (`tumblelog.py`)
+  - Replace `Any` with `object` (`tumblelog.py`)
+  - Fix exception message (`tumblelog.py`)
+
 ## [6.3.0] - 2026-08-03
 
   - Improve typing hints (`tumblelog.py`)
