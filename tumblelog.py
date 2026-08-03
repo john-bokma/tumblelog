@@ -108,9 +108,8 @@ class Config:
 class Article:
     text: str | None
     title: str | None = None
-    html: str | None = None
     tags: list[str] | None = None
-
+    html: str = ''
 
 @dataclass(kw_only=True)
 class Entry:
@@ -558,7 +557,7 @@ def create_index(
     for day in days[: config.days]:
         body_html += html_for_date(
             day.date, config.date_format, day.title, 'archive'
-        ) + ''.join(cast(str, article.html) for article in day.articles)
+        ) + ''.join(article.html for article in day.articles)
 
     archive_html = html_for_archive(
         archive, None, 'archive', config.label_format
@@ -770,7 +769,7 @@ def create_day_and_week_pages(
     for day_index, day in enumerate(days):
         day_body_html = html_for_date(
             day.date, config.date_format, day.title, '../..'
-        ) + ''.join(cast(str, article.html) for article in day.articles)
+        ) + ''.join(article.html for article in day.articles)
 
         label = parse_date(day.date).strftime(config.date_format)
 
@@ -838,9 +837,8 @@ def create_pages(
         else:
             body_html = '<div class="tl-topbar"></div>\n'
 
-        body_html += ''.join(
-            cast(str, article.html) for article in page.articles
-        )
+        body_html += ''.join(article.html for article in page.articles)
+
         create_page(
             f"{page.name}.html",
             page.title,
@@ -857,7 +855,7 @@ def get_url_title_description(
     day: Day,
     config: Config
 ) -> tuple[str, str, str]:
-    description = ''.join(cast(str, article.html) for article in day.articles)
+    description = ''.join(article.html for article in day.articles)
     year, month, day_number = split_date(day.date)
     url = urllib.parse.urljoin(
         config.blog_url, f'archive/{year}/{month}/{day_number}.html'
