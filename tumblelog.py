@@ -159,6 +159,10 @@ class ParseError(Exception):
     pass
 
 
+class TumblelogError(Exception):
+    pass
+
+
 def join_year_week(year: int, week: int) -> str:
     return f'{year:04d}-{week:02d}'
 
@@ -194,7 +198,7 @@ def read_raw_entries(filename: str) -> list[str]:
             if item
         ]
     if not raw_entries:
-        error('No tumblelog entries found')
+        raise TumblelogError('No tumblelog entries found')
     return raw_entries
 
 
@@ -211,10 +215,12 @@ def collect_days_and_pages(
         if match := RE_DATE_TITLE_ARTICLE.match(raw_entry):
             date, title, text = match.groups()
             if date in dates_seen:
-                error(f'Date must be unique: {date}')
+                raise TumblelogError(f'Date must be unique: {date}')
             dates_seen.add(date)
             if not title:
-                error(f'A day must have a title ({match.group(1)})')
+                raise TumblelogError(
+                    f'A day must have a title ({match.group(1)})'
+                )
             days.append(
                 Day(date=date, title=title, articles=[Article(text=text)])
             )
@@ -224,12 +230,12 @@ def collect_days_and_pages(
         if match := RE_NAME_LABEL_DATE_TITLE_ARTICLE.match(raw_entry):
             name, label, date, show_date, title, text = match.groups()
             if name in names_seen:
-                error(f'Name must be unique: {name}')
+                raise TumblelogError(f'Name must be unique: {name}')
             names_seen.add(name)
             if not label:
-                error(f'A page must have a label (@{name})')
+                raise TumblelogError(f'A page must have a label (@{name})')
             if not title:
-                error(f'A page must have a title (@{name})')
+                raise TumblelogError(f'A page must have a title (@{name})')
             pages.append(
                 Page(
                     name=name,
@@ -251,10 +257,14 @@ def collect_days_and_pages(
             pages[-1].articles.append(Article(text=raw_entry))
             continue
 
-        error('No date or page specified for first tumblelog entry')
+        raise TumblelogError(
+            'No date or page specified for first tumblelog entry'
+        )
 
     if days and 'index' in names_seen:
-        error("A page can't be named 'index' if you have a blog")
+        raise TumblelogError(
+            "A page can't be named 'index' if you have a blog"
+        )
 
     days.sort(key=attrgetter('date'), reverse=True)
     pages.sort(key=attrgetter('date'), reverse=True)
@@ -1237,7 +1247,9 @@ def convert_day_articles_with_metablock_to_html(
                 article.tags = meta['tags']
                 article.text = None
             except (ParseError, yaml.parser.ParserError) as e:
-                error(f"{e} in article {article_no} of {day.date}")
+                raise TumblelogError(
+                    f"{e} in article {article_no} of {day.date}"
+                )
 
 
 def convert_entry_articles_to_html(entries: Sequence[Entry]) -> None:
@@ -1432,11 +1444,6 @@ def create_argument_parser() -> argparse.ArgumentParser:
         help='show version and exit'
     )
     return parser
-
-
-def error(message: str) -> NoReturn:
-    print(message, file=sys.stderr)
-    sys.exit(1)
 
 
 def get_config() -> Config:
