@@ -276,8 +276,11 @@ def create_archive(days: list[Day]) -> Archive:
     years_weeks: defaultdict[str, deque[str]] = defaultdict(deque)
     for day in days:
         dt = parse_date(day.date)
-        years.add(f'{dt.year:04d}')
+        dt_year_str = f'{dt.year:04d}'
+        years.add(dt_year_str)
         year, week, _ = dt.isocalendar()
+        if year != dt.year and not years_weeks[dt_year_str]:
+            years_weeks[dt_year_str] = deque()
         if week not in seen[year]:
             years_weeks[f'{year:04d}'].appendleft(f'{week:02d}')
             seen[year].add(week)
@@ -336,7 +339,7 @@ def html_for_archive(
         if year in archive.years:
             html += f'  <dt><a href="{path}/{year}/">{year}</a></dt>\n'
         else:
-            html += f'  <dt class="tl-self">{year}</dt>\n'
+            html += f'  <dt>{year}</dt>\n'
         html += '  <dd>\n    <ul>\n'
         for week in archive.years_weeks[year]:
             year_week = join_year_week(int(year), int(week))
