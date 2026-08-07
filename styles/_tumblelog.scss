@@ -288,7 +288,6 @@ $arrow-space: 30px;
 }
 
 .tl-month {
-    width: 274px;
     margin: 0 auto;
     margin-bottom: 20px;
     border: 0;
@@ -309,6 +308,9 @@ $arrow-space: 30px;
     td {
         padding: 10px;
         text-align: right;
+    }
+    @media screen and (max-width: 479px) {
+        th, td { padding: 4px }
     }
 }
 
