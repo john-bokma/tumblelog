@@ -1,8 +1,23 @@
 # Changelog
 
+## [6.5.0] - 2026-08-07
+
+*Note* because `_tumblelog.scss` has been changed you have to regenerate
+your stylesheet using `sass`.
+
+  - Use grid and flex instead of float in `.tl-archive`
+    (`styles/_tumblelog.scss`)
+  - Make month in calendar view smaller on small screens
+    (`styles/_tumblelog.scss`)
+  - Fix bug regarding year not showing in Archive for e.g. 2025-12-31
+  - Use `assert` instead of raising `RuntimeError` (`tumblelog.py`)
+  - Format year correctly in `create_year_pages` (`tumblelog.py`)
+  - Catch `yaml.YAMLError` instead of `yaml.parser.ParserError` (`tumblelog.py`)
+  - Simplify `create_archive` to make every year count
+
 ## [6.4.1] - 2026-08-03
 
-  - Push to pages instead of days if state equals PAGE (tumblelog.pl)
+  - Push to pages instead of days if state equals `PAGE` (`tumblelog.pl`)
 
 ## [6.4.0] - 2026-08-03
 
