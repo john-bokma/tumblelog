@@ -108,7 +108,8 @@ class Article:
     text: str | None
     title: str | None = None
     tags: list[str] | None = None
-    html: str = ''
+    html: str | None = None
+
 
 @dataclass(kw_only=True)
 class Entry:
@@ -545,6 +546,11 @@ def create_page(
         print(f"Created '{path}'")
 
 
+def get_article_html(article: Article) -> str:
+    assert article.html is not None
+    return article.html
+
+
 def create_index(
     days: list[Day],
     archive: Archive,
@@ -557,7 +563,7 @@ def create_index(
     for day in days[: config.days]:
         body_html += html_for_date(
             day.date, config.date_format, day.title, 'archive'
-        ) + ''.join(article.html for article in day.articles)
+        ) + ''.join(get_article_html(article) for article in day.articles)
 
     archive_html = html_for_archive(
         archive, None, 'archive', config.label_format
@@ -769,7 +775,7 @@ def create_day_and_week_pages(
     for day_index, day in enumerate(days):
         day_body_html = html_for_date(
             day.date, config.date_format, day.title, '../..'
-        ) + ''.join(article.html for article in day.articles)
+        ) + ''.join(get_article_html(article) for article in day.articles)
 
         label = parse_date(day.date).strftime(config.date_format)
 
@@ -837,7 +843,9 @@ def create_pages(
         else:
             body_html = '<div class="tl-topbar"></div>\n'
 
-        body_html += ''.join(article.html for article in page.articles)
+        body_html += ''.join(
+            get_article_html(article) for article in page.articles
+        )
 
         create_page(
             f"{page.name}.html",
@@ -855,7 +863,9 @@ def get_url_title_description(
     day: Day,
     config: Config
 ) -> tuple[str, str, str]:
-    description = ''.join(article.html for article in day.articles)
+    description = ''.join(
+        get_article_html(article) for article in day.articles
+    )
     year, month, day_number = split_date(day.date)
     url = urllib.parse.urljoin(
         config.blog_url, f'archive/{year}/{month}/{day_number}.html'
@@ -893,11 +903,9 @@ def create_tag_pages(
     for day in days:
         year_str, _, _ = split_date(day.date)
         for article in reversed(day.articles):
-            if article.tags is None:
-                raise RuntimeError('Unexpected: article.tags is None')
+            assert article.tags is not None
             for tag in article.tags:
-                if article.title is None:
-                    raise RuntimeError('Unexpected: article.title is None')
+                assert article.title is not None
                 tag_years[tag][int(year_str)].appendleft(
                     TagEntry(title=article.title, date=day.date)
                 )
@@ -1202,11 +1210,9 @@ def convert_day_articles_with_metablock_to_html(
     for day in days:
         for article_no, article in enumerate(day.articles, start=1):
             try:
-                if article.text is None:
-                    raise RuntimeError('Unexpected: article.text is None')
+                assert article.text is not None
                 match = RE_YAML_MARKDOWN.match(article.text)
-                if match is None:
-                    raise RuntimeError('Unexpected: no match occurred')
+                assert match is not None
                 yaml_block, markdown = match.groups()
                 if not yaml_block:
                     raise ParseError('No mandatory YAML block found')
@@ -1261,8 +1267,7 @@ def convert_entry_articles_to_html(entries: Sequence[Entry]) -> None:
     renderer = commonmark.HtmlRenderer()
     for entry in entries:
         for article in entry.articles:
-            if article.text is None:
-                raise RuntimeError('Unexpected: article.text is None')
+            assert article.text is not None
             ast = parser.parse(article.text)
             rewrite_ast(ast)
             article.html = f'<article>\n{renderer.render(ast)}</article>\n'
