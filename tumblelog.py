@@ -280,8 +280,7 @@ def create_archive(days: list[Day]) -> Archive:
         dt_year_str = f'{dt.year:04d}'
         years.add(dt_year_str)
         year, week, _ = dt.isocalendar()
-        if year != dt.year and not years_weeks[dt_year_str]:
-            years_weeks[dt_year_str] = deque()
+        years_weeks.setdefault(dt_year_str, deque())  # make every year count
         if week not in seen[year]:
             years_weeks[f'{year:04d}'].appendleft(f'{week:02d}')
             seen[year].add(week)
