@@ -337,26 +337,40 @@ $arrow-space: 30px;
     }
 
     > dl {
-        margin: 0;
-        padding: 0;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 6px;
+        row-gap: 2px;
+        align-items: start;
     }
 
     dt {
+        grid-column: 1;
+        margin: 0;
+        padding: 0;
+        text-align: left;
         float: left;
+        clear: left;
     }
 
     dd {
-        margin: 0 0 0 36px;
-    }
-
-    ul {
-        display: inline;
+        grid-column: 2;
         margin: 0;
         padding: 0;
     }
 
+    ul {
+        display: flex; flex-wrap: wrap;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
     li {
-        display: inline;
+        margin: 0;
+        padding: 0 0 0 4px;
+        flex: 0 0 auto;
+        display: inline-block;
     }
 }
 
