@@ -668,7 +668,7 @@ def create_year_pages(
             parents=True, exist_ok=True
         )
         create_page(
-            f'archive/{year}/index.html',
+            f'archive/{year:04d}/index.html',
             str(year),
             body_html,
             archive_html,
