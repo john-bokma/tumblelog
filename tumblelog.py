@@ -1256,7 +1256,7 @@ def convert_day_articles_with_metablock_to_html(
                 )
                 article.tags = meta['tags']
                 article.text = None
-            except (ParseError, yaml.parser.ParserError) as e:
+            except (ParseError, yaml.YAMLError) as e:
                 raise TumblelogError(
                     f"{e} in article {article_no} of {day.date}"
                 )
