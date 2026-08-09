@@ -190,12 +190,16 @@ def get_year_week(date: str) -> str:
 
 
 def read_raw_entries(filename: str) -> list[str]:
-    with open(filename, encoding='utf-8') as f:
-        raw_entries = [
-            item
-            for item in re.split(r'^%\n', f.read(), flags=re.MULTILINE)
-            if item
-        ]
+    try:
+        with open(filename, encoding='utf-8') as f:
+            raw_entries = [
+                item
+                for item in re.split(r'^%\n', f.read(), flags=re.MULTILINE)
+                if item
+            ]
+    except OSError as e:
+        raise TumblelogError(f"Can't read '{filename}': {e}")
+
     if not raw_entries:
         raise TumblelogError('No tumblelog entries found')
     return raw_entries
@@ -1465,8 +1469,13 @@ def get_config() -> Config:
     arguments = parser.parse_args()
     config = vars(arguments)
 
-    with open(config['template_filename'], encoding='utf-8') as f:
-        template = f.read()
+    try:
+        with open(config['template_filename'], encoding='utf-8') as f:
+            template = f.read()
+    except OSError as e:
+        raise TumblelogError(
+            f"Can't read '{config['template_filename']}': {e}"
+        )
 
     if not config['blog_url'].endswith('/'):
         config['blog_url'] += '/'
