@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.5.3] - 2026-08-09
+
+  - Improve argument parsing (`tumblelog.py`)
+  - Report nicely on file system issue (2x, `tumblelog.py`)
+  - Check if tag is a string (`tumblelog.py`)
+  - Reword identifier error messages
+  - Use a context to reduce function parameters
+
+## [6.5.2] - 2026-08-09
+
+  - Add a trailing slash to blog URL if not present
+
 ## [6.5.1] - 2026-08-09
 
   - Use a function call in `sub` method (`tumblelog.py`)

@@ -26,7 +26,7 @@ except ImportError:
 import commonmark
 import commonmark.node
 
-VERSION = '6.5.2'
+VERSION = '6.5.3'
 
 RE_DATE_TITLE_ARTICLE = re.compile(
     r"""
