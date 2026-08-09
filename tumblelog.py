@@ -1234,7 +1234,7 @@ def convert_day_articles_with_metablock_to_html(
             except (ParseError, yaml.YAMLError) as e:
                 raise TumblelogError(
                     f"{e} in article {article_no} of {day.date}"
-                )
+                ) from e
 
 
 def convert_entry_articles_to_html(entries: Sequence[Entry]) -> None:
@@ -1452,7 +1452,7 @@ def get_config() -> Config:
     except OSError as e:
         raise TumblelogError(
             f"Can't read '{config['template_filename']}': {e}"
-        )
+        ) from e
 
     if not config['blog_url'].endswith('/'):
         config['blog_url'] += '/'
