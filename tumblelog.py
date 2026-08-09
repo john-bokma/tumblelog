@@ -89,7 +89,7 @@ class Config:
     css: str
     date_format: str
     label_format: str
-    min_year: int
+    min_year: int | None
     tags: bool
     tags_label: str
     tags_title: str
@@ -1446,24 +1446,24 @@ def create_argument_parser() -> argparse.ArgumentParser:
         default=False
     )
     parser.add_argument(
+        'filename',
+        metavar='FILE'
+    )
+    parser.add_argument(
         '-v',
         '--version',
         action='version',
         version=VERSION,
         help='show version and exit'
     )
+
     return parser
 
 
 def get_config() -> Config:
     parser = create_argument_parser()
-    arguments, args = parser.parse_known_args()
+    arguments = parser.parse_args()
     config = vars(arguments)
-
-    if not args:
-        parser.error('Specify a filename that contains the blog entries')
-    if len(args) > 1:
-        print('Additional arguments have been skipped', file=sys.stderr)
 
     with open(config['template_filename'], encoding='utf-8') as f:
         template = f.read()
@@ -1476,7 +1476,6 @@ def get_config() -> Config:
 
     return Config(
         **config,
-        filename=args[0],
         template=template,
         json_path=json_path,
         json_feed_url=urllib.parse.urljoin(
