@@ -26,7 +26,7 @@ except ImportError:
 import commonmark
 import commonmark.node
 
-VERSION = '6.5.0'
+VERSION = '6.5.1'
 
 RE_DATE_TITLE_ARTICLE = re.compile(
     r"""
@@ -202,7 +202,7 @@ def read_raw_entries(filename: str) -> list[str]:
 
 
 def collect_days_and_pages(
-        raw_entries: list[str]
+    raw_entries: list[str]
 ) -> tuple[list[Day], list[Page]]:
     days = []
     pages = []
@@ -520,24 +520,24 @@ def create_page(
     html = config.template
 
     replacements = {
-        RE_TITLE: escape(title),
-        RE_YEAR_RANGE: escape(year_range),
-        RE_LABEL: escape(label),
-        RE_CSS: escape(css),
-        RE_NAME: escape(config.name),
-        RE_AUTHOR: escape(config.author),
-        RE_DESCRIPTION: escape(config.description),
-        RE_VERSION: escape(VERSION),
-        RE_PAGE_URL: escape(page_url),
-        RE_RSS_FEED_URL: escape(config.rss_feed_url),
-        RE_JSON_FEED_URL: escape(config.json_feed_url),
+        RE_TITLE: title,
+        RE_YEAR_RANGE: year_range,
+        RE_LABEL: label,
+        RE_CSS: css,
+        RE_NAME: config.name,
+        RE_AUTHOR: config.author,
+        RE_DESCRIPTION: config.description,
+        RE_VERSION: VERSION,
+        RE_PAGE_URL: page_url,
+        RE_RSS_FEED_URL: config.rss_feed_url,
+        RE_JSON_FEED_URL: config.json_feed_url
     }
 
     for regexpr, replacement in replacements.items():
-        html = regexpr.sub(replacement, html)
+        html = regexpr.sub(lambda _: escape(replacement), html)
 
     html = RE_BODY.sub(lambda _: body_html, html, count=1)
-    html = RE_ARCHIVE.sub(archive_html, html)
+    html = RE_ARCHIVE.sub(lambda _: archive_html, html)
 
     (Path(config.output_dir) / path).write_text(html, encoding='utf-8')
 

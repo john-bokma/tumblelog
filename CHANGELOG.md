@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.5.1] - 2026-08-09
+
+  - Use a function call in `sub` method (`tumblelog.py`)
+
 ## [6.5.0] - 2026-08-07
 
 *Note* because `_tumblelog.scss` has been changed you have to regenerate
