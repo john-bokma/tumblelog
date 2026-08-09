@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.5.4] - 2026-08-09
+
+  - Don't render any HTML for archive if there is none
+
 ## [6.5.3] - 2026-08-09
 
   - Improve argument parsing (`tumblelog.py`)

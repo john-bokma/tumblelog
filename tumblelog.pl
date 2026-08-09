@@ -23,7 +23,7 @@ use constant {
     PAGE    => 2
 };
 
-my $VERSION = '6.5.3';
+my $VERSION = '6.5.4';
 
 my $RE_DATE_TITLE_ARTICLE = qr/
     ^(\d{4}-\d{2}-\d{2})    # A date in yyyy-mm-dd format at the start
@@ -341,7 +341,7 @@ sub create_pages {
 
     my ( $pages, $context ) = @_;
 
-    my $archive_html = %{ $context->{ archive } } ? html_for_archive(
+    my $archive_html = defined $context->{ archive } ? html_for_archive(
         $context->{ archive },
         undef,
         'archive',
@@ -822,6 +822,8 @@ sub html_for_next_prev {
 sub create_archive {
 
     my $days = shift;
+
+    return undef unless @$days;
 
     my %seen;
     my %archive;

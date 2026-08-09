@@ -26,7 +26,7 @@ except ImportError:
 import commonmark
 import commonmark.node
 
-VERSION = '6.5.3'
+VERSION = '6.5.4'
 
 RE_DATE_TITLE_ARTICLE = re.compile(
     r"""
@@ -150,7 +150,7 @@ class Archive:
 
 @dataclass(frozen=True, kw_only=True)
 class RenderContext:
-    archive: Archive
+    archive: Archive | None
     config: Config
     min_year: int
     max_year: int
@@ -283,7 +283,10 @@ def collect_days_and_pages(
     return days, pages
 
 
-def create_archive(days: list[Day]) -> Archive:
+def create_archive(days: list[Day]) -> Archive | None:
+    if not days:
+        return None
+
     seen: defaultdict[int, set[int]] = defaultdict(set)
     years: set[str] = set()
     years_weeks: defaultdict[str, deque[str]] = defaultdict(deque)
@@ -571,6 +574,7 @@ def create_index(days: list[Day], context: RenderContext) -> None:
             day.date, context.config.date_format, day.title, 'archive'
         ) + ''.join(get_article_html(article) for article in day.articles)
 
+    assert context.archive is not None
     archive_html = html_for_archive(
         context.archive, None, 'archive', context.config.label_format
     )
@@ -593,6 +597,7 @@ def create_year_pages(days: list[Day], context: RenderContext) -> None:
 
     years = list(range(int(start_year), int(end_year) + 1))
 
+    assert context.archive is not None
     archive_html = html_for_archive(
         context.archive, None, '..', context.config.label_format
     )
@@ -688,6 +693,7 @@ def create_month_pages(days: list[Day], context: RenderContext) -> None:
         years[year][month].appendleft(day)
 
     month_names = get_month_names()
+    assert context.archive is not None
     archive_html = html_for_archive(
         context.archive, None, '../..', context.config.label_format
     )
@@ -726,6 +732,7 @@ def create_month_pages(days: list[Day], context: RenderContext) -> None:
 def create_week_page(
     year_week: str, body_html: str, context: RenderContext
 ) -> None:
+    assert context.archive is not None
     archive_html = html_for_archive(
         context.archive, year_week, '../..', context.config.label_format
     )
@@ -751,6 +758,7 @@ def create_week_page(
 def create_day_and_week_pages(days: list[Day], context: RenderContext) -> None:
     week_body_html = ''
     current_year_week = get_year_week(days[0].date)
+    assert context.archive is not None
     day_archive_html = html_for_archive(
         context.archive, None, '../..', context.config.label_format
     )
@@ -874,6 +882,7 @@ def create_tag_pages(days: list[Day], context: RenderContext) -> None:
                     TagEntry(title=article.title, date=day.date)
                 )
 
+    assert context.archive is not None
     archive_html = html_for_archive(
         context.archive, None, '../../archive', context.config.label_format
     )
