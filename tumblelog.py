@@ -26,7 +26,7 @@ except ImportError:
 import commonmark
 import commonmark.node
 
-VERSION = '6.5.1'
+VERSION = '6.5.2'
 
 RE_DATE_TITLE_ARTICLE = re.compile(
     r"""
@@ -1467,6 +1467,9 @@ def get_config() -> Config:
 
     with open(config['template_filename'], encoding='utf-8') as f:
         template = f.read()
+
+    if not config['blog_url'].endswith('/'):
+        config['blog_url'] += '/'
 
     json_path = 'feed.json'
     rss_path = 'feed.rss'

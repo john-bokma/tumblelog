@@ -23,7 +23,7 @@ use constant {
     PAGE    => 2
 };
 
-my $VERSION = '6.5.1';
+my $VERSION = '6.5.2';
 
 my $RE_DATE_TITLE_ARTICLE = qr/
     ^(\d{4}-\d{2}-\d{2})    # A date in yyyy-mm-dd format at the start
@@ -162,6 +162,9 @@ sub get_config {
     warn "Additional arguments have been skipped\n" if @ARGV;
 
     my %config = %arguments;
+    if ( substr($config{ 'blog-url' }, -1 ) ne '/' ) {
+        $config{ 'blog-url' } .= '/';
+    }
     $config{ filename } = $filename;
     $config{ template } = path( $config{ 'template-filename' } )
         ->slurp_utf8();
@@ -501,7 +504,7 @@ sub create_year_pages {
 
         $body_html .= "</div>\n";
 
-        path( "$config->{ 'output-dir' }/archive/$year")->mkpath();
+        path( "$config->{ 'output-dir' }/archive/$year" )->mkpath();
         create_page(
             "archive/$year/index.html",
             $year, $body_html, $archive_html, $config,
@@ -881,7 +884,7 @@ sub create_tag_pages {
             }
             $body_html .= "  </dl>\n</div>\n";
 
-            path( "$config->{ 'output-dir' }/tags/$year/")->mkpath();
+            path( "$config->{ 'output-dir' }/tags/$year/" )->mkpath();
             create_page(
                 "tags/$year/$tag_path",
                 $tag, $body_html, $archive_html, $config,
