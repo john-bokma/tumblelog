@@ -215,7 +215,7 @@ sub create_blog {
     path( $config->{ 'output-dir' } )->mkpath();
 
     my $context = {
-        archive  => create_archive( $days ),
+        archive  => scalar( create_archive( $days ) ),
         config   => $config,
         min_year => $min_year,
         max_year => $max_year
@@ -823,7 +823,7 @@ sub create_archive {
 
     my $days = shift;
 
-    return undef unless @$days;
+    return unless @$days;
 
     my %seen;
     my %archive;
