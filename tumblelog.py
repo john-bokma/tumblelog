@@ -148,6 +148,14 @@ class Archive:
     years_weeks: dict[str, deque[str]]
 
 
+@dataclass(frozen=True, kw_only=True)
+class RenderContext:
+    archive: Archive
+    config: Config
+    min_year: int
+    max_year: int
+
+
 class State(Enum):
     UNKNOWN = auto()
     DAY = auto()
@@ -502,6 +510,7 @@ def html_for_day(day: Day) -> str:
 
 
 def create_page(
+    *,
     path: str,
     title: str,
     body_html: str,
@@ -554,50 +563,38 @@ def get_article_html(article: Article) -> str:
     return article.html
 
 
-def create_index(
-    days: list[Day],
-    archive: Archive,
-    config: Config,
-    min_year: int,
-    max_year: int
-) -> None:
+def create_index(days: list[Day], context: RenderContext) -> None:
     body_html = ''
 
-    for day in days[: config.days]:
+    for day in days[: context.config.days]:
         body_html += html_for_date(
-            day.date, config.date_format, day.title, 'archive'
+            day.date, context.config.date_format, day.title, 'archive'
         ) + ''.join(get_article_html(article) for article in day.articles)
 
     archive_html = html_for_archive(
-        archive, None, 'archive', config.label_format
+        context.archive, None, 'archive', context.config.label_format
     )
 
     create_page(
-        'index.html',
-        'home',
-        body_html,
-        archive_html,
-        config,
-        'home',
-        min_year,
-        max_year
+        path='index.html',
+        title='home',
+        body_html=body_html,
+        archive_html=archive_html,
+        config=context.config,
+        label='home',
+        min_year=context.min_year,
+        max_year=context.max_year
     )
 
 
-def create_year_pages(
-    days: list[Day],
-    archive: Archive,
-    config: Config,
-    min_year: int,
-    max_year: int
-) -> None:
+def create_year_pages(days: list[Day], context: RenderContext) -> None:
     start_year, *_ = split_date(days[-1].date)
     end_year,   *_ = split_date(days[ 0].date)
 
     years = list(range(int(start_year), int(end_year) + 1))
 
     archive_html = html_for_archive(
-        archive, None, '..', config.label_format
+        context.archive, None, '..', context.config.label_format
     )
 
     day_names_row = html_for_day_names_row()
@@ -667,28 +664,22 @@ def create_year_pages(
 
         body_html += '</div>\n'
 
-        (Path(config.output_dir) / 'archive' / f'{year:04d}').mkdir(
+        (Path(context.config.output_dir) / 'archive' / f'{year:04d}').mkdir(
             parents=True, exist_ok=True
         )
         create_page(
-            f'archive/{year:04d}/index.html',
-            str(year),
-            body_html,
-            archive_html,
-            config,
-            str(year),
-            min_year,
-            max_year
+            path=f'archive/{year:04d}/index.html',
+            title=str(year),
+            body_html=body_html,
+            archive_html=archive_html,
+            config=context.config,
+            label=str(year),
+            min_year=context.min_year,
+            max_year=context.max_year
         )
 
 
-def create_month_pages(
-    days: list[Day],
-    archive: Archive,
-    config: Config,
-    min_year: int,
-    max_year: int
-) -> None:
+def create_month_pages(days: list[Day], context: RenderContext) -> None:
     years: defaultdict[str, defaultdict[str, deque[Day]]] = defaultdict(
         lambda: defaultdict(deque)
     )
@@ -698,7 +689,7 @@ def create_month_pages(
 
     month_names = get_month_names()
     archive_html = html_for_archive(
-        archive, None, '../..', config.label_format
+        context.archive, None, '../..', context.config.label_format
     )
 
     for year in sorted(years):
@@ -721,124 +712,100 @@ def create_month_pages(
                 ]
             )
             create_page(
-                f'archive/{year}/{month}/index.html',
-                f'{month_name}, {year}',
-                body_html,
-                archive_html,
-                config,
-                first_dt.strftime('%b, %Y'),
-                min_year,
-                max_year
+                path=f'archive/{year}/{month}/index.html',
+                title=f'{month_name}, {year}',
+                body_html=body_html,
+                archive_html=archive_html,
+                config=context.config,
+                label=first_dt.strftime('%b, %Y'),
+                min_year=context.min_year,
+                max_year=context.max_year
             )
 
 
 def create_week_page(
-    year_week: str,
-    body_html: str,
-    archive: Archive,
-    config: Config,
-    min_year: int,
-    max_year: int
+    year_week: str, body_html: str, context: RenderContext
 ) -> None:
     archive_html = html_for_archive(
-        archive, year_week, '../..', config.label_format
+        context.archive, year_week, '../..', context.config.label_format
     )
 
     year, week = split_year_week(year_week)
-    title = year_week_title(config.label_format, year, week)
+    title = year_week_title(context.config.label_format, year, week)
 
-    (Path(config.output_dir) / 'archive' / year / 'week').mkdir(
+    (Path(context.config.output_dir) / 'archive' / year / 'week').mkdir(
         parents=True, exist_ok=True
     )
     create_page(
-        f'archive/{year}/week/{week}.html',
-        title,
-        body_html,
-        archive_html,
-        config,
-        title,
-        min_year,
-        max_year
+        path=f'archive/{year}/week/{week}.html',
+        title=title,
+        body_html=body_html,
+        archive_html=archive_html,
+        config=context.config,
+        label=title,
+        min_year=context.min_year,
+        max_year=context.max_year
     )
 
 
-def create_day_and_week_pages(
-    days: list[Day],
-    archive: Archive,
-    config: Config,
-    min_year: int,
-    max_year: int
-) -> None:
+def create_day_and_week_pages(days: list[Day], context: RenderContext) -> None:
     week_body_html = ''
     current_year_week = get_year_week(days[0].date)
     day_archive_html = html_for_archive(
-        archive, None, '../..', config.label_format
+        context.archive, None, '../..', context.config.label_format
     )
 
     for day_index, day in enumerate(days):
         day_body_html = html_for_date(
-            day.date, config.date_format, day.title, '../..'
+            day.date, context.config.date_format, day.title, '../..'
         ) + ''.join(get_article_html(article) for article in day.articles)
 
-        label = parse_date(day.date).strftime(config.date_format)
+        label = parse_date(day.date).strftime(context.config.date_format)
 
         year, month, day_number = split_date(day.date)
-        next_prev_html = html_for_next_prev(days, day_index, config)
+        next_prev_html = html_for_next_prev(days, day_index, context.config)
 
-        (Path(config.output_dir) / 'archive' / year / month).mkdir(
+        (Path(context.config.output_dir) / 'archive' / year / month).mkdir(
             parents=True, exist_ok=True
         )
         create_page(
-            f'archive/{year}/{month}/{day_number}.html',
-            day.title,
-            day_body_html + next_prev_html,
-            day_archive_html,
-            config,
-            label,
-            min_year,
-            max_year
+            path=f'archive/{year}/{month}/{day_number}.html',
+            title=day.title,
+            body_html=day_body_html + next_prev_html,
+            archive_html=day_archive_html,
+            config=context.config,
+            label=label,
+            min_year=context.min_year,
+            max_year=context.max_year
         )
 
         year_week = get_year_week(day.date)
         if year_week == current_year_week:
             week_body_html += day_body_html
         else:
-            create_week_page(
-                current_year_week,
-                week_body_html,
-                archive,
-                config,
-                min_year,
-                max_year
-            )
+            create_week_page(current_year_week, week_body_html, context)
             current_year_week = year_week
             week_body_html = day_body_html
 
-    create_week_page(
-        year_week,
-        week_body_html,
-        archive,
-        config,
-        min_year,
-        max_year
-    )
+    create_week_page(year_week, week_body_html, context)
 
 
-def create_pages(
-    pages: list[Page],
-    archive: Archive,
-    config: Config,
-    min_year: int,
-    max_year: int
-) -> None:
+def create_pages(pages: list[Page], context: RenderContext) -> None:
     archive_html = (
-        html_for_archive(archive, None, 'archive', config.label_format)
-        if archive
+        html_for_archive(
+            context.archive,
+            None,
+            'archive',
+            context.config.label_format
+        )
+        if context.archive
         else ''
     )
     for page in pages:
         date = page.date
-        link_text = escape(parse_date(date).strftime(config.date_format))
+        link_text = escape(
+            parse_date(date).strftime(context.config.date_format)
+        )
         if page.show_date:
             body_html = (
                 f'<time class="tl-date" datetime="{date}">{link_text}</time>\n'
@@ -851,14 +818,14 @@ def create_pages(
         )
 
         create_page(
-            f"{page.name}.html",
-            page.title,
-            body_html,
-            archive_html,
-            config,
-            page.label,
-            min_year,
-            max_year
+            path=f"{page.name}.html",
+            title=page.title,
+            body_html=body_html,
+            archive_html=archive_html,
+            config=context.config,
+            label=page.label,
+            min_year=context.min_year,
+            max_year=context.max_year
         )
 
 
@@ -892,13 +859,7 @@ def get_cloud_size(count: int, min_count: int, max_count: int) -> int:
     return 1 + int(4 * log(count / min_count) / log(max_count / min_count))
 
 
-def create_tag_pages(
-    days: list[Day],
-    archive: Archive,
-    config: Config,
-    min_year: int,
-    max_year: int
-) -> None:
+def create_tag_pages(days: list[Day], context: RenderContext) -> None:
     tag_years: defaultdict[
         str, defaultdict[int, deque[TagEntry]]
     ] = defaultdict(lambda: defaultdict(deque))
@@ -914,7 +875,7 @@ def create_tag_pages(
                 )
 
     archive_html = html_for_archive(
-        archive, None, '../../archive', config.label_format
+        context.archive, None, '../../archive', context.config.label_format
     )
 
     tag_info: defaultdict[str, TagInfo] = defaultdict(TagInfo)
@@ -950,18 +911,18 @@ def create_tag_pages(
 
             body_html += '</div>\n'
 
-            (Path(config.output_dir) / 'tags' / f'{year:04d}').mkdir(
+            (Path(context.config.output_dir) / 'tags' / f'{year:04d}').mkdir(
                 parents=True, exist_ok=True
             )
             create_page(
-                f'tags/{year:04d}/{tag_path}',
-                tag,
-                body_html,
-                archive_html,
-                config,
-                tag,
-                min_year,
-                max_year
+                path=f'tags/{year:04d}/{tag_path}',
+                title=tag,
+                body_html=body_html,
+                archive_html=archive_html,
+                config=context.config,
+                label=tag,
+                min_year=context.min_year,
+                max_year=context.max_year
             )
 
     # Create a page with a tag cloud
@@ -971,7 +932,7 @@ def create_tag_pages(
     body_html = (
         '<div class="tl-topbar"></div>\n'
         '<div class="tl-tags-overview">\n'
-        f"  <h2>{config.tags_title}</h2>\n"
+        f"  <h2>{escape(context.config.tags_title)}</h2>\n"
         '  <ul class="tl-tag-cloud">\n'
     )
 
@@ -989,14 +950,14 @@ def create_tag_pages(
     body_html += '  </ul>\n</div>\n'
 
     create_page(
-        'tags/index.html',
-        config.tags_title,
-        body_html,
-        archive_html,
-        config,
-        config.tags_label,
-        min_year,
-        max_year
+        path='tags/index.html',
+        title=context.config.tags_title,
+        body_html=body_html,
+        archive_html=archive_html,
+        config=context.config,
+        label=context.config.tags_label,
+        min_year=context.min_year,
+        max_year=context.max_year
     )
 
 
@@ -1300,18 +1261,23 @@ def create_blog(config: Config) -> None:
 
     Path(config.output_dir).mkdir(parents=True, exist_ok=True)
 
-    archive = create_archive(days)
-    create_pages(pages, archive, config, min_year, max_year)
+    context = RenderContext(
+        archive=create_archive(days),
+        config=config,
+        min_year=min_year,
+        max_year=max_year
+    )
+    create_pages(pages, context)
 
     if not days:
         return
 
-    create_index(days, archive, config, min_year, max_year)
-    create_day_and_week_pages(days, archive, config, min_year, max_year)
-    create_month_pages(days, archive, config, min_year, max_year)
-    create_year_pages(days, archive, config, min_year, max_year)
+    create_index(days, context)
+    create_day_and_week_pages(days, context)
+    create_month_pages(days, context)
+    create_year_pages(days, context)
     if config.tags:
-        create_tag_pages(days, archive, config, min_year, max_year)
+        create_tag_pages(days, context)
     create_rss_feed(days, config)
     create_json_feed(days, config)
 

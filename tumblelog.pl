@@ -214,17 +214,22 @@ sub create_blog {
 
     path( $config->{ 'output-dir' } )->mkpath();
 
-    my $archive = create_archive( $days );
-    create_pages( $pages, $archive, $config, $min_year, $max_year );
+    my $context = {
+        archive  => create_archive( $days ),
+        config   => $config,
+        min_year => $min_year,
+        max_year => $max_year
+    };
+    create_pages( $pages, $context );
 
     return unless @$days;
 
-    create_index( $days, $archive, $config, $min_year, $max_year );
-    create_day_and_week_pages( $days, $archive, $config, $min_year, $max_year );
-    create_month_pages( $days, $archive, $config, $min_year, $max_year );
-    create_year_pages( $days, $archive, $config, $min_year, $max_year );
+    create_index( $days, $context );
+    create_day_and_week_pages( $days, $context );
+    create_month_pages( $days, $context );
+    create_year_pages( $days, $context );
 
-    create_tag_pages( $days, $archive, $config, $min_year, $max_year )
+    create_tag_pages( $days, $context )
         if $config->{ tags };
 
     create_rss_feed( $days, $config );
@@ -235,25 +240,36 @@ sub create_blog {
 
 sub create_index {
 
-    my ( $days, $archive, $config, $min_year, $max_year ) = @_;
+    my ( $days, $context ) = @_;
 
     my $body_html;
-    my $size = min( scalar( @$days ), $config->{ days } );
+    my $size = min( scalar( @$days ), $context->{ config }{ days } );
     for my $day ( @$days[ 0 .. $size - 1 ] ) {
 
         $body_html .= html_for_date(
-            $day->{ date }, $config->{ 'date-format' }, $day->{ title },
+            $day->{ date },
+            $context->{ config }{ 'date-format' },
+            $day->{ title },
             'archive'
         ) . join( '', map { $_->{ html } } @{ $day->{ articles } } );
     }
 
     my $archive_html = html_for_archive(
-        $archive, undef, 'archive', $config->{ 'label-format' }
+        $context->{ archive },
+        undef,
+        'archive',
+        $context->{ config }{ 'label-format' }
     );
 
     create_page(
-        'index.html', 'home', $body_html, $archive_html, $config,
-        'home', $min_year, $max_year
+        'index.html',
+        'home',
+        $body_html,
+        $archive_html,
+        $context->{ config },
+        'home',
+        $context->{ min_year },
+        $context->{ max_year }
     );
 
     return;
@@ -261,35 +277,47 @@ sub create_index {
 
 sub create_day_and_week_pages {
 
-    my ( $days, $archive, $config, $min_year, $max_year ) = @_;
+    my ( $days, $context ) = @_;
 
     my $year_week;
     my $week_body_html;
     my $current_year_week = get_year_week( $days->[ 0 ]{ date } );
     my $day_archive_html = html_for_archive(
-        $archive, undef, '../..', $config->{ 'label-format' }
+        $context->{ archive },
+        undef,
+        '../..',
+        $context->{ config }{ 'label-format' }
     );
     my $index = 0;
     for my $day ( @$days ) {
 
         my $day_body_html = html_for_date(
-            $day->{ date }, $config->{ 'date-format' }, $day->{ title },
+            $day->{ date },
+            $context->{ config }{ 'date-format' },
+            $day->{ title },
             '../..'
         ) . join( '', map { $_->{ html } } @{ $day->{ articles } } );
 
         my $label = decode_utf8( parse_date( $day->{ date } )
-            ->strftime( $config->{ 'date-format' } ) );
+            ->strftime( $context->{ config }{ 'date-format' } ) );
 
         my ( $year, $month, $day_number ) = split_date( $day->{ date } );
-        my $next_prev_html = html_for_next_prev( $days, $index, $config );
+        my $next_prev_html = html_for_next_prev(
+            $days, $index, $context->{ config }
+        );
 
-        path( "$config->{ 'output-dir' }/archive/$year/$month")->mkpath();
+        path(
+            "$context->{ config }{ 'output-dir' }/archive/$year/$month"
+        )->mkpath();
         create_page(
             "archive/$year/$month/$day_number.html",
-            $day->{ title }, $day_body_html . $next_prev_html,
+            $day->{ title },
+            $day_body_html . $next_prev_html,
             $day_archive_html,
-            $config,
-            $label, $min_year, $max_year
+            $context->{ config },
+            $label,
+            $context->{ min_year },
+            $context->{ max_year }
         );
 
         $year_week = get_year_week( $day->{ date } );
@@ -297,37 +325,36 @@ sub create_day_and_week_pages {
             $week_body_html .= $day_body_html;
         }
         else {
-            create_week_page(
-                $current_year_week, $week_body_html, $archive, $config,
-                $min_year, $max_year
-            );
+            create_week_page( $current_year_week, $week_body_html, $context );
             $current_year_week = $year_week;
             $week_body_html = $day_body_html;
         }
         $index++;
     }
 
-    create_week_page(
-        $year_week, $week_body_html, $archive, $config,
-        $min_year, $max_year
-    );
+    create_week_page( $year_week, $week_body_html, $context );
 
     return;
 }
 
 sub create_pages {
 
-    my ( $pages, $archive, $config, $min_year, $max_year ) = @_;
+    my ( $pages, $context ) = @_;
 
-    my $archive_html = %$archive ? html_for_archive(
-        $archive, undef, 'archive', $config->{ 'label-format' }
+    my $archive_html = %{ $context->{ archive } } ? html_for_archive(
+        $context->{ archive },
+        undef,
+        'archive',
+        $context->{ config }{ 'label-format' }
     ) : '';
 
     for my $page ( @$pages ) {
         my $date = $page->{ date };
         my $link_text = escape(
             decode_utf8(
-                parse_date( $date )->strftime( $config->{ 'date-format' } )
+                parse_date( $date )->strftime(
+                    $context->{ config }{ 'date-format' }
+                )
             )
         );
         my $body_html;
@@ -343,8 +370,13 @@ sub create_pages {
 
         create_page(
             "$page->{ name }.html",
-            $page->{ title }, $body_html, $archive_html, $config,
-            $page->{ label }, $min_year, $max_year
+            $page->{ title },
+            $body_html,
+            $archive_html,
+            $context->{ config },
+            $page->{ label },
+            $context->{ min_year },
+            $context->{ max_year }
         );
     }
 
@@ -353,26 +385,38 @@ sub create_pages {
 
 sub create_week_page {
 
-    my ( $year_week, $body_html, $archive, $config, $min_year, $max_year ) = @_;
+    my ( $year_week, $body_html, $context ) = @_;
 
     my $archive_html = html_for_archive(
-        $archive, $year_week, '../..', $config->{ 'label-format' }
+        $context->{ archive },
+        $year_week,
+        '../..',
+        $context->{ config }{ 'label-format' }
     );
 
     my ( $year, $week ) = split_year_week( $year_week );
-    my $title = year_week_title( $config->{ 'label-format' }, $year, $week );
-    path( "$config->{ 'output-dir' }/archive/$year/week" )->mkpath();
+    my $title = year_week_title(
+        $context->{ config }{ 'label-format' },
+        $year,
+        $week
+    );
+    path( "$context->{ config }{ 'output-dir' }/archive/$year/week" )->mkpath();
     create_page(
         "archive/$year/week/$week.html",
-        $title, $body_html, $archive_html, $config,
-        $title, $min_year, $max_year
+        $title,
+        $body_html,
+        $archive_html,
+        $context->{ config },
+        $title,
+        $context->{ min_year },
+        $context->{ max_year }
     );
     return;
 }
 
 sub create_month_pages {
 
-    my ( $days, $archive, $config, $min_year, $max_year ) = @_;
+    my ( $days, $context ) = @_;
 
     my %years;
     for my $day ( @$days ) {
@@ -382,7 +426,10 @@ sub create_month_pages {
 
     my @month_names = get_month_names();
     my $archive_html = html_for_archive(
-        $archive, undef, '../..', $config->{ 'label-format' }
+        $context->{ archive },
+        undef,
+        '../..',
+        $context->{ config }{ 'label-format' }
     );
 
     for my $year ( sort keys %years ) {
@@ -409,9 +456,13 @@ sub create_month_pages {
 
             create_page(
                 "archive/$year/$month/index.html",
-                "$month_name, $year", $body_html, $archive_html, $config,
+                "$month_name, $year",
+                $body_html,
+                $archive_html,
+                $context->{ config },
                 decode_utf8( $first_tp->strftime( '%b, %Y' ) ),
-                $min_year, $max_year
+                $context->{ min_year },
+                $context->{ max_year }
             );
         }
     }
@@ -420,13 +471,16 @@ sub create_month_pages {
 
 sub create_year_pages {
 
-    my ( $days, $archive, $config, $min_year, $max_year ) = @_;
+    my ( $days, $context ) = @_;
 
     my ( $start_year ) = split_date( $days->[ -1 ]{ date } );
     my ( $end_year )   = split_date( $days->[  0 ]{ date } );
 
     my $archive_html = html_for_archive(
-        $archive, undef, '..', $config->{ 'label-format' }
+        $context->{ archive },
+        undef,
+        '..',
+        $context->{ config }{ 'label-format' }
     );
 
     my $day_names_row = html_for_day_names_row();
@@ -504,11 +558,16 @@ sub create_year_pages {
 
         $body_html .= "</div>\n";
 
-        path( "$config->{ 'output-dir' }/archive/$year" )->mkpath();
+        path( "$context->{ config }{ 'output-dir' }/archive/$year" )->mkpath();
         create_page(
             "archive/$year/index.html",
-            $year, $body_html, $archive_html, $config,
-            $year, $min_year, $max_year
+            $year,
+            $body_html,
+            $archive_html,
+            $context->{ config },
+            $year,
+            $context->{ min_year },
+            $context->{ max_year }
         );
     }
     return;
@@ -834,7 +893,7 @@ sub get_cloud_size {
 
 sub create_tag_pages {
 
-    my ( $days, $archive, $config, $min_year, $max_year ) = @_;
+    my ( $days, $context ) = @_;
 
     my $tag_years = {};
     for my $day ( @$days ) {
@@ -850,7 +909,10 @@ sub create_tag_pages {
     }
 
     my $archive_html = html_for_archive(
-        $archive, undef, '../../archive', $config->{ 'label-format' }
+        $context->{ archive },
+        undef,
+        '../../archive',
+        $context->{ config }{ 'label-format' }
     );
 
     my %tag_info;
@@ -884,11 +946,18 @@ sub create_tag_pages {
             }
             $body_html .= "  </dl>\n</div>\n";
 
-            path( "$config->{ 'output-dir' }/tags/$year/" )->mkpath();
+            path(
+                "$context->{ config }{ 'output-dir' }/tags/$year/"
+            )->mkpath();
             create_page(
                 "tags/$year/$tag_path",
-                $tag, $body_html, $archive_html, $config,
-                $tag, $min_year, $max_year
+                $tag,
+                $body_html,
+                $archive_html,
+                $context->{ config },
+                $tag,
+                $context->{ min_year },
+                $context->{ max_year }
             );
         }
     }
@@ -902,9 +971,10 @@ sub create_tag_pages {
             if !defined $max_count || $tag_info{ $tag }{ count } > $max_count;
     }
 
+    my $tags_title = escape( $context->{ config }{ 'tags-title' } );
     my $body_html = qq(<div class="tl-topbar"></div>\n)
         . qq(<div class="tl-tags-overview">\n)
-        . "  <h2>$config->{ 'tags-title' }</h2>\n"
+        . "  <h2>$tags_title</h2>\n"
         . qq(  <ul class="tl-tag-cloud">\n);
 
     for my $tag ( sort keys %tag_info ) {
@@ -922,8 +992,13 @@ sub create_tag_pages {
 
     create_page(
         'tags/index.html',
-        $config->{ 'tags-title' }, $body_html, $archive_html, $config,
-        $config->{ 'tags-label' }, $min_year, $max_year
+        $context->{ config }{ 'tags-title' },
+        $body_html,
+        $archive_html,
+        $context->{ config },
+        $context->{ config }{ 'tags-label' },
+        $context->{ min_year },
+        $context->{ max_year }
     );
     return;
 }
