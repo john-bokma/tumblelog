@@ -1179,6 +1179,8 @@ def validate_tags(tags: object) -> None:
 
     seen = set()
     for tag in tags:
+        if not isinstance(tag, str):
+            raise ParseError('A tag must be a string')
         if not tag:
             raise ParseError('A tag must have a length')
         match = RE_TAG.match(tag)
