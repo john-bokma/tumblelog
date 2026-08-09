@@ -1205,9 +1205,9 @@ sub insert_identifier_and_add_permalink {
 sub validate_identifier {
     my $identifier = shift;
 
-    ref $identifier eq '' or die 'identifier is not a string';
-    length $identifier or die 'identifier must not be empty';
-    die 'identifier must not contain whitespace' if $identifier =~ /\s/;
+    ref $identifier eq '' or die 'An identifier must be a string';
+    length $identifier or die 'An identifier must not be empty';
+    $identifier =~ /\s/ and die 'An identifier must not contain whitespace';
     return;
 }
 
