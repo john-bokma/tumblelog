@@ -1199,7 +1199,8 @@ def convert_day_articles_with_metablock_to_html(
 
                 ast = parser.parse(markdown)
                 identifier, heading = extract_identifier_and_heading(ast)
-                if custom_id := meta.get('id'):
+                if 'id' in meta:
+                    custom_id = meta['id']
                     validate_identifier(custom_id)
                     identifier = custom_id
 
