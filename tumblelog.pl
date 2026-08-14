@@ -832,10 +832,7 @@ sub create_archive {
         my $tp_year_str = sprintf '%04d', $tp->year();
         $archive{ 'years' }{ $tp_year_str } = 1;
         my ( $year, $week ) = get_year_and_week( $tp );
-        if ( not exists( $archive{ 'years_weeks' }{ $tp_year_str } ) ) {
-            # make every year count
-            $archive{ 'years_weeks' }{ $tp_year_str } = [ ];
-        }
+        $archive{years_weeks}{$year_str} //= [];  # make every year count
         if ( !$seen{ $year }{ $week }++ ) {
             unshift @{ $archive{ 'years_weeks' }{ sprintf '%04d', $year } },
                 sprintf '%02d', $week;
