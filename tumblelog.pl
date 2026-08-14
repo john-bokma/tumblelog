@@ -196,7 +196,7 @@ sub create_blog {
     }
     convert_entry_articles_to_html( $pages );
 
-    my $max_year = localtime()->year(); # current year
+    my $max_year = localtime()->year();
     my $min_year;
     if ( defined $config->{ 'min-year' } ) {
         $min_year = $config->{ 'min-year' };
