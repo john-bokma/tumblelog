@@ -1115,7 +1115,7 @@ def wrap_in_permalink(
         config.blog_url,
         f'archive/{year}/{month}/{day_number}.html#{safe_fragment}'
     )
-    return f'<a href="{url}">{string}</a>'
+    return f'<a href="{escape(url)}">{string}</a>'
 
 
 def insert_identifier_and_add_permalink(

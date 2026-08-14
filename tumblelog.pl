@@ -1264,7 +1264,7 @@ sub wrap_in_permalink {
         $config->{ 'blog-url' }
     );
     $uri->fragment( $identifier );
-    return qq(<a href="$uri">$string</a>);
+    return '<a href="' . escape( $uri ) . qq(">$string</a>);
 }
 
 sub insert_identifier_and_add_permalink {
