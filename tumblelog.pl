@@ -1314,7 +1314,7 @@ sub html_for_tag {
         "tags/$year/$tag_path",
         $config->{ 'blog-url' }
     );
-    return qq(<a href="$uri">$tag</a>);
+    return '<a href="' . escape( $uri ) . '">' . escape( $tag ) . '</a>';
 }
 
 sub html_for_tags {

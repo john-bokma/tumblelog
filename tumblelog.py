@@ -1164,7 +1164,7 @@ def validate_tags(tags: object) -> None:
 def html_for_tag(tag: str, year: str, config: Config) -> str:
     tag_path = get_tag_path(tag)
     url = urllib.parse.urljoin(config.blog_url, f'tags/{year}/{tag_path}')
-    return f'<a href="{url}">{tag}</a>'
+    return f'<a href="{escape(url)}">{escape(tag)}</a>'
 
 
 def html_for_tags(tags: list[str], date: str, config: Config) -> str:
