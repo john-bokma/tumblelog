@@ -332,7 +332,7 @@ sub create_day_and_week_pages {
         $index++;
     }
 
-    create_week_page( $year_week, $week_body_html, $context );
+    create_week_page( $current_year_week, $week_body_html, $context );
 
     return;
 }

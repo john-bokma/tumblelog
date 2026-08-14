@@ -795,7 +795,7 @@ def create_day_and_week_pages(days: list[Day], context: RenderContext) -> None:
             current_year_week = year_week
             week_body_html = day_body_html
 
-    create_week_page(year_week, week_body_html, context)
+    create_week_page(current_year_week, week_body_html, context)
 
 
 def create_pages(pages: list[Page], context: RenderContext) -> None:
