@@ -12,7 +12,7 @@ use Path::Tiny;
 use CommonMark qw(:opt :node :event);
 use Time::Piece;
 use Time::Seconds;
-use Getopt::Long;
+use Getopt::Long qw(:config no_auto_abbrev);
 use List::Util 'min';
 use Unicode::UTF8 'decode_utf8';
 use Try::Tiny;
@@ -121,7 +121,7 @@ sub get_config {
         'quiet',
         'version',
         'help',
-    );
+    ) or show_usage_and_exit( 2 );
 
     show_usage_and_exit() if $arguments{ help };
 
