@@ -1297,9 +1297,10 @@ def create_argument_parser() -> argparse.ArgumentParser:
   %(prog)s --template-filename TEMPLATE --output-dir HTDOCS
       --author AUTHOR --name BLOGNAME --description DESCRIPTION
       --blog-url URL
-      [--days DAYS ] [--css URL] [--date-format DATE] [--min-year YEAR]
+      [--days DAYS ] [--css CSS]
+      [--date-format DATE] [--label-format FORMAT] [--min-year YEAR]
       [--tags [--tags-label LABEL] [--tags-title TITLE]]
-      [--quiet] FILE
+      [--feed-size SIZE] [--quiet] FILE
   %(prog)s --version
   %(prog)s --help"""
 
@@ -1364,8 +1365,8 @@ def create_argument_parser() -> argparse.ArgumentParser:
         '-c',
         '--css',
         dest='css',
-        help='URL of the stylesheet to use; default: %(default)s',
-        metavar='URL',
+        help='name of the stylesheet to use; default: %(default)s',
+        metavar='CSS',
         default='styles.css'
     )
     parser.add_argument(

@@ -1501,7 +1501,8 @@ SYNOPSIS
         tumblelog.pl --template-filename TEMPLATE --output-dir HTDOCS
             --author AUTHOR --name BLOGNAME --description DESCRIPTION
             --blog-url URL
-            [--days DAYS ] [--css CSS] [--date-format FORMAT] [--min-year YEAR]
+            [--days DAYS ] [--css CSS]
+            [--date-format FORMAT] [--label-format FORMAT] [--min-year YEAR]
             [--tags [--tags-label LABEL] [--tags-title TITLE]]
             [--feed-size SIZE] [--quiet] FILE
         tumblelog.pl --version
