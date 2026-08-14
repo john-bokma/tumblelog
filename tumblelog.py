@@ -1022,15 +1022,13 @@ def create_json_feed(days: list[Day], config: Config) -> None:
         url, title, description = get_url_title_description(day, config)
 
         end_of_day = get_end_of_day(day.date)
-        date_published = str(end_of_day).replace(' ', 'T')
-
         items.append(
             {
                 'id': url,
                 'url': url,
                 'title': title,
                 'content_html': description,
-                'date_published': date_published,
+                'date_published': end_of_day.isoformat()
             }
         )
 
