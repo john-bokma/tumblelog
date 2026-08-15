@@ -1,5 +1,21 @@
 # Changelog
 
+## [6.6.0] - 2026-08-15
+
+  - Use `current_year_week` in `create_week_page` call
+  - Use `escape` on the `href` attribute in `wrap_in_permalink`
+  - Don't ignore an empty `id` (`tumblelog.py`)
+  - Make synopsis/usage show all options
+  - Escape URL and tag in `html_for_tag`
+  - Use `isoformat` instead of `str` with `replace` (`tumblelog.py`)
+  - Don't accept unknown options nor abbreviated options (`tumblelog.pl`)
+  - Use `our $VERSION` (`tumblelog.pl`)
+  - Simplify clumsy code (`tumblelog.pl`)
+  - Remove obvious comment (`tumblelog.pl`)
+  - Fix bug in create_archive (`tumblelog.pl`)
+  - Make `get_end_of_day` conform the `Time::Piece` documentation
+    (`tumblelog.pl`)
+
 ## [6.5.4] - 2026-08-09
 
   - Don't render any HTML for archive if there is none
