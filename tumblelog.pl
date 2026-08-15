@@ -869,9 +869,8 @@ sub get_month_names {
 
 sub get_end_of_day {
 
-    return Time::Piece->localtime(
-        Time::Piece->strptime( shift . ' 23:59:59', '%Y-%m-%d %H:%M:%S' )
-    );
+    my $date = shift;
+    return localtime()->strptime( "$date 23:59:59", '%Y-%m-%d %H:%M:%S' );
 }
 
 sub get_tag_path {
